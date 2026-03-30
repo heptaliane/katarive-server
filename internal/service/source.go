@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
+	"sync"
 
 	katarive "github.com/heptaliane/katarive-go-sdk"
 	pb "github.com/heptaliane/katarive-go-sdk/gen/pb/plugin/v1"
@@ -16,6 +17,7 @@ type sourceRegistry struct {
 }
 
 type SourceManager struct {
+	mu      sync.RWMutex
 	sources []*sourceRegistry
 }
 
@@ -23,6 +25,9 @@ func (m *SourceManager) GetSource(
 	ctx context.Context,
 	url string,
 ) (*pb.GetSourceResponse, error) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
 	for _, s := range m.sources {
 		if s.pattern.Match([]byte(url)) {
 			return s.source.GetSource(ctx, url)

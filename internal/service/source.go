@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"regexp"
 	"sync"
+	"time"
 
 	katarive "github.com/heptaliane/katarive-go-sdk"
 	pb "github.com/heptaliane/katarive-go-sdk/gen/pb/plugin/v1"
@@ -17,8 +18,9 @@ type sourceRegistry struct {
 }
 
 type SourceManager struct {
-	mu      sync.RWMutex
-	sources []*sourceRegistry
+	mu       sync.RWMutex
+	interval time.Duration
+	sources  []*sourceRegistry
 }
 
 func (m *SourceManager) GetSource(
@@ -26,7 +28,10 @@ func (m *SourceManager) GetSource(
 	url string,
 ) (*pb.GetSourceResponse, error) {
 	m.mu.Lock()
-	defer m.mu.Unlock()
+	defer func() {
+		time.Sleep(m.interval)
+		m.mu.Unlock()
+	}()
 
 	for _, s := range m.sources {
 		if s.pattern.Match([]byte(url)) {
@@ -37,7 +42,11 @@ func (m *SourceManager) GetSource(
 	return nil, errors.New(fmt.Sprintf("No supported Source plugin found for %s", url))
 }
 
-func NewSourceManager(ctx context.Context, sources []katarive.Source) (*SourceManager, error) {
+func NewSourceManager(
+	ctx context.Context,
+	sources []katarive.Source,
+	interval int,
+) (*SourceManager, error) {
 	var registries []*sourceRegistry
 	for _, source := range sources {
 		res, err := source.GetSupportedPatterns(ctx)
@@ -53,7 +62,13 @@ func NewSourceManager(ctx context.Context, sources []katarive.Source) (*SourceMa
 		}
 	}
 
+	duration, err := time.ParseDuration(fmt.Sprintf("%dms", interval))
+	if err != nil {
+		return nil, err
+	}
+
 	return &SourceManager{
-		sources: registries,
+		interval: duration,
+		sources:  registries,
 	}, nil
 }

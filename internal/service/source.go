@@ -12,15 +12,13 @@ import (
 	pb "github.com/heptaliane/katarive-go-sdk/gen/pb/plugin/v1"
 )
 
-type sourceRegistry struct {
-	source  katarive.Source
-	pattern *regexp.Regexp
-}
-
 type SourceManager struct {
-	mu       sync.RWMutex
+	mu       *sync.RWMutex
 	interval time.Duration
-	sources  []*sourceRegistry
+	source   katarive.Source
+	name     string
+	version  string
+	pattern  *regexp.Regexp
 }
 
 func (m *SourceManager) GetSource(
@@ -33,42 +31,58 @@ func (m *SourceManager) GetSource(
 		m.mu.Unlock()
 	}()
 
+	return m.source.GetSource(ctx, url)
+}
+func (m *SourceManager) GetName() string {
+	return fmt.Sprintf("%s:%s", m.name, m.version)
+}
+
+type SourceRepository struct {
+	sources []*SourceManager
+}
+
+func (m *SourceRepository) GetSource(
+	url string,
+) (*SourceManager, error) {
+
 	for _, s := range m.sources {
 		if s.pattern.Match([]byte(url)) {
-			return s.source.GetSource(ctx, url)
+			return s, nil
 		}
 	}
 
 	return nil, errors.New(fmt.Sprintf("No supported Source plugin found for %s", url))
 }
 
-func NewSourceManager(
+func NewSourceRepository(
 	ctx context.Context,
 	sources []katarive.Source,
-	interval int,
-) (*SourceManager, error) {
-	var registries []*sourceRegistry
+	interval_ms int,
+) (*SourceRepository, error) {
+	duration, err := time.ParseDuration(fmt.Sprintf("%dms", interval_ms))
+	if err != nil {
+		return nil, err
+	}
+	mu := new(sync.RWMutex)
+
+	var sm []*SourceManager
 	for _, source := range sources {
-		res, err := source.GetSupportedPatterns(ctx)
+		res, err := source.GetSourceServiceMetadata(ctx)
 		if err != nil {
 			return nil, err
 		}
 
-		for _, pattern := range res.GetPatterns() {
-			registries = append(registries, &sourceRegistry{
-				source:  source,
-				pattern: regexp.MustCompile(pattern),
-			})
-		}
+		sm = append(sm, &SourceManager{
+			mu:       mu,
+			interval: duration,
+			source:   source,
+			name:     res.GetName(),
+			version:  res.GetVersion(),
+			pattern:  regexp.MustCompile(res.GetSupportedPattern()),
+		})
 	}
 
-	duration, err := time.ParseDuration(fmt.Sprintf("%dms", interval))
-	if err != nil {
-		return nil, err
-	}
-
-	return &SourceManager{
-		interval: duration,
-		sources:  registries,
+	return &SourceRepository{
+		sources: sm,
 	}, nil
 }

@@ -8,17 +8,22 @@ import (
 )
 
 type MockSource struct {
-	Patterns []string
-	Title    string
-	Content  string
-	NextUrl  string
+	Name             string
+	Version          string
+	SupportedPattern string
+
+	Title   string
+	Content string
+	NextUrl string
 }
 
-func (s *MockSource) GetSupportedPatterns(
+func (s *MockSource) GetSourceServiceMetadata(
 	ctx context.Context,
-) (*pb.GetSupportedPatternsResponse, error) {
-	return &pb.GetSupportedPatternsResponse{
-		Patterns: s.Patterns,
+) (*pb.GetSourceServiceMetadataResponse, error) {
+	return &pb.GetSourceServiceMetadataResponse{
+		Name:             s.Name,
+		Version:          s.Version,
+		SupportedPattern: s.SupportedPattern,
 	}, nil
 }
 

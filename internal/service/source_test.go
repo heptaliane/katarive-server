@@ -1,12 +1,11 @@
 package service_test
 
 import (
-	"testing"
 	"context"
+	"testing"
 
-	katarive "github.com/heptaliane/katarive-go-sdk"
-	pb "github.com/heptaliane/katarive-go-sdk/gen/pb/plugin/v1"
 	"github.com/google/go-cmp/cmp"
+	katarive "github.com/heptaliane/katarive-go-sdk"
 
 	"github.com/heptaliane/katarive-server/internal/plugin"
 	"github.com/heptaliane/katarive-server/internal/service"
@@ -16,34 +15,29 @@ func TestSourceManager(t *testing.T) {
 	t.Parallel()
 
 	sources := []katarive.Source{
-		&plugin.MockSource {
-			Patterns: []string{`^http://example\.com/.*`},
-			Title: "example",
-			Content: "This is the example",
-			NextUrl: "http://example.com/2",
+		&plugin.MockSource{
+			Name:             "example",
+			Version:          "v1",
+			SupportedPattern: `^http://example\.com/.*`,
 		},
 	}
 	ctx := context.Background()
-	sm, err := service.NewSourceManager(ctx, sources)
+	sm, err := service.NewSourceRepository(ctx, sources, 10)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	cases := map[string]struct {
-		url string
-		res *pb.GetSourceResponse
-	} {
+		url  string
+		name string
+	}{
 		"normal": {
-			url: "http://example.com/1",
-			res: &pb.GetSourceResponse {
-				Title: "example",
-				Content: "This is the example",
-				NextUrl: "http://example.com/2",
-			},
+			url:  "http://example.com/1",
+			name: "example:v1",
 		},
 		"not_found": {
-			url: "http://not_found.com/1",
-			res: nil,
+			url:  "http://not_found.com/1",
+			name: "",
 		},
 	}
 
@@ -52,11 +46,12 @@ func TestSourceManager(t *testing.T) {
 			t.Parallel()
 
 			ctx = context.Background()
-			src, err := sm.GetSource(ctx, tc.url)
+			sm, err := sm.GetSource(tc.url)
 
-			if tc.res == nil {
+			if tc.name == "" {
 				if err == nil {
 					t.Errorf("Error expected, but got nil")
+					return
 				}
 				return
 			}
@@ -65,17 +60,8 @@ func TestSourceManager(t *testing.T) {
 				t.Errorf("Unexpected error: %s", err)
 				return
 			}
-			if diff := cmp.Diff(src.GetTitle(), tc.res.GetTitle()); diff != "" {
-				t.Errorf("Title unmatched: %s", diff)
-				return
-			}
-			if diff := cmp.Diff(src.GetContent(), tc.res.GetContent()); diff != "" {
-				t.Errorf("Content unmatched: %s", diff)
-				return
-			}
-			if diff := cmp.Diff(src.GetNextUrl(), tc.res.GetNextUrl()); diff != "" {
-				t.Errorf("NextUrl unmatched: %s", diff)
-				return
+			if diff := cmp.Diff(sm.GetName(), tc.name); diff != "" {
+				t.Errorf("Unexpected SourceManager name: %s", diff)
 			}
 		})
 	}

@@ -5,39 +5,50 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	katarive "github.com/heptaliane/katarive-go-sdk"
+	pb "github.com/heptaliane/katarive-go-sdk/gen/pb/plugin/v1"
 
 	"github.com/heptaliane/katarive-server/internal/plugin"
 	"github.com/heptaliane/katarive-server/internal/service"
 )
 
-func TestSourceManager(t *testing.T) {
+func TestSemaphoreSourceManager(t *testing.T) {
 	t.Parallel()
 
-	sources := []katarive.Source{
-		&plugin.MockSource{
-			Name:             "example",
-			Version:          "v1",
-			SupportedPattern: `^http://example\.com/.*`,
-		},
+	source := &plugin.MockSource{
+		Name:             "example",
+		Version:          "v1",
+		SupportedPattern: `^http://example\.com/.*`,
+		Title:            "example title",
+		Content:          "example content",
+		NextUrl:          "http://example.com/2",
 	}
 	ctx := context.Background()
-	sm, err := service.NewSourceRepository(ctx, sources, 10)
+	sm, err := service.NewSemaphoreSourceManager(ctx, source)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	cases := map[string]struct {
-		url  string
-		name string
+		url                    string
+		expectedSource         *pb.GetSourceResponse
+		expectedIsSupportedURL bool
+		expectedName           string
 	}{
-		"normal": {
-			url:  "http://example.com/1",
-			name: "example:v1",
+		"supported": {
+			url: "http://example.com/1",
+			expectedSource: &pb.GetSourceResponse{
+				Title:   source.Title,
+				Content: source.Content,
+				NextUrl: source.NextUrl,
+			},
+			expectedIsSupportedURL: true,
+			expectedName:           source.Name,
 		},
-		"not_found": {
-			url:  "http://not_found.com/1",
-			name: "",
+		"unsupported": {
+			url:                    "http://unsupported.com/1",
+			expectedSource:         nil,
+			expectedIsSupportedURL: false,
+			expectedName:           source.Name,
 		},
 	}
 
@@ -45,28 +56,28 @@ func TestSourceManager(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			ctx = context.Background()
-			sm, err := sm.GetSource(tc.url)
-
-			if tc.name == "" {
-				if err == nil {
-					t.Errorf("Error expected, but got nil")
-					return
-				}
+			ctx := context.Background()
+			actualSource, _ := sm.GetSource(ctx, tc.url)
+			if diff := cmp.Diff(actualSource, tc.expectedSource); diff != "" {
+				t.Errorf("Unmatched GetSource result (want: -, got: +): %s", diff)
 				return
 			}
-
-			if err != nil {
-				t.Errorf("Unexpected error: %s", err)
+			actualIsSupportedURL := sm.IsSupportedURL(tc.url)
+			if actualIsSupportedURL != tc.expectedIsSupportedURL {
+				t.Errorf(
+					"Expceted %s but got %s for IsSupportedURL",
+					tc.expectedIsSupportedURL,
+					actualIsSupportedURL,
+				)
 				return
 			}
-			if diff := cmp.Diff(sm.GetName(), tc.name); diff != "" {
-				t.Errorf("Unexpected SourceManager name: %s", diff)
-			}
-
-			_, err = sm.GetSource(ctx, tc.url)
-			if err != nil {
-				t.Errorf("Unexpected error in GetSource: %v", err)
+			actualName := sm.GetName()
+			if actualName != tc.expectedName {
+				t.Errorf(
+					"Expceted %s but got %s for GetName",
+					tc.expectedName,
+					actualName,
+				)
 				return
 			}
 		})

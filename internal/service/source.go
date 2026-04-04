@@ -2,8 +2,8 @@ package service
 
 import (
 	"context"
-	"errors"
 	"fmt"
+	"path/filepath"
 	"regexp"
 	"sync"
 	"time"
@@ -12,76 +12,130 @@ import (
 	pb "github.com/heptaliane/katarive-go-sdk/gen/pb/plugin/v1"
 )
 
-type SourceManager struct {
-	mu       *sync.RWMutex
-	interval time.Duration
-	source   katarive.Source
-	name     string
-	version  string
-	pattern  *regexp.Regexp
+type SourceManager interface {
+	GetSource(ctx context.Context, url string) (*pb.GetSourceResponse, error)
+	IsSupportedURL(url string) bool
+	GetName() string
 }
 
-func (m *SourceManager) GetSource(
+type semaphoreSourceManagerOptions struct {
+	interval time.Duration
+}
+
+type SemaphoreSourceManagerOption func(*semaphoreSourceManagerOptions)
+
+func WithInterval(interval_ms int) SemaphoreSourceManagerOption {
+	return func(opt *semaphoreSourceManagerOptions) {
+		t, err := time.ParseDuration(fmt.Sprintf("%dms", interval_ms))
+		if err == nil {
+			opt.interval = t
+		}
+	}
+}
+
+type SemaphoreSourceManager struct {
+	source katarive.Source
+
+	pattern *regexp.Regexp
+	name    string
+	version string
+
+	mu      *sync.RWMutex
+	options *semaphoreSourceManagerOptions
+}
+
+func (s *SemaphoreSourceManager) GetSource(
 	ctx context.Context,
 	url string,
 ) (*pb.GetSourceResponse, error) {
-	m.mu.Lock()
+	s.mu.Lock()
 	defer func() {
-		time.Sleep(m.interval)
-		m.mu.Unlock()
+		time.Sleep(s.options.interval)
+		s.mu.Unlock()
 	}()
 
-	return m.source.GetSource(ctx, url)
+	return s.source.GetSource(ctx, url)
 }
-func (m *SourceManager) GetName() string {
-	return fmt.Sprintf("%s:%s", m.name, m.version)
+func (s *SemaphoreSourceManager) IsSupportedURL(url string) bool {
+	return s.pattern.Match([]byte(url))
+}
+func (s *SemaphoreSourceManager) GetName() string {
+	return fmt.Sprintf("%s:%s", s.name, s.version)
 }
 
-type SourceRepository struct {
-	sources []*SourceManager
-}
+// Ensure SemaphoreSourceManager implements SourceManager
+var _ SourceManager = new(SemaphoreSourceManager)
 
-func (m *SourceRepository) GetSource(
-	url string,
-) (*SourceManager, error) {
-
-	for _, s := range m.sources {
-		if s.pattern.Match([]byte(url)) {
-			return s, nil
-		}
+func NewSemaphoreSourceManager(
+	ctx context.Context,
+	source katarive.Source,
+	opts ...SemaphoreSourceManagerOption,
+) (*SemaphoreSourceManager, error) {
+	var options semaphoreSourceManagerOptions
+	for _, opt := range opts {
+		opt(&options)
 	}
 
-	return nil, errors.New(fmt.Sprintf("No supported Source plugin found for %s", url))
-}
-
-func NewSourceRepository(
-	ctx context.Context,
-	sources []katarive.Source,
-	interval_ms int,
-) (*SourceRepository, error) {
-	duration, err := time.ParseDuration(fmt.Sprintf("%dms", interval_ms))
+	res, err := source.GetSourceServiceMetadata(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	var sm []*SourceManager
-	for _, source := range sources {
-		res, err := source.GetSourceServiceMetadata(ctx)
-		if err != nil {
-			return nil, err
-		}
+	return &SemaphoreSourceManager{
+		source:  source,
+		pattern: regexp.MustCompile(res.GetSupportedPattern()),
+		name:    res.GetName(),
+		version: res.GetVersion(),
+		mu:      new(sync.RWMutex),
+		options: &options,
+	}, nil
+}
 
-		sm = append(sm, &SourceManager{
-			mu:       new(sync.RWMutex),
-			interval: duration,
-			source:   source,
-			name:     res.GetName(),
-			version:  res.GetVersion(),
-			pattern:  regexp.MustCompile(res.GetSupportedPattern()),
-		})
+type SourceRegistry struct {
+	basedir string
+	sources []SourceManager
+}
+
+func (s *SourceRegistry) GetSource(
+	ctx context.Context,
+	url string,
+) (*pb.GetSourceResponse, error) {
+	// Find supported SourceManager
+	var sm SourceManager
+	for _, source := range s.sources {
+		if source.IsSupportedURL(url) {
+			sm = source
+			break
+		}
+	}
+	if sm == nil {
+		return nil, &UnsupportedSourceURLError{URL: url}
 	}
 
-	return &SourceRepository{
-		sources: sm,
-	}, nil
+	filename := fmt.Sprintf("%s.json", url2filename(url))
+	path := filepath.Join(s.basedir, sm.GetName(), filename)
+	if Exists(path) {
+		return LoadJson[pb.GetSourceResponse](path)
+	}
+
+	res, err := sm.GetSource(ctx, url)
+	if err != nil {
+		return nil, err
+	}
+
+	err = DumpJson(path, res)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
+func NewSourceRegistry(
+	basedir string,
+	sources []SourceManager,
+) *SourceRegistry {
+	return &SourceRegistry{
+		basedir: basedir,
+		sources: sources,
+	}
 }

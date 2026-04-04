@@ -18,13 +18,13 @@ func Exists(path string) bool {
 	return err == nil
 }
 func NewFile(path string) (*os.File, error) {
-	parent := filepath.Base(path)
+	parent := filepath.Dir(path)
 	err := os.MkdirAll(parent, 0755)
 	if err != nil {
 		return nil, err
 	}
 
-	return os.Open(path)
+	return os.Create(path)
 }
 
 func LoadJson[T any](path string) (*T, error) {

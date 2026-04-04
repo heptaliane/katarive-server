@@ -91,6 +91,28 @@ func NewSemaphoreSourceManager(
 	}, nil
 }
 
+type MockSourceManager struct {
+	Source       *pb.GetSourceResponse
+	SupportedURL *regexp.Regexp
+	Name         string
+}
+
+func (m *MockSourceManager) GetSource(
+	ctx context.Context,
+	url string,
+) (*pb.GetSourceResponse, error) {
+	return m.Source, nil
+}
+func (m *MockSourceManager) IsSupportedURL(url string) bool {
+	return m.SupportedURL.Match([]byte(url))
+}
+func (m *MockSourceManager) GetName() string {
+	return m.Name
+}
+
+// Ensure MockSourceManager implements SourceManager
+var _ SourceManager = new(MockSourceManager)
+
 type SourceRegistry struct {
 	basedir string
 	sources []SourceManager

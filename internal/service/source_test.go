@@ -2,6 +2,7 @@ package service_test
 
 import (
 	"context"
+	"regexp"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -60,9 +61,9 @@ func TestSemaphoreSourceManager(t *testing.T) {
 			if tc.expectedIsSupportedURL {
 				ctx := context.Background()
 				actualSource, _ := sm.GetSource(ctx, tc.url)
-				opts := cmpopts.IgnoreUnexported(pb.GetSourceResponse{})
-				if diff := cmp.Diff(actualSource, tc.expectedSource, opts); diff != "" {
-					t.Errorf("Unmatched GetSource result (got: -, want: +): %s", diff)
+				opt := cmpopts.IgnoreUnexported(pb.GetSourceResponse{})
+				if diff := cmp.Diff(actualSource, tc.expectedSource, opt); diff != "" {
+					t.Errorf("Unmatched GetSource result (got: -, want: +):\n%s", diff)
 					return
 				}
 			}
@@ -83,6 +84,72 @@ func TestSemaphoreSourceManager(t *testing.T) {
 					actualName,
 				)
 				return
+			}
+		})
+	}
+}
+
+func TestSourceRegistry(t *testing.T) {
+	t.Parallel()
+
+	basedir := t.TempDir()
+
+	source := &pb.GetSourceResponse{
+		Title:   "title",
+		Content: "content",
+		NextUrl: "http://example.com/2",
+	}
+
+	sms := []service.SourceManager{
+		&service.MockSourceManager{
+			Source:       source,
+			SupportedURL: regexp.MustCompile(`http://example\.com/.*`),
+			Name:         "name",
+		},
+	}
+	sr := service.NewSourceRegistry(basedir, sms)
+
+	cases := []struct {
+		name           string
+		url            string
+		expectedSource *pb.GetSourceResponse
+	}{
+		{
+			name:           "new_file",
+			url:            "http://example.com/1",
+			expectedSource: source,
+		},
+		{
+			name:           "exists_file",
+			url:            "http://example.com/1",
+			expectedSource: source,
+		},
+		{
+			name:           "unsupported",
+			url:            "http://unsupported.com",
+			expectedSource: nil,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			ctx := context.Background()
+			actualSource, err := sr.GetSource(ctx, tc.url)
+			if tc.expectedSource == nil {
+				if err == nil {
+					t.Errorf("Expect error but got nil")
+					return
+				}
+			} else {
+				if err != nil {
+					t.Errorf("Unexpected error: %v", err)
+					return
+				}
+				opt := cmpopts.IgnoreUnexported(pb.GetSourceResponse{})
+				if diff := cmp.Diff(actualSource, tc.expectedSource, opt); diff != "" {
+					t.Errorf("Unmatched GetSource result (got: -, want: +):\n%s", diff)
+					return
+				}
 			}
 		})
 	}

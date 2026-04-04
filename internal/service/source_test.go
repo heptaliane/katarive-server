@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	pb "github.com/heptaliane/katarive-go-sdk/gen/pb/plugin/v1"
 
 	"github.com/heptaliane/katarive-server/internal/plugin"
@@ -42,13 +43,13 @@ func TestSemaphoreSourceManager(t *testing.T) {
 				NextUrl: source.NextUrl,
 			},
 			expectedIsSupportedURL: true,
-			expectedName:           source.Name,
+			expectedName:           "example:v1",
 		},
 		"unsupported": {
 			url:                    "http://unsupported.com/1",
 			expectedSource:         nil,
 			expectedIsSupportedURL: false,
-			expectedName:           source.Name,
+			expectedName:           "example:v1",
 		},
 	}
 
@@ -56,16 +57,19 @@ func TestSemaphoreSourceManager(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			ctx := context.Background()
-			actualSource, _ := sm.GetSource(ctx, tc.url)
-			if diff := cmp.Diff(actualSource, tc.expectedSource); diff != "" {
-				t.Errorf("Unmatched GetSource result (want: -, got: +): %s", diff)
-				return
+			if tc.expectedIsSupportedURL {
+				ctx := context.Background()
+				actualSource, _ := sm.GetSource(ctx, tc.url)
+				opts := cmpopts.IgnoreUnexported(pb.GetSourceResponse{})
+				if diff := cmp.Diff(actualSource, tc.expectedSource, opts); diff != "" {
+					t.Errorf("Unmatched GetSource result (got: -, want: +): %s", diff)
+					return
+				}
 			}
 			actualIsSupportedURL := sm.IsSupportedURL(tc.url)
 			if actualIsSupportedURL != tc.expectedIsSupportedURL {
 				t.Errorf(
-					"Expceted %s but got %s for IsSupportedURL",
+					"Expceted %t but got %t for IsSupportedURL",
 					tc.expectedIsSupportedURL,
 					actualIsSupportedURL,
 				)

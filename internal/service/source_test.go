@@ -63,6 +63,12 @@ func TestSourceManager(t *testing.T) {
 			if diff := cmp.Diff(sm.GetName(), tc.name); diff != "" {
 				t.Errorf("Unexpected SourceManager name: %s", diff)
 			}
+
+			_, err = sm.GetSource(ctx, tc.url)
+			if err != nil {
+				t.Errorf("Unexpected error in GetSource: %v", err)
+				return
+			}
 		})
 	}
 }

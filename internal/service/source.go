@@ -63,7 +63,6 @@ func NewSourceRepository(
 	if err != nil {
 		return nil, err
 	}
-	mu := new(sync.RWMutex)
 
 	var sm []*SourceManager
 	for _, source := range sources {
@@ -73,7 +72,7 @@ func NewSourceRepository(
 		}
 
 		sm = append(sm, &SourceManager{
-			mu:       mu,
+			mu:       new(sync.RWMutex),
 			interval: duration,
 			source:   source,
 			name:     res.GetName(),

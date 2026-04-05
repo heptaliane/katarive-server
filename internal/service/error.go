@@ -13,3 +13,13 @@ func (e *UnsupportedSourceURLError) Error() string {
 }
 
 var _ error = new(UnsupportedSourceURLError)
+
+type NarrateError struct {
+	Reason string
+}
+
+func (e *NarrateError) Error() string {
+	return fmt.Sprintf("Narrate failed with error: %s", e.Reason)
+}
+
+var _ error = new(NarrateError)

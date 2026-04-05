@@ -35,5 +35,41 @@ func (s *MockSource) GetSource(ctx context.Context, url string) (*pb.GetSourceRe
 	}, nil
 }
 
-// Make sure to impplement Source
+// Ensure MockSource implements Source
 var _ katarive.Source = new(MockSource)
+
+type MockNarrator struct {
+	Error  error
+	Reason *string
+
+	Name    string
+	Version string
+	Options []*pb.NarratorOption
+}
+
+func (n *MockNarrator) Narrate(
+	ctx context.Context,
+	path string,
+	text string,
+	options map[string]string,
+) (*pb.NarrateResponse, error) {
+	if n.Error != nil {
+		return nil, n.Error
+	}
+	return &pb.NarrateResponse{
+		Error:  n.Reason != nil,
+		Reason: n.Reason,
+	}, nil
+}
+func (n *MockNarrator) GetNarratorServiceMetadata(
+	ctx context.Context,
+) (*pb.GetNarratorServiceMetadataResponse, error) {
+	return &pb.GetNarratorServiceMetadataResponse{
+		Name:    n.Name,
+		Version: n.Version,
+		Options: n.Options,
+	}, nil
+}
+
+// Ensure MockNarrator implements Narrator
+var _ katarive.Narrator = new(MockNarrator)

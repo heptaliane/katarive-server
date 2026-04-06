@@ -98,3 +98,77 @@ func TestSemaphoreNarratorManager(t *testing.T) {
 		})
 	}
 }
+
+func TestNarratorRegistry(t *testing.T) {
+	t.Parallel()
+
+	basedir := t.TempDir()
+
+	nms := []service.NarratorManager{
+		&service.MockNarratorManager{
+			Name: "narrate",
+			Options: []*pb.NarratorOption{
+				{
+					Id:          "id-1",
+					Label:       "label-1",
+					Description: "description-1",
+				},
+			},
+		},
+	}
+	nr := service.NewNarratorRegistry(basedir, nms)
+
+	cases := []struct {
+		label         string
+		name          string
+		url           string
+		text          string
+		expectedError error
+	}{
+		{
+			label:         "valid",
+			name:          "narrate",
+			url:           "http://example.com/1",
+			text:          "text",
+			expectedError: nil,
+		},
+		{
+			label:         "exists",
+			name:          "narrate",
+			url:           "http://example.com/1",
+			text:          "text",
+			expectedError: nil,
+		},
+		{
+			label:         "invalid",
+			name:          "unsupported",
+			url:           "http://example.com/1",
+			text:          "text",
+			expectedError: service.UnspecifiedNarratorError,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.label, func(t *testing.T) {
+			ctx := context.Background()
+
+			nr.Use(tc.name)
+			path, err := nr.GetNarration(ctx, tc.url, tc.text)
+			if tc.expectedError == nil {
+				if err != nil {
+					t.Errorf("Unexpceted error: %v", err)
+					return
+				}
+				if path == "" {
+					t.Errorf("Blank path")
+					return
+				}
+			} else {
+				if !errors.Is(err, tc.expectedError) {
+					t.Errorf("Unexpected error: expected %v but got %v", tc.expectedError, err)
+					return
+				}
+			}
+		})
+	}
+}

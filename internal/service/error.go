@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"fmt"
 )
 
@@ -23,3 +24,5 @@ func (e *NarrateError) Error() string {
 }
 
 var _ error = new(NarrateError)
+
+var UnspecifiedNarratorError = errors.New("No narrator is set")

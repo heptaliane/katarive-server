@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"path/filepath"
 	"sync"
 
 	katarive "github.com/heptaliane/katarive-go-sdk"
@@ -113,3 +114,56 @@ func (n *MockNarratorManager) SupportedOptions() []*pb.NarratorOption {
 
 // Ensure MockNarratorManager implements NarratorManager
 var _ NarratorManager = new(MockNarratorManager)
+
+type NarratorRegistry struct {
+	basedir   string
+	narrators map[string]NarratorManager
+	cursor    NarratorManager
+}
+
+func (n *NarratorRegistry) Use(name string) {
+	n.cursor = n.narrators[name]
+}
+func (n *NarratorRegistry) Narrators() []string {
+	keys := make([]string, 0)
+	for name, _ := range n.narrators {
+		keys = append(keys, name)
+	}
+	return keys
+}
+func (n *NarratorRegistry) GetNarration(
+	ctx context.Context,
+	url string,
+	text string,
+	opts ...NarrateOption,
+) (string, error) {
+	if n.cursor == nil {
+		return "", UnspecifiedNarratorError
+	}
+
+	filename := fmt.Sprintf("%s.json", url2filename(url))
+	path := filepath.Join(n.basedir, n.cursor.GetName(), filename)
+	if Exists(path) {
+		return path, nil
+	}
+
+	err := n.cursor.Do(ctx, path, text, opts...)
+	if err != nil {
+		return "", err
+	}
+	return path, err
+}
+func NewNarratorRegistry(
+	basedir string,
+	narrators []NarratorManager,
+) *NarratorRegistry {
+	var nms = make(map[string]NarratorManager)
+	for _, narrator := range narrators {
+		nms[narrator.GetName()] = narrator
+	}
+
+	return &NarratorRegistry{
+		basedir:   basedir,
+		narrators: nms,
+	}
+}

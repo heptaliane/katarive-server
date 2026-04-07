@@ -17,12 +17,17 @@ func TestSemaphoreSourceManager(t *testing.T) {
 	t.Parallel()
 
 	source := &plugin.MockSource{
-		Name:             "example",
-		Version:          "v1",
-		SupportedPattern: `^http://example\.com/.*`,
-		Title:            "example title",
-		Content:          "example content",
-		NextUrl:          "http://example.com/2",
+		GetSourceServiceMetadataResponse: &pb.GetSourceServiceMetadataResponse{
+			Name:             "example",
+			Version:          "v1",
+			SupportedPattern: `^http://example\.com/.*`,
+		},
+		GetSourceResponse: &pb.GetSourceResponse{
+			Title:    "example title",
+			Content:  "example content",
+			Language: pb.Language_LANGUAGE_ENGLISH,
+			NextUrl:  "http://example.com/2",
+		},
 	}
 	ctx := context.Background()
 	sm, err := service.NewSemaphoreSourceManager(ctx, source)
@@ -37,12 +42,8 @@ func TestSemaphoreSourceManager(t *testing.T) {
 		expectedName           string
 	}{
 		"supported": {
-			url: "http://example.com/1",
-			expectedSource: &pb.GetSourceResponse{
-				Title:   source.Title,
-				Content: source.Content,
-				NextUrl: source.NextUrl,
-			},
+			url:                    "http://example.com/1",
+			expectedSource:         source.GetSourceResponse,
 			expectedIsSupportedURL: true,
 			expectedName:           "example:v1",
 		},

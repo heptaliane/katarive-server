@@ -8,7 +8,6 @@ import (
 	"sync"
 	"time"
 
-	katarive "github.com/heptaliane/katarive-go-sdk"
 	pb "github.com/heptaliane/katarive-go-sdk/gen/pb/plugin/v1"
 )
 
@@ -34,7 +33,7 @@ func WithInterval(interval_ms int) SemaphoreSourceManagerOption {
 }
 
 type SemaphoreSourceManager struct {
-	source katarive.Source
+	source pb.SourceServiceServer
 
 	pattern *regexp.Regexp
 	name    string
@@ -54,7 +53,10 @@ func (s *SemaphoreSourceManager) GetSource(
 		s.mu.Unlock()
 	}()
 
-	return s.source.GetSource(ctx, url)
+	req := &pb.GetSourceRequest{
+		Url: url,
+	}
+	return s.source.GetSource(ctx, req)
 }
 func (s *SemaphoreSourceManager) IsSupportedURL(url string) bool {
 	return s.pattern.Match([]byte(url))
@@ -68,7 +70,7 @@ var _ SourceManager = new(SemaphoreSourceManager)
 
 func NewSemaphoreSourceManager(
 	ctx context.Context,
-	source katarive.Source,
+	source pb.SourceServiceServer,
 	opts ...SemaphoreSourceManagerOption,
 ) (*SemaphoreSourceManager, error) {
 	var options semaphoreSourceManagerOptions
@@ -76,7 +78,8 @@ func NewSemaphoreSourceManager(
 		opt(&options)
 	}
 
-	res, err := source.GetSourceServiceMetadata(ctx)
+	req := &pb.GetSourceServiceMetadataRequest{}
+	res, err := source.GetSourceServiceMetadata(ctx, req)
 	if err != nil {
 		return nil, err
 	}

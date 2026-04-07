@@ -3,73 +3,56 @@ package plugin
 import (
 	"context"
 
-	katarive "github.com/heptaliane/katarive-go-sdk"
 	pb "github.com/heptaliane/katarive-go-sdk/gen/pb/plugin/v1"
 )
 
 type MockSource struct {
-	Name             string
-	Version          string
-	SupportedPattern string
+	pb.UnimplementedSourceServiceServer
 
-	Title   string
-	Content string
-	NextUrl string
+	GetSourceServiceMetadataResponse *pb.GetSourceServiceMetadataResponse
+	GetSourceResponse                *pb.GetSourceResponse
 }
 
 func (s *MockSource) GetSourceServiceMetadata(
 	ctx context.Context,
+	req *pb.GetSourceServiceMetadataRequest,
 ) (*pb.GetSourceServiceMetadataResponse, error) {
-	return &pb.GetSourceServiceMetadataResponse{
-		Name:             s.Name,
-		Version:          s.Version,
-		SupportedPattern: s.SupportedPattern,
-	}, nil
+	return s.GetSourceServiceMetadataResponse, nil
 }
 
-func (s *MockSource) GetSource(ctx context.Context, url string) (*pb.GetSourceResponse, error) {
-	return &pb.GetSourceResponse{
-		Title:   s.Title,
-		Content: s.Content,
-		NextUrl: s.NextUrl,
-	}, nil
+func (s *MockSource) GetSource(
+	ctx context.Context,
+	req *pb.GetSourceRequest,
+) (*pb.GetSourceResponse, error) {
+	return s.GetSourceResponse, nil
 }
 
 // Ensure MockSource implements Source
-var _ katarive.Source = new(MockSource)
+var _ pb.SourceServiceServer = new(MockSource)
 
 type MockNarrator struct {
-	Error  error
-	Reason *string
+	pb.UnimplementedNarratorServiceServer
 
-	Name    string
-	Version string
-	Options []*pb.NarratorOption
+	NarrateError                       error
+	NarrateResponse                    *pb.NarrateResponse
+	GetNarratorServiceMetadataResponse *pb.GetNarratorServiceMetadataResponse
 }
 
 func (n *MockNarrator) Narrate(
 	ctx context.Context,
-	path string,
-	text string,
-	options map[string]string,
+	req *pb.NarrateRequest,
 ) (*pb.NarrateResponse, error) {
-	if n.Error != nil {
-		return nil, n.Error
+	if n.NarrateError != nil {
+		return nil, n.NarrateError
 	}
-	return &pb.NarrateResponse{
-		Error:  n.Reason != nil,
-		Reason: n.Reason,
-	}, nil
+	return n.NarrateResponse, nil
 }
 func (n *MockNarrator) GetNarratorServiceMetadata(
 	ctx context.Context,
+	req *pb.GetNarratorServiceMetadataRequest,
 ) (*pb.GetNarratorServiceMetadataResponse, error) {
-	return &pb.GetNarratorServiceMetadataResponse{
-		Name:    n.Name,
-		Version: n.Version,
-		Options: n.Options,
-	}, nil
+	return n.GetNarratorServiceMetadataResponse, nil
 }
 
 // Ensure MockNarrator implements Narrator
-var _ katarive.Narrator = new(MockNarrator)
+var _ pb.NarratorServiceServer = new(MockNarrator)

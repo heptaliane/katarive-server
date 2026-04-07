@@ -6,18 +6,23 @@ import (
 	"path/filepath"
 	"sync"
 
-	katarive "github.com/heptaliane/katarive-go-sdk"
 	pb "github.com/heptaliane/katarive-go-sdk/gen/pb/plugin/v1"
 )
 
 type narrateOptions struct {
-	opts map[string]string
+	opts     map[string]string
+	language pb.Language
 }
 type NarrateOption func(*narrateOptions)
 
 func WithNarrateOption(key string, value string) NarrateOption {
 	return func(opt *narrateOptions) {
 		opt.opts[key] = value
+	}
+}
+func WithLanguage(language pb.Language) NarrateOption {
+	return func(opt *narrateOptions) {
+		opt.language = language
 	}
 }
 
@@ -28,7 +33,7 @@ type NarratorManager interface {
 }
 
 type SemaphoreNarratorManager struct {
-	narrator katarive.Narrator
+	narrator pb.NarratorServiceServer
 
 	name    string
 	version string
@@ -51,7 +56,13 @@ func (n *SemaphoreNarratorManager) Do(
 	n.mu.Lock()
 	defer n.mu.Unlock()
 
-	res, err := n.narrator.Narrate(ctx, path, text, options.opts)
+	req := &pb.NarrateRequest{
+		Path:     path,
+		Text:     text,
+		Language: options.language,
+		Options:  options.opts,
+	}
+	res, err := n.narrator.Narrate(ctx, req)
 	if err != nil {
 		return err
 	}
@@ -74,9 +85,10 @@ var _ NarratorManager = new(SemaphoreNarratorManager)
 
 func NewSemaphoreNarratorManager(
 	ctx context.Context,
-	narrator katarive.Narrator,
+	narrator pb.NarratorServiceServer,
 ) (*SemaphoreNarratorManager, error) {
-	res, err := narrator.GetNarratorServiceMetadata(ctx)
+	req := &pb.GetNarratorServiceMetadataRequest{}
+	res, err := narrator.GetNarratorServiceMetadata(ctx, req)
 	if err != nil {
 		return nil, err
 	}

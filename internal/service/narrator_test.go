@@ -59,11 +59,16 @@ func TestSemaphoreNarratorManager(t *testing.T) {
 			t.Parallel()
 
 			narrator := &plugin.MockNarrator{
-				Error:   tc.err,
-				Reason:  tc.reason,
-				Name:    narratorName,
-				Version: version,
-				Options: options,
+				NarrateError: tc.err,
+				NarrateResponse: &pb.NarrateResponse{
+					Error:  tc.err != nil,
+					Reason: tc.reason,
+				},
+				GetNarratorServiceMetadataResponse: &pb.GetNarratorServiceMetadataResponse{
+					Name:    narratorName,
+					Version: version,
+					Options: options,
+				},
 			}
 
 			ctx := context.Background()

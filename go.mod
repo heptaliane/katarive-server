@@ -4,7 +4,7 @@ go 1.25.5
 
 require (
 	github.com/google/go-cmp v0.7.0
-	github.com/heptaliane/katarive-go-sdk v0.0.2
+	github.com/heptaliane/katarive-go-sdk v0.0.3
 	google.golang.org/grpc v1.79.3
 	google.golang.org/protobuf v1.36.10
 )

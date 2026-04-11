@@ -11,26 +11,29 @@ import (
 	pb "github.com/heptaliane/katarive-go-sdk/gen/pb/plugin/v1"
 )
 
+// ==============================
+// Interfaces for Source handlers
+// ==============================
+
+//go:generate mockgen -source=$GOFILE -destination=mock/mock_$GOFILE -package=mock
 type SourceManager interface {
 	GetSource(ctx context.Context, url string) (*pb.GetSourceResponse, error)
 	IsSupportedURL(url string) bool
 	GetName() string
 }
 
-type semaphoreSourceManagerOptions struct {
-	interval time.Duration
+//go:generate mockgen -source=$GOFILE -destination=mock/mock_$GOFILE -package=mock
+type SourceRegistry interface {
+	Get(ctx context.Context, url string) (*pb.GetSourceResponse, error)
 }
 
-type SemaphoreSourceManagerOption func(*semaphoreSourceManagerOptions)
+// ============================
+// SourceManager Implementation
+// ============================
 
-func WithInterval(interval_ms int) SemaphoreSourceManagerOption {
-	return func(opt *semaphoreSourceManagerOptions) {
-		t, err := time.ParseDuration(fmt.Sprintf("%dms", interval_ms))
-		if err == nil {
-			opt.interval = t
-		}
-	}
-}
+// ----------------------
+// SemaphoreSourceManager
+// ----------------------
 
 type SemaphoreSourceManager struct {
 	source pb.SourceServiceServer
@@ -68,6 +71,25 @@ func (s *SemaphoreSourceManager) GetName() string {
 // Ensure SemaphoreSourceManager implements SourceManager
 var _ SourceManager = new(SemaphoreSourceManager)
 
+// -----------------
+// Helper components
+// -----------------
+
+type semaphoreSourceManagerOptions struct {
+	interval time.Duration
+}
+
+type SemaphoreSourceManagerOption func(*semaphoreSourceManagerOptions)
+
+func WithInterval(interval_ms int) SemaphoreSourceManagerOption {
+	return func(opt *semaphoreSourceManagerOptions) {
+		t, err := time.ParseDuration(fmt.Sprintf("%dms", interval_ms))
+		if err == nil {
+			opt.interval = t
+		}
+	}
+}
+
 func NewSemaphoreSourceManager(
 	ctx context.Context,
 	source pb.SourceServiceServer,
@@ -94,31 +116,13 @@ func NewSemaphoreSourceManager(
 	}, nil
 }
 
-type MockSourceManager struct {
-	Source       *pb.GetSourceResponse
-	SupportedURL *regexp.Regexp
-	Name         string
-}
+// =============================
+// SourceRegistry Implementation
+// =============================
 
-func (m *MockSourceManager) GetSource(
-	ctx context.Context,
-	url string,
-) (*pb.GetSourceResponse, error) {
-	return m.Source, nil
-}
-func (m *MockSourceManager) IsSupportedURL(url string) bool {
-	return m.SupportedURL.Match([]byte(url))
-}
-func (m *MockSourceManager) GetName() string {
-	return m.Name
-}
-
-// Ensure MockSourceManager implements SourceManager
-var _ SourceManager = new(MockSourceManager)
-
-type SourceRegistry interface {
-	Get(ctx context.Context, url string) (*pb.GetSourceResponse, error)
-}
+// ------------------
+// FileSourceRegistry
+// ------------------
 
 type FileSourceRegistry struct {
 	basedir string
@@ -161,6 +165,10 @@ func (s *FileSourceRegistry) Get(
 
 // Ensure FileSourceRegistry implements SourceRegistry
 var _ SourceRegistry = new(FileSourceRegistry)
+
+// -----------------
+// Helper components
+// -----------------
 
 func NewFileSourceRegistry(
 	basedir string,

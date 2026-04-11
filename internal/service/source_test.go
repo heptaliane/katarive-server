@@ -2,15 +2,16 @@ package service_test
 
 import (
 	"context"
-	"regexp"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	pb "github.com/heptaliane/katarive-go-sdk/gen/pb/plugin/v1"
+	"go.uber.org/mock/gomock"
 
 	"github.com/heptaliane/katarive-server/internal/plugin"
 	"github.com/heptaliane/katarive-server/internal/service"
+	"github.com/heptaliane/katarive-server/internal/service/mock"
 )
 
 func TestSemaphoreSourceManager(t *testing.T) {
@@ -90,25 +91,26 @@ func TestSemaphoreSourceManager(t *testing.T) {
 	}
 }
 
-func TestSourceRegistry(t *testing.T) {
+func TestFileSourceRegistry(t *testing.T) {
 	t.Parallel()
 
 	basedir := t.TempDir()
-
 	source := &pb.GetSourceResponse{
 		Title:   "title",
 		Content: "content",
 		NextUrl: "http://example.com/2",
 	}
 
-	sms := []service.SourceManager{
-		&service.MockSourceManager{
-			Source:       source,
-			SupportedURL: regexp.MustCompile(`http://example\.com/.*`),
-			Name:         "name",
-		},
-	}
-	sr := service.NewSourceRegistry(basedir, sms)
+	sm := mock.NewMockSourceManager(gomock.NewController(t))
+	sms := []service.SourceManager{sm}
+	sr := service.NewFileSourceRegistry(basedir, sms)
+
+	supportedUrl := "http://example.com/1"
+	unsupportedUrl := "http://unsupported.com/1"
+	sm.EXPECT().IsSupportedURL(supportedUrl).Return(true).AnyTimes()
+	sm.EXPECT().IsSupportedURL(unsupportedUrl).Return(false).AnyTimes()
+	sm.EXPECT().GetName().Return("mock").AnyTimes()
+	sm.EXPECT().GetSource(gomock.Any(), supportedUrl).Return(source, nil).Times(1)
 
 	cases := []struct {
 		name           string
@@ -117,17 +119,17 @@ func TestSourceRegistry(t *testing.T) {
 	}{
 		{
 			name:           "new_file",
-			url:            "http://example.com/1",
+			url:            supportedUrl,
 			expectedSource: source,
 		},
 		{
 			name:           "exists_file",
-			url:            "http://example.com/1",
+			url:            supportedUrl,
 			expectedSource: source,
 		},
 		{
 			name:           "unsupported",
-			url:            "http://unsupported.com",
+			url:            unsupportedUrl,
 			expectedSource: nil,
 		},
 	}
@@ -135,7 +137,7 @@ func TestSourceRegistry(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			ctx := context.Background()
-			actualSource, err := sr.GetSource(ctx, tc.url)
+			actualSource, err := sr.Get(ctx, tc.url)
 			if tc.expectedSource == nil {
 				if err == nil {
 					t.Errorf("Expect error but got nil")

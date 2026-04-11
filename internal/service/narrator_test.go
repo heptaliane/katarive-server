@@ -121,7 +121,7 @@ func TestNarratorRegistry(t *testing.T) {
 			},
 		},
 	}
-	nr := service.NewNarratorRegistry(basedir, nms)
+	nr := service.NewFileNarratorRegistry(basedir, nms)
 
 	cases := []struct {
 		label         string
@@ -158,7 +158,7 @@ func TestNarratorRegistry(t *testing.T) {
 			ctx := context.Background()
 
 			nr.Use(tc.name)
-			path, err := nr.GetNarration(ctx, tc.url, tc.text)
+			path, err := nr.Do(ctx, tc.url, tc.text)
 			if tc.expectedError == nil {
 				if err != nil {
 					t.Errorf("Unexpceted error: %v", err)

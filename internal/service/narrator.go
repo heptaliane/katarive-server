@@ -9,6 +9,28 @@ import (
 	pb "github.com/heptaliane/katarive-go-sdk/gen/pb/plugin/v1"
 )
 
+// ==============================
+// Interfaces for Narrator handlers
+// ==============================
+
+//go:generate mockgen -source=$GOFILE -destination=mock/mock_$GOFILE -package=mock
+type NarratorManager interface {
+	Do(ctx context.Context, path string, text string, opts ...NarrateOption) error
+	GetName() string
+	SupportedOptions() []*pb.NarratorOption
+}
+
+//go:generate mockgen -source=$GOFILE -destination=mock/mock_$GOFILE -package=mock
+type NarratorRegistry interface {
+	Use(name string)
+	Narrators() []string
+	Do(ctx context.Context, url string, text string, opts ...NarrateOption) (string, error)
+}
+
+// -----------------
+// Helper components
+// -----------------
+
 type narrateOptions struct {
 	opts     map[string]string
 	language pb.Language
@@ -26,12 +48,13 @@ func WithNarrateLanguage(language pb.Language) NarrateOption {
 	}
 }
 
-type NarratorManager interface {
-	Do(ctx context.Context, path string, text string, opts ...NarrateOption) error
-	GetName() string
-	SupportedOptions() []*pb.NarratorOption
-}
+// ============================
+// NarratorManager Implementation
+// ============================
 
+// ----------------------
+// SemaphoreNarratorManager
+// ----------------------
 type SemaphoreNarratorManager struct {
 	narrator pb.NarratorServiceServer
 
@@ -83,6 +106,10 @@ func (n *SemaphoreNarratorManager) SupportedOptions() []*pb.NarratorOption {
 // Ensure SemaphoreNarratorManager implements NarratorManager
 var _ NarratorManager = new(SemaphoreNarratorManager)
 
+// -----------------
+// Helper components
+// -----------------
+
 func NewSemaphoreNarratorManager(
 	ctx context.Context,
 	narrator pb.NarratorServiceServer,
@@ -103,35 +130,13 @@ func NewSemaphoreNarratorManager(
 
 }
 
-type MockNarratorManager struct {
-	NarrateResult error
-	Name          string
-	Options       []*pb.NarratorOption
-}
+// =============================
+// NarratorRegistry Implementation
+// =============================
 
-func (n *MockNarratorManager) Do(
-	ctx context.Context,
-	path string,
-	text string,
-	opts ...NarrateOption,
-) error {
-	return n.NarrateResult
-}
-func (n *MockNarratorManager) GetName() string {
-	return n.Name
-}
-func (n *MockNarratorManager) SupportedOptions() []*pb.NarratorOption {
-	return n.Options
-}
-
-// Ensure MockNarratorManager implements NarratorManager
-var _ NarratorManager = new(MockNarratorManager)
-
-type NarratorRegistry interface {
-	Use(name string)
-	Narrators() []string
-	Do(ctx context.Context, url string, text string, opts ...NarrateOption) (string, error)
-}
+// ------------------
+// FileNarratorRegistry
+// ------------------
 
 type FileNarratorRegistry struct {
 	basedir   string
@@ -159,7 +164,7 @@ func (n *FileNarratorRegistry) Do(
 		return "", UnspecifiedNarratorError
 	}
 
-	filename := fmt.Sprintf("%s.json", url2filename(url))
+	filename := fmt.Sprintf("%s.mp3", url2filename(url))
 	path := filepath.Join(n.basedir, n.cursor.GetName(), filename)
 	if Exists(path) {
 		return path, nil
@@ -174,6 +179,10 @@ func (n *FileNarratorRegistry) Do(
 
 // Ensure NarratorRegistry implements NarratorRegistry
 var _ NarratorRegistry = new(FileNarratorRegistry)
+
+// -----------------
+// Helper components
+// -----------------
 
 func NewFileNarratorRegistry(
 	basedir string,

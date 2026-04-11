@@ -8,9 +8,11 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	pb "github.com/heptaliane/katarive-go-sdk/gen/pb/plugin/v1"
+	"go.uber.org/mock/gomock"
 
 	"github.com/heptaliane/katarive-server/internal/plugin"
 	"github.com/heptaliane/katarive-server/internal/service"
+	"github.com/heptaliane/katarive-server/internal/service/mock"
 )
 
 func TestSemaphoreNarratorManager(t *testing.T) {
@@ -109,46 +111,45 @@ func TestNarratorRegistry(t *testing.T) {
 
 	basedir := t.TempDir()
 
-	nms := []service.NarratorManager{
-		&service.MockNarratorManager{
-			Name: "narrate",
-			Options: []*pb.NarratorOption{
-				{
-					Id:          "id-1",
-					Label:       "label-1",
-					Description: "description-1",
-				},
-			},
-		},
-	}
+	nm := mock.NewMockNarratorManager(gomock.NewController(t))
+	nms := []service.NarratorManager{nm}
+
+	text := "text"
+	name := "mock"
+	url := "http://example.com/1"
+	nm.EXPECT().GetName().Return(name).AnyTimes()
+	nm.EXPECT().Do(gomock.Any(), gomock.Any(), text).Return(nil).
+		Do(func(ctx context.Context, path string, text string, opts ...service.NarrateOption) {
+			f, err := service.NewFile(path)
+			if err != nil {
+				t.Fatalf("Failed to create file: %v", err)
+			}
+			defer f.Close()
+		}).Times(1)
+
 	nr := service.NewFileNarratorRegistry(basedir, nms)
 
 	cases := []struct {
 		label         string
 		name          string
-		url           string
 		text          string
 		expectedError error
 	}{
 		{
 			label:         "valid",
-			name:          "narrate",
-			url:           "http://example.com/1",
-			text:          "text",
+			name:          name,
+			text:          text,
 			expectedError: nil,
 		},
 		{
 			label:         "exists",
-			name:          "narrate",
-			url:           "http://example.com/1",
-			text:          "text",
+			name:          name,
+			text:          text,
 			expectedError: nil,
 		},
 		{
 			label:         "invalid",
 			name:          "unsupported",
-			url:           "http://example.com/1",
-			text:          "text",
 			expectedError: service.UnspecifiedNarratorError,
 		},
 	}
@@ -158,7 +159,7 @@ func TestNarratorRegistry(t *testing.T) {
 			ctx := context.Background()
 
 			nr.Use(tc.name)
-			path, err := nr.Do(ctx, tc.url, tc.text)
+			path, err := nr.Do(ctx, url, tc.text)
 			if tc.expectedError == nil {
 				if err != nil {
 					t.Errorf("Unexpceted error: %v", err)

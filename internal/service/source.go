@@ -116,12 +116,16 @@ func (m *MockSourceManager) GetName() string {
 // Ensure MockSourceManager implements SourceManager
 var _ SourceManager = new(MockSourceManager)
 
-type SourceRegistry struct {
+type SourceRegistry interface {
+	Get(ctx context.Context, url string) (*pb.GetSourceResponse, error)
+}
+
+type FileSourceRegistry struct {
 	basedir string
 	sources []SourceManager
 }
 
-func (s *SourceRegistry) GetSource(
+func (s *FileSourceRegistry) Get(
 	ctx context.Context,
 	url string,
 ) (*pb.GetSourceResponse, error) {
@@ -155,11 +159,14 @@ func (s *SourceRegistry) GetSource(
 	return res, nil
 }
 
-func NewSourceRegistry(
+// Ensure FileSourceRegistry implements SourceRegistry
+var _ SourceRegistry = new(FileSourceRegistry)
+
+func NewFileSourceRegistry(
 	basedir string,
 	sources []SourceManager,
-) *SourceRegistry {
-	return &SourceRegistry{
+) *FileSourceRegistry {
+	return &FileSourceRegistry{
 		basedir: basedir,
 		sources: sources,
 	}

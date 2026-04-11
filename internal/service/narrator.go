@@ -127,23 +127,29 @@ func (n *MockNarratorManager) SupportedOptions() []*pb.NarratorOption {
 // Ensure MockNarratorManager implements NarratorManager
 var _ NarratorManager = new(MockNarratorManager)
 
-type NarratorRegistry struct {
+type NarratorRegistry interface {
+	Use(name string)
+	Narrators() []string
+	Do(ctx context.Context, url string, text string, opts ...NarrateOption) (string, error)
+}
+
+type FileNarratorRegistry struct {
 	basedir   string
 	narrators map[string]NarratorManager
 	cursor    NarratorManager
 }
 
-func (n *NarratorRegistry) Use(name string) {
+func (n *FileNarratorRegistry) Use(name string) {
 	n.cursor = n.narrators[name]
 }
-func (n *NarratorRegistry) Narrators() []string {
+func (n *FileNarratorRegistry) Narrators() []string {
 	keys := make([]string, 0)
 	for name, _ := range n.narrators {
 		keys = append(keys, name)
 	}
 	return keys
 }
-func (n *NarratorRegistry) GetNarration(
+func (n *FileNarratorRegistry) Do(
 	ctx context.Context,
 	url string,
 	text string,
@@ -165,16 +171,20 @@ func (n *NarratorRegistry) GetNarration(
 	}
 	return path, err
 }
-func NewNarratorRegistry(
+
+// Ensure NarratorRegistry implements NarratorRegistry
+var _ NarratorRegistry = new(FileNarratorRegistry)
+
+func NewFileNarratorRegistry(
 	basedir string,
 	narrators []NarratorManager,
-) *NarratorRegistry {
+) *FileNarratorRegistry {
 	var nms = make(map[string]NarratorManager)
 	for _, narrator := range narrators {
 		nms[narrator.GetName()] = narrator
 	}
 
-	return &NarratorRegistry{
+	return &FileNarratorRegistry{
 		basedir:   basedir,
 		narrators: nms,
 	}

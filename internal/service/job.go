@@ -29,8 +29,8 @@ func (j *NarrateJob) GetResult() (string, error) {
 }
 
 type NarrateJobManager struct {
-	narrator *NarratorRegistry
-	source   *SourceRegistry
+	narrator NarratorRegistry
+	source   SourceRegistry
 	jobs     *sync.Map
 	group    *singleflight.Group
 }
@@ -49,12 +49,12 @@ func (m *NarrateJobManager) Enqueue(ctx context.Context, url string) (string, er
 
 	go func() {
 		v, err, _ := m.group.Do(url, func() (any, error) {
-			src, err := m.source.GetSource(ctx, url)
+			src, err := m.source.Get(ctx, url)
 			if err != nil {
 				return nil, err
 			}
 
-			return m.narrator.GetNarration(
+			return m.narrator.Do(
 				ctx,
 				url,
 				src.GetContent(),

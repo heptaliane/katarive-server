@@ -20,7 +20,7 @@ func WithNarrateOption(key string, value string) NarrateOption {
 		opt.opts[key] = value
 	}
 }
-func WithLanguage(language pb.Language) NarrateOption {
+func WithNarrateLanguage(language pb.Language) NarrateOption {
 	return func(opt *narrateOptions) {
 		opt.language = language
 	}

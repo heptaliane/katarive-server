@@ -25,4 +25,28 @@ func (e *NarrateError) Error() string {
 
 var _ error = new(NarrateError)
 
+type JobNotFoundError struct {
+	JobId string
+}
+
+func (e *JobNotFoundError) Error() string {
+	return fmt.Sprintf("No job is found for %s", e.JobId)
+}
+
+var _ error = new(JobNotFoundError)
+
+type UnexpectedTypeError struct {
+	Value    any
+	Expected any
+}
+
+func (e *UnexpectedTypeError) Error() string {
+	return fmt.Sprintf("Unexpected type is detected. Expected %T but got %T",
+		e.Value,
+		e.Expected,
+	)
+}
+
+var _ error = new(UnexpectedTypeError)
+
 var UnspecifiedNarratorError = errors.New("No narrator is set")

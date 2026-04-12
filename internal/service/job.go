@@ -8,25 +8,28 @@ import (
 	"golang.org/x/sync/singleflight"
 )
 
+// ==================================
+// Interfaces for NarrateJob handlers
+// ==================================
+
+//go:generate mockgen -source=$GOFILE -destination=mock/mock_$GOFILE -package=mock
 type NarrateJobService interface {
 	Enqueue(ctx context.Context, url string) (string, error)
-	GetJob(jobId string) (*NarrateJob, error)
+	GetJob(jobId string) (NarrateJob, error)
 }
 
-type NarrateJob struct {
-	id     string
-	url    string
-	result string
-	err    error
-	mu     *sync.RWMutex
+//go:generate mockgen -source=$GOFILE -destination=mock/mock_$GOFILE -package=mock
+type NarrateJob interface {
+	GetResult() (string, error)
 }
 
-func (j *NarrateJob) GetResult() (string, error) {
-	j.mu.RLock()
-	defer j.mu.RUnlock()
+// ================================
+// NarrateJobService Implementation
+// ================================
 
-	return j.result, j.err
-}
+// -----------------
+// NarrateJobManager
+// -----------------
 
 type NarrateJobManager struct {
 	narrator NarratorRegistry
@@ -41,7 +44,7 @@ func (m *NarrateJobManager) Enqueue(ctx context.Context, url string) (string, er
 		return "", err
 	}
 
-	job := &NarrateJob{
+	job := &SemaphoreNarrateJob{
 		id:  jobId.String(),
 		url: url,
 	}
@@ -82,21 +85,64 @@ func (m *NarrateJobManager) Enqueue(ctx context.Context, url string) (string, er
 	return job.id, nil
 }
 
-func (n *NarrateJobManager) GetJob(jobId string) (*NarrateJob, error) {
+func (n *NarrateJobManager) GetJob(jobId string) (NarrateJob, error) {
 	v, ok := n.jobs.Load(jobId)
 	if !ok {
 		return nil, &JobNotFoundError{JobId: jobId}
 	}
 
-	result, ok := v.(*NarrateJob)
+	result, ok := v.(*SemaphoreNarrateJob)
 	if !ok {
 		return nil, &UnexpectedTypeError{
 			Value:    v,
-			Expected: new(NarrateJob),
+			Expected: new(SemaphoreNarrateJob),
 		}
 	}
 
 	return result, nil
 }
 
+// Ensure NarrateJobManager implements NarrateJobService
 var _ NarrateJobService = new(NarrateJobManager)
+
+// -----------------
+// Helper components
+// -----------------
+
+func NewNarrateJobManager(
+	narrator NarratorRegistry,
+	source SourceRegistry,
+) *NarrateJobManager {
+	return &NarrateJobManager{
+		narrator: narrator,
+		source:   source,
+		jobs:     new(sync.Map),
+		group:    new(singleflight.Group),
+	}
+}
+
+// =========================
+// NarrateJob Implementation
+// =========================
+
+// -------------------
+// SemaphoreNarrateJob
+// -------------------
+
+type SemaphoreNarrateJob struct {
+	id     string
+	url    string
+	result string
+	err    error
+	mu     *sync.RWMutex
+}
+
+func (j *SemaphoreNarrateJob) GetResult() (string, error) {
+	j.mu.RLock()
+	defer j.mu.RUnlock()
+
+	return j.result, j.err
+}
+
+// Ensure SemaphoreNarrateJob implements NarrateJob
+var _ NarrateJob = new(SemaphoreNarrateJob)

@@ -6,10 +6,10 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
+	pbmock "github.com/heptaliane/katarive-go-sdk/gen/mock/plugin/v1"
 	pb "github.com/heptaliane/katarive-go-sdk/gen/pb/plugin/v1"
 	"go.uber.org/mock/gomock"
 
-	"github.com/heptaliane/katarive-server/internal/plugin"
 	"github.com/heptaliane/katarive-server/internal/service"
 	"github.com/heptaliane/katarive-server/internal/service/mock"
 )
@@ -17,19 +17,34 @@ import (
 func TestSemaphoreSourceManager(t *testing.T) {
 	t.Parallel()
 
-	source := &plugin.MockSource{
-		GetSourceServiceMetadataResponse: &pb.GetSourceServiceMetadataResponse{
-			Name:             "example",
-			Version:          "v1",
-			SupportedPattern: `^http://example\.com/.*`,
-		},
-		GetSourceResponse: &pb.GetSourceResponse{
-			Title:    "example title",
-			Content:  "example content",
-			Language: pb.Language_LANGUAGE_ENGLISH,
-			NextUrl:  "http://example.com/2",
-		},
+	gsr := &pb.GetSourceResponse{
+		Title:    "example title",
+		Content:  "example content",
+		Language: pb.Language_LANGUAGE_ENGLISH,
+		NextUrl:  "http://example.com/2",
 	}
+	gssmr := &pb.GetSourceServiceMetadataResponse{
+		Name:             "example",
+		Version:          "v1",
+		SupportedPattern: `^http://example\.com/.*`,
+	}
+	supportedUrl := "http://example.com/1"
+
+	source := pbmock.NewMockSourceServiceServer(gomock.NewController(t))
+
+	source.EXPECT().GetSource(gomock.Any(), gomock.Any()).
+		DoAndReturn(func(
+			ctx context.Context,
+			req *pb.GetSourceRequest,
+		) (*pb.GetSourceResponse, error) {
+			if req.Url == supportedUrl {
+				return gsr, nil
+			}
+			return nil, &service.UnsupportedSourceURLError{URL: req.Url}
+		}).AnyTimes()
+	source.EXPECT().GetSourceServiceMetadata(gomock.Any(), gomock.Any()).
+		Return(gssmr, nil).AnyTimes()
+
 	ctx := context.Background()
 	sm, err := service.NewSemaphoreSourceManager(ctx, source)
 	if err != nil {
@@ -39,18 +54,20 @@ func TestSemaphoreSourceManager(t *testing.T) {
 	cases := map[string]struct {
 		url                    string
 		expectedSource         *pb.GetSourceResponse
+		expectedIsError        bool
 		expectedIsSupportedURL bool
 		expectedName           string
 	}{
 		"supported": {
 			url:                    "http://example.com/1",
-			expectedSource:         source.GetSourceResponse,
+			expectedSource:         gsr,
+			expectedIsError:        false,
 			expectedIsSupportedURL: true,
 			expectedName:           "example:v1",
 		},
 		"unsupported": {
 			url:                    "http://unsupported.com/1",
-			expectedSource:         nil,
+			expectedIsError:        true,
 			expectedIsSupportedURL: false,
 			expectedName:           "example:v1",
 		},
@@ -60,9 +77,18 @@ func TestSemaphoreSourceManager(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			if tc.expectedIsSupportedURL {
-				ctx := context.Background()
-				actualSource, _ := sm.GetSource(ctx, tc.url)
+			ctx := context.Background()
+			actualSource, err := sm.GetSource(ctx, tc.url)
+			if err != nil {
+				if !tc.expectedIsError {
+					t.Errorf("Unexpected error: %v", err)
+					return
+				}
+			} else {
+				if tc.expectedIsError {
+					t.Errorf("Error expected but got nil")
+					return
+				}
 				opt := cmpopts.IgnoreUnexported(pb.GetSourceResponse{})
 				if diff := cmp.Diff(actualSource, tc.expectedSource, opt); diff != "" {
 					t.Errorf("Unmatched GetSource result (got: -, want: +):\n%s", diff)

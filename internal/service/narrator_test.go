@@ -7,10 +7,10 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
+	pbmock "github.com/heptaliane/katarive-go-sdk/gen/mock/plugin/v1"
 	pb "github.com/heptaliane/katarive-go-sdk/gen/pb/plugin/v1"
 	"go.uber.org/mock/gomock"
 
-	"github.com/heptaliane/katarive-server/internal/plugin"
 	"github.com/heptaliane/katarive-server/internal/service"
 	"github.com/heptaliane/katarive-server/internal/service/mock"
 )
@@ -25,32 +25,53 @@ func TestSemaphoreNarratorManager(t *testing.T) {
 			Description: "description-1",
 		},
 	}
-	narratorName := "narrator"
-	version := "v1"
-	reason := "error reason"
+	gnsmr := &pb.GetNarratorServiceMetadataResponse{
+		Name:    "narrator",
+		Version: "v1",
+		Options: options,
+	}
+	validText := "valid"
+	invalidText := "invalid"
+	invalidReason := "invalid reason"
+	narrateError := errors.New("some error")
+
+	narrator := pbmock.NewMockNarratorServiceServer(gomock.NewController(t))
+	narrator.EXPECT().GetNarratorServiceMetadata(gomock.Any(), gomock.Any()).
+		Return(gnsmr, nil).AnyTimes()
+	narrator.EXPECT().Narrate(gomock.Any(), gomock.Any()).
+		DoAndReturn(func(
+			ctx context.Context,
+			req *pb.NarrateRequest,
+		) (*pb.NarrateResponse, error) {
+			switch req.GetText() {
+			case validText:
+				return &pb.NarrateResponse{Error: false}, nil
+			case invalidText:
+				return &pb.NarrateResponse{Error: true, Reason: &invalidReason}, nil
+			}
+			return nil, narrateError
+		}).AnyTimes()
 
 	cases := map[string]struct {
-		err                      error
-		reason                   *string
+		text                     string
 		expectedError            error
 		expectedName             string
 		expectedSupportedOptions []*pb.NarratorOption
 	}{
 		"success": {
+			text:                     validText,
 			expectedName:             "narrator:v1",
 			expectedSupportedOptions: options,
 		},
 		"failed with reason": {
-			err:                      nil,
-			reason:                   &reason,
-			expectedError:            &service.NarrateError{Reason: "fail"},
+			text:                     invalidText,
+			expectedError:            &service.NarrateError{Reason: invalidReason},
 			expectedName:             "narrator:v1",
 			expectedSupportedOptions: options,
 		},
 		"failed before pb": {
-			err:                      errors.New("some error"),
-			reason:                   &reason,
-			expectedError:            errors.New("some error"),
+			text:                     "error",
+			expectedError:            narrateError,
 			expectedName:             "narrator:v1",
 			expectedSupportedOptions: options,
 		},
@@ -59,19 +80,6 @@ func TestSemaphoreNarratorManager(t *testing.T) {
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
-
-			narrator := &plugin.MockNarrator{
-				NarrateError: tc.err,
-				NarrateResponse: &pb.NarrateResponse{
-					Error:  tc.err != nil,
-					Reason: tc.reason,
-				},
-				GetNarratorServiceMetadataResponse: &pb.GetNarratorServiceMetadataResponse{
-					Name:    narratorName,
-					Version: version,
-					Options: options,
-				},
-			}
 
 			ctx := context.Background()
 			nm, err := service.NewSemaphoreNarratorManager(ctx, narrator)

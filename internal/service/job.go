@@ -49,7 +49,7 @@ func (m *NarrateJobManager) Enqueue(ctx context.Context, url string) (string, er
 		url: url,
 		mu:  new(sync.RWMutex),
 	}
-	m.jobs.Store(jobId, job)
+	m.jobs.Store(job.id, job)
 
 	go func() {
 		v, err, _ := m.group.Do(url, func() (any, error) {

@@ -47,6 +47,7 @@ func (m *NarrateJobManager) Enqueue(ctx context.Context, url string) (string, er
 	job := &SemaphoreNarrateJob{
 		id:  jobId.String(),
 		url: url,
+		mu:  new(sync.RWMutex),
 	}
 	m.jobs.Store(jobId, job)
 
@@ -85,8 +86,8 @@ func (m *NarrateJobManager) Enqueue(ctx context.Context, url string) (string, er
 	return job.id, nil
 }
 
-func (n *NarrateJobManager) GetJob(jobId string) (NarrateJob, error) {
-	v, ok := n.jobs.Load(jobId)
+func (m *NarrateJobManager) GetJob(jobId string) (NarrateJob, error) {
+	v, ok := m.jobs.Load(jobId)
 	if !ok {
 		return nil, &JobNotFoundError{JobId: jobId}
 	}

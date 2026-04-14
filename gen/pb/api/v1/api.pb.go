@@ -7,7 +7,6 @@
 package apiv1
 
 import (
-	v1 "github.com/heptaliane/katarive-server/gen/pb/plugin/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
@@ -213,7 +212,6 @@ type GetJobStatusResponse struct {
 	state         protoimpl.MessageState      `protogen:"open.v1"`
 	Status        GetJobStatusResponse_Status `protobuf:"varint,1,opt,name=status,proto3,enum=api.v1.GetJobStatusResponse_Status" json:"status,omitempty"`
 	Path          *string                     `protobuf:"bytes,2,opt,name=path,proto3,oneof" json:"path,omitempty"`
-	Source        *v1.GetSourceResponse       `protobuf:"bytes,3,opt,name=source,proto3,oneof" json:"source,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -262,36 +260,27 @@ func (x *GetJobStatusResponse) GetPath() string {
 	return ""
 }
 
-func (x *GetJobStatusResponse) GetSource() *v1.GetSourceResponse {
-	if x != nil {
-		return x.Source
-	}
-	return nil
-}
-
 var File_api_v1_api_proto protoreflect.FileDescriptor
 
 const file_api_v1_api_proto_rawDesc = "" +
 	"\n" +
-	"\x10api/v1/api.proto\x12\x06api.v1\x1a\x16plugin/v1/source.proto\"*\n" +
+	"\x10api/v1/api.proto\x12\x06api.v1\"*\n" +
 	"\x16CreateNarrationRequest\x12\x10\n" +
 	"\x03url\x18\x01 \x01(\tR\x03url\")\n" +
 	"\x17CreateNarrationResponse\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\"%\n" +
 	"\x13GetJobStatusRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\"\xb4\x02\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\"\xee\x01\n" +
 	"\x14GetJobStatusResponse\x12;\n" +
 	"\x06status\x18\x01 \x01(\x0e2#.api.v1.GetJobStatusResponse.StatusR\x06status\x12\x17\n" +
-	"\x04path\x18\x02 \x01(\tH\x00R\x04path\x88\x01\x01\x129\n" +
-	"\x06source\x18\x03 \x01(\v2\x1c.plugin.v1.GetSourceResponseH\x01R\x06source\x88\x01\x01\"w\n" +
+	"\x04path\x18\x02 \x01(\tH\x00R\x04path\x88\x01\x01\"w\n" +
 	"\x06Status\x12\x16\n" +
 	"\x12STATUS_UNSPECIFIED\x10\x00\x12\x16\n" +
 	"\x12STATUS_PROGRESSING\x10\x01\x12\x14\n" +
 	"\x10STATUS_COMPLETED\x10\x02\x12\x11\n" +
 	"\rSTATUS_FAILED\x10\x03\x12\x14\n" +
 	"\x10STATUS_NOT_FOUND\x10\x04B\a\n" +
-	"\x05_pathB\t\n" +
-	"\a_source2\xb0\x01\n" +
+	"\x05_path2\xb0\x01\n" +
 	"\x0fKatariveService\x12R\n" +
 	"\x0fCreateNarration\x12\x1e.api.v1.CreateNarrationRequest\x1a\x1f.api.v1.CreateNarrationResponse\x12I\n" +
 	"\fGetJobStatus\x12\x1b.api.v1.GetJobStatusRequest\x1a\x1c.api.v1.GetJobStatusResponseB\x8a\x01\n" +
@@ -318,20 +307,18 @@ var file_api_v1_api_proto_goTypes = []any{
 	(*CreateNarrationResponse)(nil),  // 2: api.v1.CreateNarrationResponse
 	(*GetJobStatusRequest)(nil),      // 3: api.v1.GetJobStatusRequest
 	(*GetJobStatusResponse)(nil),     // 4: api.v1.GetJobStatusResponse
-	(*v1.GetSourceResponse)(nil),     // 5: plugin.v1.GetSourceResponse
 }
 var file_api_v1_api_proto_depIdxs = []int32{
 	0, // 0: api.v1.GetJobStatusResponse.status:type_name -> api.v1.GetJobStatusResponse.Status
-	5, // 1: api.v1.GetJobStatusResponse.source:type_name -> plugin.v1.GetSourceResponse
-	1, // 2: api.v1.KatariveService.CreateNarration:input_type -> api.v1.CreateNarrationRequest
-	3, // 3: api.v1.KatariveService.GetJobStatus:input_type -> api.v1.GetJobStatusRequest
-	2, // 4: api.v1.KatariveService.CreateNarration:output_type -> api.v1.CreateNarrationResponse
-	4, // 5: api.v1.KatariveService.GetJobStatus:output_type -> api.v1.GetJobStatusResponse
-	4, // [4:6] is the sub-list for method output_type
-	2, // [2:4] is the sub-list for method input_type
-	2, // [2:2] is the sub-list for extension type_name
-	2, // [2:2] is the sub-list for extension extendee
-	0, // [0:2] is the sub-list for field type_name
+	1, // 1: api.v1.KatariveService.CreateNarration:input_type -> api.v1.CreateNarrationRequest
+	3, // 2: api.v1.KatariveService.GetJobStatus:input_type -> api.v1.GetJobStatusRequest
+	2, // 3: api.v1.KatariveService.CreateNarration:output_type -> api.v1.CreateNarrationResponse
+	4, // 4: api.v1.KatariveService.GetJobStatus:output_type -> api.v1.GetJobStatusResponse
+	3, // [3:5] is the sub-list for method output_type
+	1, // [1:3] is the sub-list for method input_type
+	1, // [1:1] is the sub-list for extension type_name
+	1, // [1:1] is the sub-list for extension extendee
+	0, // [0:1] is the sub-list for field type_name
 }
 
 func init() { file_api_v1_api_proto_init() }

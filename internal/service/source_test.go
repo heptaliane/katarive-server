@@ -9,6 +9,7 @@ import (
 	pbmock "github.com/heptaliane/katarive-go-sdk/gen/mock/plugin/v1"
 	pb "github.com/heptaliane/katarive-go-sdk/gen/pb/plugin/v1"
 	"go.uber.org/mock/gomock"
+	"google.golang.org/grpc"
 
 	"github.com/heptaliane/katarive-server/internal/service"
 	"github.com/heptaliane/katarive-server/internal/service/mock"
@@ -30,12 +31,13 @@ func TestSemaphoreSourceManager(t *testing.T) {
 	}
 	supportedUrl := "http://example.com/1"
 
-	source := pbmock.NewMockSourceServiceServer(gomock.NewController(t))
+	source := pbmock.NewMockSourceServiceClient(gomock.NewController(t))
 
 	source.EXPECT().GetSource(gomock.Any(), gomock.Any()).
 		DoAndReturn(func(
 			ctx context.Context,
 			req *pb.GetSourceRequest,
+			opt ...grpc.CallOption,
 		) (*pb.GetSourceResponse, error) {
 			if req.Url == supportedUrl {
 				return gsr, nil

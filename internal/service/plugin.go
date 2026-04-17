@@ -11,8 +11,8 @@ import (
 )
 
 type PluginRegistry struct {
-	sources   []pb.SourceServiceServer
-	narrators []pb.NarratorServiceServer
+	sources   []pb.SourceServiceClient
+	narrators []pb.NarratorServiceClient
 	clients   []*plugin.Client
 }
 
@@ -47,7 +47,7 @@ func (r *PluginRegistry) Load(path string) error {
 			if err != nil {
 				return err
 			}
-			source := rawSource.(pb.SourceServiceServer)
+			source := rawSource.(pb.SourceServiceClient)
 			r.sources = append(r.sources, source)
 		}
 		if name == pb.NarratorService_ServiceDesc.ServiceName {
@@ -55,7 +55,7 @@ func (r *PluginRegistry) Load(path string) error {
 			if err != nil {
 				return err
 			}
-			narrator := rawNarrator.(pb.NarratorServiceServer)
+			narrator := rawNarrator.(pb.NarratorServiceClient)
 			r.narrators = append(r.narrators, narrator)
 		}
 	}
@@ -63,10 +63,10 @@ func (r *PluginRegistry) Load(path string) error {
 	client.Kill()
 	return nil
 }
-func (r *PluginRegistry) GetSources() []pb.SourceServiceServer {
+func (r *PluginRegistry) GetSources() []pb.SourceServiceClient {
 	return r.sources
 }
-func (r *PluginRegistry) GetNarrators() []pb.NarratorServiceServer {
+func (r *PluginRegistry) GetNarrators() []pb.NarratorServiceClient {
 	return r.narrators
 }
 

@@ -56,7 +56,7 @@ func WithNarrateLanguage(language pb.Language) NarrateOption {
 // SemaphoreNarratorManager
 // ----------------------
 type SemaphoreNarratorManager struct {
-	narrator pb.NarratorServiceServer
+	narrator pb.NarratorServiceClient
 
 	name    string
 	version string
@@ -112,7 +112,7 @@ var _ NarratorManager = new(SemaphoreNarratorManager)
 
 func NewSemaphoreNarratorManager(
 	ctx context.Context,
-	narrator pb.NarratorServiceServer,
+	narrator pb.NarratorServiceClient,
 ) (*SemaphoreNarratorManager, error) {
 	req := &pb.GetNarratorServiceMetadataRequest{}
 	res, err := narrator.GetNarratorServiceMetadata(ctx, req)

@@ -24,8 +24,8 @@ github.com/hashicorp/go-plugin v1.7.0 h1:YghfQH/0QmPNc/AZMTFE3ac8fipZyZECHdDPshf
 github.com/hashicorp/go-plugin v1.7.0/go.mod h1:BExt6KEaIYx804z8k4gRzRLEvxKVb+kn0NMcihqOqb8=
 github.com/hashicorp/yamux v0.1.2 h1:XtB8kyFOyHXYVFnwT5C3+Bdo8gArse7j2AQ0DA0Uey8=
 github.com/hashicorp/yamux v0.1.2/go.mod h1:C+zze2n6e/7wshOZep2A70/aQU6QBRWJO/G6FT1wIns=
-github.com/heptaliane/katarive-go-sdk v0.0.10 h1:ExiIawDZURcmmZLifm5KPhpuu4UtOBRuG0L5LojYjCQ=
-github.com/heptaliane/katarive-go-sdk v0.0.10/go.mod h1:wCwqFN/cJp4TQBkkd1N66RpO/M9B6xnVYZUCLEWOl0o=
+github.com/heptaliane/katarive-go-sdk v0.0.12 h1:J1MuCGF9eKPFly3rT2Egy4ue0HoqsWFFXeggBmF53Pg=
+github.com/heptaliane/katarive-go-sdk v0.0.12/go.mod h1:wCwqFN/cJp4TQBkkd1N66RpO/M9B6xnVYZUCLEWOl0o=
 github.com/jhump/protoreflect v1.17.0 h1:qOEr613fac2lOuTgWN4tPAtLL7fUSbuJL5X5XumQh94=
 github.com/jhump/protoreflect v1.17.0/go.mod h1:h9+vUUL38jiBzck8ck+6G/aeMX8Z4QUY/NiJPwPNi+8=
 github.com/mattn/go-colorable v0.1.9/go.mod h1:u6P/XSegPjTcexA+o6vUJrdnUu04hMope9wVRipJSqc=

@@ -36,7 +36,7 @@ type SourceRegistry interface {
 // ----------------------
 
 type SemaphoreSourceManager struct {
-	source pb.SourceServiceServer
+	source pb.SourceServiceClient
 
 	pattern *regexp.Regexp
 	name    string
@@ -92,7 +92,7 @@ func WithInterval(interval_ms int) SemaphoreSourceManagerOption {
 
 func NewSemaphoreSourceManager(
 	ctx context.Context,
-	source pb.SourceServiceServer,
+	source pb.SourceServiceClient,
 	opts ...SemaphoreSourceManagerOption,
 ) (*SemaphoreSourceManager, error) {
 	var options semaphoreSourceManagerOptions

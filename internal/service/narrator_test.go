@@ -10,6 +10,7 @@ import (
 	pbmock "github.com/heptaliane/katarive-go-sdk/gen/mock/plugin/v1"
 	pb "github.com/heptaliane/katarive-go-sdk/gen/pb/plugin/v1"
 	"go.uber.org/mock/gomock"
+	"google.golang.org/grpc"
 
 	"github.com/heptaliane/katarive-server/internal/service"
 	"github.com/heptaliane/katarive-server/internal/service/mock"
@@ -35,13 +36,14 @@ func TestSemaphoreNarratorManager(t *testing.T) {
 	invalidReason := "invalid reason"
 	narrateError := errors.New("some error")
 
-	narrator := pbmock.NewMockNarratorServiceServer(gomock.NewController(t))
+	narrator := pbmock.NewMockNarratorServiceClient(gomock.NewController(t))
 	narrator.EXPECT().GetNarratorServiceMetadata(gomock.Any(), gomock.Any()).
 		Return(gnsmr, nil).AnyTimes()
 	narrator.EXPECT().Narrate(gomock.Any(), gomock.Any()).
 		DoAndReturn(func(
 			ctx context.Context,
 			req *pb.NarrateRequest,
+			opt ...grpc.CallOption,
 		) (*pb.NarrateResponse, error) {
 			switch req.GetText() {
 			case validText:

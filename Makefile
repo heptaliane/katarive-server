@@ -11,3 +11,6 @@ test:
 
 format:
 	go fmt ./...
+
+run:
+	go run ./...

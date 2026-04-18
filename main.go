@@ -21,6 +21,7 @@ const PORT string = ":9421"
 const HTTP_PORT string = ":9422"
 const PLUGIN_DIR string = "plugins"
 const DATA_DIR string = "data"
+const STATIC_DIR string = "web"
 
 func loadPlugins(pluginDir string) (*service.PluginRegistry, error) {
 	files, err := os.ReadDir(pluginDir)
@@ -115,6 +116,8 @@ func main() {
 
 	fs := http.FileServer(http.Dir(DATA_DIR))
 	http.Handle("/file/", http.StripPrefix("/file/", fs))
+	ss := http.FileServer(http.Dir(STATIC_DIR))
+	http.Handle("/static/", http.StripPrefix("/static/", ss))
 
 	go func() {
 		log.Printf("Start file server on %s", HTTP_PORT)

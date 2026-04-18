@@ -41,7 +41,7 @@ func main() {
 	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
 	<-quit
 
-	log.Printf("Shut down gRPC server")
+	log.Printf("Shut down server")
 	server.Close()
 	log.Printf("Server stopped")
 }

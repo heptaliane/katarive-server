@@ -5,6 +5,8 @@ import (
 	"strings"
 
 	pb "github.com/heptaliane/katarive-server/gen/pb/api/v1"
+	"github.com/improbable-eng/grpc-web/go/grpcweb"
+	"github.com/rs/cors"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
 	"google.golang.org/grpc"
@@ -59,21 +61,43 @@ func NewHttpServer(paths map[string]string) *http.ServeMux {
 
 	return mux
 }
+
 func NewHttp2Server(
 	addr string,
 	grpcServer *grpc.Server,
 	httpServer *http.ServeMux,
 ) *http.Server {
+	grpcwebServer := grpcweb.WrapServer(grpcServer)
+
 	root := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if isGRPC(r) {
+		switch {
+		case isGRPC(r):
 			grpcServer.ServeHTTP(w, r)
-		} else {
+		case grpcwebServer.IsGrpcWebRequest(r):
+			grpcwebServer.ServeHTTP(w, r)
+		default:
 			httpServer.ServeHTTP(w, r)
 		}
 	})
 
+	c := cors.New(cors.Options{
+		AllowedOrigins: []string{
+			// Allow access from Vite
+			"http://localhost:5173",
+		},
+		AllowedMethods: []string{"GET", "POST", "OPTIONS"},
+		AllowedHeaders: []string{
+			"Content-Type",
+			"X-User-Agent",
+			"X-Grpc-Web",
+			"Grpc-Timeout",
+		},
+		ExposedHeaders: []string{"Grpc-Status", "Grpc-Message"},
+		Debug:          false,
+	})
+
 	return &http.Server{
 		Addr:    addr,
-		Handler: h2c.NewHandler(root, &http2.Server{}),
+		Handler: h2c.NewHandler(c.Handler(root), &http2.Server{}),
 	}
 }

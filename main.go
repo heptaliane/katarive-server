@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"net"
+	"net/http"
 	"os"
 	"os/signal"
 	"path/filepath"
@@ -17,6 +18,7 @@ import (
 )
 
 const PORT string = ":9421"
+const HTTP_PORT string = ":9422"
 const PLUGIN_DIR string = "plugins"
 const DATA_DIR string = "data"
 
@@ -107,6 +109,16 @@ func main() {
 	go func() {
 		log.Printf("Start gRPC server on %s", PORT)
 		if err := server.Serve(listener); err != nil {
+			log.Fatalf("Failed to serve: %v", err)
+		}
+	}()
+
+	fs := http.FileServer(http.Dir(DATA_DIR))
+	http.Handle("/file/", http.StripPrefix("/file/", fs))
+
+	go func() {
+		log.Printf("Start file server on %s", HTTP_PORT)
+		if err := http.ListenAndServe(HTTP_PORT, nil); err != nil {
 			log.Fatalf("Failed to serve: %v", err)
 		}
 	}()

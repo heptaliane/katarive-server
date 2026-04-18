@@ -1,128 +1,38 @@
 package main
 
 import (
-	"context"
 	"log"
-	"net"
 	"net/http"
 	"os"
 	"os/signal"
-	"path/filepath"
 	"syscall"
-
-	"google.golang.org/grpc"
-
-	pb "github.com/heptaliane/katarive-server/gen/pb/api/v1"
-	"github.com/heptaliane/katarive-server/internal/handler"
-	"github.com/heptaliane/katarive-server/internal/service"
 )
 
-const PORT string = ":9421"
+const ADDR string = ":9421"
 const HTTP_PORT string = ":9422"
 const PLUGIN_DIR string = "plugins"
 const DATA_DIR string = "data"
 const STATIC_DIR string = "web"
 
-func loadPlugins(pluginDir string) (*service.PluginRegistry, error) {
-	files, err := os.ReadDir(pluginDir)
-	if err != nil {
-		return nil, err
-	}
-
-	pr := new(service.PluginRegistry)
-	for _, file := range files {
-		if file.IsDir() {
-			continue
-		}
-		path := filepath.Join(pluginDir, file.Name())
-		err := pr.Load(path)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return pr, nil
-}
-
-func newNarrator(destDir string, plugins *service.PluginRegistry) (service.NarratorRegistry, error) {
-	ctx := context.Background()
-
-	var narrators []service.NarratorManager
-	for _, rawNarrator := range plugins.GetNarrators() {
-		narrator, err := service.NewSemaphoreNarratorManager(ctx, rawNarrator)
-		if err != nil {
-			return nil, err
-		}
-		narrators = append(narrators, narrator)
-	}
-
-	return service.NewFileNarratorRegistry(destDir, narrators), nil
-}
-
-func newSource(destDir string, plugins *service.PluginRegistry) (service.SourceRegistry, error) {
-	ctx := context.Background()
-
-	var sources []service.SourceManager
-	for _, rawSource := range plugins.GetSources() {
-		source, err := service.NewSemaphoreSourceManager(ctx, rawSource)
-		if err != nil {
-			return nil, err
-		}
-		sources = append(sources, source)
-	}
-
-	return service.NewFileSourceRegistry(destDir, sources), nil
-}
-
-func newKatariveHandler(pluginDir string, destDir string) (*handler.KatariveHandlerV1, error) {
-	plugin, err := loadPlugins(pluginDir)
-	if err != nil {
-		return nil, err
-	}
-
-	nr, err := newNarrator(destDir, plugin)
-	if err != nil {
-		return nil, err
-	}
-
-	sr, err := newSource(destDir, plugin)
-	if err != nil {
-		return nil, err
-	}
-
-	js := service.NewNarrateJobManager(nr, sr)
-	return handler.NewKatariveHandler(js), nil
-}
-
 func main() {
-	katariveHandler, err := newKatariveHandler(PLUGIN_DIR, DATA_DIR)
+	grpc, err := NewGRPCServer(PLUGIN_DIR, DATA_DIR)
 	if err != nil {
-		log.Fatalf("Failed to initialize handler: %v", err)
+		log.Fatalf("Failed to initialize grpc server: %v", err)
 	}
 
-	server := grpc.NewServer()
-	pb.RegisterKatariveServiceServer(server, katariveHandler)
+	mux := NewHttpServer(map[string]string{
+		"/file/":   DATA_DIR,
+		"/static/": STATIC_DIR,
+	})
 
-	listener, err := net.Listen("tcp", PORT)
-	if err != nil {
-		log.Fatalf("Failed to listen: %v", err)
-	}
-
-	go func() {
-		log.Printf("Start gRPC server on %s", PORT)
-		if err := server.Serve(listener); err != nil {
-			log.Fatalf("Failed to serve: %v", err)
-		}
-	}()
-
-	fs := http.FileServer(http.Dir(DATA_DIR))
-	http.Handle("/file/", http.StripPrefix("/file/", fs))
-	ss := http.FileServer(http.Dir(STATIC_DIR))
-	http.Handle("/static/", http.StripPrefix("/static/", ss))
+	server := NewHttp2Server(ADDR, grpc, mux)
 
 	go func() {
-		log.Printf("Start file server on %s", HTTP_PORT)
-		if err := http.ListenAndServe(HTTP_PORT, nil); err != nil {
-			log.Fatalf("Failed to serve: %v", err)
+		log.Printf("Start server on %s", ADDR)
+		if err := server.ListenAndServe(); err != nil {
+			if err != http.ErrServerClosed {
+				log.Fatalf("Failed to serve: %v", err)
+			}
 		}
 	}()
 
@@ -132,6 +42,6 @@ func main() {
 	<-quit
 
 	log.Printf("Shut down gRPC server")
-	server.GracefulStop()
+	server.Close()
 	log.Printf("Server stopped")
 }

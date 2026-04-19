@@ -13,9 +13,10 @@ const HTTP_PORT string = ":9422"
 const PLUGIN_DIR string = "plugins"
 const DATA_DIR string = "data"
 const STATIC_DIR string = "web"
+const INTERVAL int = 1000
 
 func main() {
-	grpc, err := NewGRPCServer(PLUGIN_DIR, DATA_DIR)
+	grpc, err := NewGRPCServer(PLUGIN_DIR, DATA_DIR, INTERVAL)
 	if err != nil {
 		log.Fatalf("Failed to initialize grpc server: %v", err)
 	}

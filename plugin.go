@@ -46,13 +46,18 @@ func NewNarrator(
 }
 func NewSource(
 	destDir string,
+	interval int,
 	plugins *service.PluginRegistry,
 ) (service.SourceRegistry, error) {
 	ctx := context.Background()
 
 	var sources []service.SourceManager
 	for _, rawSource := range plugins.GetSources() {
-		source, err := service.NewSemaphoreSourceManager(ctx, rawSource)
+		source, err := service.NewSemaphoreSourceManager(
+			ctx,
+			rawSource,
+			service.WithInterval(interval),
+		)
 		if err != nil {
 			return nil, err
 		}

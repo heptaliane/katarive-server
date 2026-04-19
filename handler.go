@@ -15,7 +15,11 @@ import (
 	"github.com/heptaliane/katarive-server/internal/service"
 )
 
-func newKatariveHandler(pluginDir string, destDir string) (*handler.KatariveHandlerV1, error) {
+func newKatariveHandler(
+	pluginDir string,
+	destDir string,
+	interval int,
+) (*handler.KatariveHandlerV1, error) {
 	plugin, err := LoadPlugins(pluginDir)
 	if err != nil {
 		return nil, err
@@ -26,7 +30,7 @@ func newKatariveHandler(pluginDir string, destDir string) (*handler.KatariveHand
 		return nil, err
 	}
 
-	sr, err := NewSource(destDir, plugin)
+	sr, err := NewSource(destDir, interval, plugin)
 	if err != nil {
 		return nil, err
 	}
@@ -39,10 +43,10 @@ func isGRPC(r *http.Request) bool {
 	return strings.HasPrefix(contentType, "application/grpc") && r.ProtoMajor == 2
 }
 
-func NewGRPCServer(pluginDir string, dataDir string) (*grpc.Server, error) {
+func NewGRPCServer(pluginDir string, dataDir string, interval int) (*grpc.Server, error) {
 	server := grpc.NewServer()
 
-	kh, err := newKatariveHandler(pluginDir, dataDir)
+	kh, err := newKatariveHandler(pluginDir, dataDir, interval)
 	if err != nil {
 		return nil, err
 	}

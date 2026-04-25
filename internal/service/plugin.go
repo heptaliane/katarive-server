@@ -28,6 +28,7 @@ func (r *PluginRegistry) Load(path string) error {
 		Plugins:          katarive.PluginMap,
 		Cmd:              exec.Command(path),
 		AllowedProtocols: []plugin.Protocol{plugin.ProtocolGRPC},
+		Managed:          true,
 	})
 	r.clients = append(r.clients, client)
 
@@ -60,7 +61,6 @@ func (r *PluginRegistry) Load(path string) error {
 		}
 	}
 
-	client.Kill()
 	return nil
 }
 func (r *PluginRegistry) GetSources() []pb.SourceServiceClient {

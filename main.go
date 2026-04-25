@@ -1,7 +1,8 @@
 package main
 
 import (
-	"log"
+	"fmt"
+	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
@@ -14,11 +15,15 @@ const PLUGIN_DIR string = "plugins"
 const DATA_DIR string = "data"
 const STATIC_DIR string = "web"
 const INTERVAL int = 1000
+const LOG_LEVEL slog.Level = slog.LevelDebug
 
 func main() {
+	SetupLogger(LOG_LEVEL)
+
 	grpc, err := NewGRPCServer(PLUGIN_DIR, DATA_DIR, INTERVAL)
 	if err != nil {
-		log.Fatalf("Failed to initialize grpc server: %v", err)
+		slog.Error("Failed to initialize grpc server", "error", err)
+		os.Exit(1)
 	}
 
 	mux := NewHttpServer(map[string]string{
@@ -29,10 +34,11 @@ func main() {
 	server := NewHttp2Server(ADDR, grpc, mux)
 
 	go func() {
-		log.Printf("Start server on %s", ADDR)
+		slog.Info(fmt.Sprintf("Start server on %s", ADDR))
 		if err := server.ListenAndServe(); err != nil {
 			if err != http.ErrServerClosed {
-				log.Fatalf("Failed to serve: %v", err)
+				slog.Error("Failed to serve", "error", err)
+				os.Exit(1)
 			}
 		}
 	}()
@@ -42,7 +48,7 @@ func main() {
 	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
 	<-quit
 
-	log.Printf("Shut down server")
+	slog.Info("Shut down server")
 	server.Close()
-	log.Printf("Server stopped")
+	slog.Info("Server stopped")
 }

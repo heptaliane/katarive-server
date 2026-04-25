@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"log/slog"
 	"sync"
 
 	"github.com/google/uuid"
@@ -36,6 +37,7 @@ type NarrateJobManager struct {
 	source   SourceRegistry
 	jobs     *sync.Map
 	group    *singleflight.Group
+	logger   *slog.Logger
 }
 
 func (m *NarrateJobManager) Enqueue(ctx context.Context, url string) (string, error) {
@@ -52,6 +54,7 @@ func (m *NarrateJobManager) Enqueue(ctx context.Context, url string) (string, er
 	m.jobs.Store(job.id, job)
 
 	go func() {
+		m.logger.InfoContext(ctx, "Start narrate job", "id", jobId, "url", url)
 		v, err, _ := m.group.Do(url, func() (any, error) {
 			src, err := m.source.Get(ctx, url)
 			if err != nil {
@@ -71,9 +74,12 @@ func (m *NarrateJobManager) Enqueue(ctx context.Context, url string) (string, er
 
 		if err != nil {
 			job.err = err
-			return
-		}
-		if result, ok := v.(string); ok {
+		} else if result, ok := v.(string); ok {
+			m.logger.InfoContext(
+				ctx, "Narrate job successed",
+				"id", jobId,
+				"url", url,
+			)
 			job.result = result
 		} else {
 			job.err = &UnexpectedTypeError{
@@ -81,6 +87,12 @@ func (m *NarrateJobManager) Enqueue(ctx context.Context, url string) (string, er
 				Expected: new(string),
 			}
 		}
+		m.logger.ErrorContext(
+			ctx, "Narrate job failed",
+			"id", jobId,
+			"url", url,
+			"error", job.err,
+		)
 	}()
 
 	return job.id, nil
@@ -89,6 +101,7 @@ func (m *NarrateJobManager) Enqueue(ctx context.Context, url string) (string, er
 func (m *NarrateJobManager) GetJob(jobId string) (NarrateJob, error) {
 	v, ok := m.jobs.Load(jobId)
 	if !ok {
+		m.logger.Warn("No such job", "id", jobId)
 		return nil, &JobNotFoundError{JobId: jobId}
 	}
 
@@ -119,6 +132,7 @@ func NewNarrateJobManager(
 		source:   source,
 		jobs:     new(sync.Map),
 		group:    new(singleflight.Group),
+		logger:   slog.Default(),
 	}
 }
 

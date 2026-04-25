@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"path/filepath"
 	"regexp"
 	"sync"
@@ -127,6 +128,7 @@ func NewSemaphoreSourceManager(
 type FileSourceRegistry struct {
 	basedir string
 	sources []SourceManager
+	logger  *slog.Logger
 }
 
 func (s *FileSourceRegistry) Get(
@@ -144,10 +146,12 @@ func (s *FileSourceRegistry) Get(
 	if sm == nil {
 		return nil, &UnsupportedSourceURLError{URL: url}
 	}
+	s.logger.DebugContext(ctx, "SourceManager found", "type", sm.GetName(), "url", url)
 
 	filename := fmt.Sprintf("%s.json", url2filename(url))
 	path := filepath.Join(s.basedir, sm.GetName(), filename)
 	if Exists(path) {
+		s.logger.DebugContext(ctx, "Source cache hit", "url", url, "path", path)
 		return LoadJson[pb.GetSourceResponse](path)
 	}
 
@@ -155,11 +159,13 @@ func (s *FileSourceRegistry) Get(
 	if err != nil {
 		return nil, err
 	}
+	s.logger.DebugContext(ctx, "Source fetched", "url", url)
 
 	err = DumpJson(path, res)
 	if err != nil {
 		return nil, err
 	}
+	s.logger.DebugContext(ctx, "Source saved", "url", url, "path", path)
 	return res, nil
 }
 
@@ -177,5 +183,6 @@ func NewFileSourceRegistry(
 	return &FileSourceRegistry{
 		basedir: basedir,
 		sources: sources,
+		logger:  slog.Default(),
 	}
 }

@@ -7,6 +7,8 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/hashicorp/go-hclog"
 )
 
 const ADDR string = ":9421"
@@ -16,11 +18,12 @@ const DATA_DIR string = "data"
 const STATIC_DIR string = "web"
 const INTERVAL int = 1000
 const LOG_LEVEL slog.Level = slog.LevelDebug
+const PLUGIN_LOG_LEVEL hclog.Level = hclog.Info
 
 func main() {
 	SetupLogger(LOG_LEVEL)
 
-	grpc, err := NewGRPCServer(PLUGIN_DIR, DATA_DIR, INTERVAL)
+	grpc, err := NewGRPCServer(PLUGIN_DIR, DATA_DIR, INTERVAL, PLUGIN_LOG_LEVEL)
 	if err != nil {
 		slog.Error("Failed to initialize grpc server", "error", err)
 		os.Exit(1)

@@ -6,6 +6,7 @@ import (
 	"runtime"
 	"testing"
 
+	"github.com/hashicorp/go-hclog"
 	"github.com/heptaliane/katarive-server/internal/service"
 )
 
@@ -44,8 +45,7 @@ func TestPluginRegistry(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			pr := new(service.PluginRegistry)
-			defer pr.Kill()
+			pr := service.NewPluginRegistry(hclog.Warn)
 
 			err := pr.Load(tc.path)
 			if err != nil {

@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/hashicorp/go-hclog"
 	pb "github.com/heptaliane/katarive-server/gen/pb/api/v1"
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"github.com/rs/cors"
@@ -19,8 +20,9 @@ func newKatariveHandler(
 	pluginDir string,
 	destDir string,
 	interval int,
+	logLevel hclog.Level,
 ) (*handler.KatariveHandlerV1, error) {
-	plugin, err := LoadPlugins(pluginDir)
+	plugin, err := LoadPlugins(pluginDir, logLevel)
 	if err != nil {
 		return nil, err
 	}
@@ -43,10 +45,15 @@ func isGRPC(r *http.Request) bool {
 	return strings.HasPrefix(contentType, "application/grpc") && r.ProtoMajor == 2
 }
 
-func NewGRPCServer(pluginDir string, dataDir string, interval int) (*grpc.Server, error) {
+func NewGRPCServer(
+	pluginDir string,
+	dataDir string,
+	interval int,
+	logLevel hclog.Level,
+) (*grpc.Server, error) {
 	server := grpc.NewServer()
 
-	kh, err := newKatariveHandler(pluginDir, dataDir, interval)
+	kh, err := newKatariveHandler(pluginDir, dataDir, interval, logLevel)
 	if err != nil {
 		return nil, err
 	}

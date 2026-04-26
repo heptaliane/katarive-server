@@ -5,16 +5,17 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/hashicorp/go-hclog"
 	"github.com/heptaliane/katarive-server/internal/service"
 )
 
-func LoadPlugins(pluginDir string) (*service.PluginRegistry, error) {
+func LoadPlugins(pluginDir string, logLevel hclog.Level) (*service.PluginRegistry, error) {
 	files, err := os.ReadDir(pluginDir)
 	if err != nil {
 		return nil, err
 	}
 
-	pr := new(service.PluginRegistry)
+	pr := service.NewPluginRegistry(logLevel)
 	for _, file := range files {
 		if file.IsDir() {
 			continue

@@ -2,8 +2,10 @@ package service
 
 import (
 	"context"
+	"os"
 	"os/exec"
 
+	"github.com/hashicorp/go-hclog"
 	"github.com/hashicorp/go-plugin"
 	katarive "github.com/heptaliane/katarive-go-sdk"
 	pb "github.com/heptaliane/katarive-go-sdk/gen/pb/plugin/v1"
@@ -14,6 +16,7 @@ type PluginRegistry struct {
 	sources   []pb.SourceServiceClient
 	narrators []pb.NarratorServiceClient
 	clients   []*plugin.Client
+	logger    hclog.Logger
 }
 
 func (r *PluginRegistry) Load(path string) error {
@@ -22,6 +25,7 @@ func (r *PluginRegistry) Load(path string) error {
 		Plugins:          katarive.PluginMap,
 		Cmd:              exec.Command(path),
 		AllowedProtocols: []plugin.Protocol{plugin.ProtocolGRPC},
+		Logger:           r.logger,
 		Managed:          true,
 	})
 	r.clients = append(r.clients, client)
@@ -88,4 +92,14 @@ func grpcServices(client *plugin.GRPCClient) ([]string, error) {
 		names = append(names, svc.GetName())
 	}
 	return names, nil
+}
+
+func NewPluginRegistry(level hclog.Level) *PluginRegistry {
+	return &PluginRegistry{
+		logger: hclog.New(&hclog.LoggerOptions{
+			Level:      level,
+			JSONFormat: true,
+			Output:     os.Stdout,
+		}),
+	}
 }

@@ -56,6 +56,7 @@ func (m *NarrateJobManager) Enqueue(ctx context.Context, url string) (string, er
 	go func() {
 		m.logger.InfoContext(ctx, "Start narrate job", "id", jobId, "url", url)
 		v, err, _ := m.group.Do(url, func() (any, error) {
+			ctx = context.WithoutCancel(ctx)
 			src, err := m.source.Get(ctx, url)
 			if err != nil {
 				return nil, err

@@ -16,12 +16,6 @@ type PluginRegistry struct {
 	clients   []*plugin.Client
 }
 
-func (r *PluginRegistry) Kill() {
-	for _, client := range r.clients {
-		client.Kill()
-	}
-}
-
 func (r *PluginRegistry) Load(path string) error {
 	client := plugin.NewClient(&plugin.ClientConfig{
 		HandshakeConfig:  katarive.Handshake,

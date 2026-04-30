@@ -49,4 +49,15 @@ func (e *UnexpectedTypeError) Error() string {
 
 var _ error = new(UnexpectedTypeError)
 
+type UnsupportedEncodingError struct {
+	Target   string
+	Encoding string
+}
+
+func (e *UnsupportedEncodingError) Error() string {
+	return fmt.Sprintf("Unsupported encoding '%s' for %s", e.Encoding, e.Target)
+}
+
+var _ error = new(UnsupportedEncodingError)
+
 var UnspecifiedNarratorError = errors.New("No narrator is set")

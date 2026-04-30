@@ -3,6 +3,7 @@ package service_test
 import (
 	"context"
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -19,6 +20,14 @@ import (
 func TestSemaphoreNarratorManager(t *testing.T) {
 	t.Parallel()
 
+	validText := "valid"
+	invalidText := "invalid"
+	invalidReason := "invalid reason"
+	narrateError := errors.New("some error")
+	validEncoding := pb.AudioEncoding_AUDIO_ENCODING_MP3
+	invalidEncoding := pb.AudioEncoding_AUDIO_ENCODING_M4A
+	basepath := "dummy"
+	validPath := "dummy.mp3"
 	options := []*pb.NarratorOption{
 		{
 			Id:          "id-1",
@@ -27,14 +36,11 @@ func TestSemaphoreNarratorManager(t *testing.T) {
 		},
 	}
 	gnsmr := &pb.GetNarratorServiceMetadataResponse{
-		Name:    "narrator",
-		Version: "v1",
-		Options: options,
+		Name:              "narrator",
+		Version:           "v1",
+		SupportedEncoding: []pb.AudioEncoding{validEncoding},
+		Options:           options,
 	}
-	validText := "valid"
-	invalidText := "invalid"
-	invalidReason := "invalid reason"
-	narrateError := errors.New("some error")
 
 	narrator := pbmock.NewMockNarratorServiceClient(gomock.NewController(t))
 	narrator.EXPECT().GetNarratorServiceMetadata(gomock.Any(), gomock.Any()).
@@ -56,24 +62,48 @@ func TestSemaphoreNarratorManager(t *testing.T) {
 
 	cases := map[string]struct {
 		text                     string
+		options                  []service.NarrateOption
 		expectedError            error
 		expectedName             string
+		expectedPath             string
 		expectedSupportedOptions []*pb.NarratorOption
 	}{
 		"success": {
-			text:                     validText,
+			text: validText,
+			options: []service.NarrateOption{
+				service.WithNarrateEncoding(validEncoding),
+			},
 			expectedName:             "narrator:v1",
+			expectedPath:             validPath,
 			expectedSupportedOptions: options,
 		},
 		"failed with reason": {
-			text:                     invalidText,
+			text: invalidText,
+			options: []service.NarrateOption{
+				service.WithNarrateEncoding(validEncoding),
+			},
 			expectedError:            &service.NarrateError{Reason: invalidReason},
 			expectedName:             "narrator:v1",
 			expectedSupportedOptions: options,
 		},
 		"failed before pb": {
-			text:                     "error",
+			text: "error",
+			options: []service.NarrateOption{
+				service.WithNarrateEncoding(validEncoding),
+			},
 			expectedError:            narrateError,
+			expectedName:             "narrator:v1",
+			expectedSupportedOptions: options,
+		},
+		"failed with encoding": {
+			text: validText,
+			options: []service.NarrateOption{
+				service.WithNarrateEncoding(invalidEncoding),
+			},
+			expectedError: &service.UnsupportedEncodingError{
+				Target:   "narrator:v1",
+				Encoding: invalidEncoding.String(),
+			},
 			expectedName:             "narrator:v1",
 			expectedSupportedOptions: options,
 		},
@@ -90,19 +120,34 @@ func TestSemaphoreNarratorManager(t *testing.T) {
 				return
 			}
 
-			err = nm.Do(ctx, "dummy.wav", "text")
-			if errors.Is(err, tc.expectedError) && err != tc.expectedError {
-				t.Errorf(
-					"Unmatched Narrate result: expected %v but got %v",
-					tc.expectedError,
-					err,
-				)
+			path, err := nm.Do(ctx, basepath, tc.text, tc.options...)
+			if tc.expectedError == nil {
+				if err != nil {
+					t.Errorf("Unexpected Error: %v", err)
+					return
+				}
+			} else {
+				if diff := cmp.Diff(err.Error(), tc.expectedError.Error()); diff != "" {
+					t.Errorf(
+						"Unmatched Narrate result: expected '%v' but got '%v'",
+						tc.expectedError,
+						err,
+					)
+					return
+				}
+			}
+			if path != tc.expectedPath {
+				t.Errorf("Unmatched path: expected '%s' but got '%s'", tc.expectedPath, path)
 				return
 			}
 
 			actualName := nm.GetName()
 			if actualName != tc.expectedName {
-				t.Errorf("Unmatched Name: expected %s but got %s", tc.expectedName, actualName)
+				t.Errorf(
+					"Unmatched Name: expected '%s' but got '%s'",
+					tc.expectedName,
+					actualName,
+				)
 				return
 			}
 
@@ -128,14 +173,21 @@ func TestNarratorRegistry(t *testing.T) {
 	name := "mock"
 	url := "http://example.com/1"
 	nm.EXPECT().GetName().Return(name).AnyTimes()
-	nm.EXPECT().Do(gomock.Any(), gomock.Any(), text).Return(nil).
-		Do(func(ctx context.Context, path string, text string, opts ...service.NarrateOption) {
+	nm.EXPECT().Do(gomock.Any(), gomock.Any(), text).
+		DoAndReturn(func(
+			ctx context.Context,
+			basePath string,
+			text string,
+			opts ...service.NarrateOption,
+		) (string, error) {
+			path := fmt.Sprintf("%s.mp3", basePath)
 			f, err := service.NewFile(path)
 			if err != nil {
 				t.Fatalf("Failed to create file: %v", err)
 			}
 			defer f.Close()
-		}).Times(1)
+			return path, nil
+		}).AnyTimes()
 
 	nr := service.NewFileNarratorRegistry(basedir, nms)
 

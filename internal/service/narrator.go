@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"path/filepath"
+	"slices"
 	"sync"
 
 	pb "github.com/heptaliane/katarive-go-sdk/gen/pb/plugin/v1"
@@ -15,7 +16,7 @@ import (
 
 //go:generate mockgen -source=$GOFILE -destination=mock/mock_$GOFILE -package=mock
 type NarratorManager interface {
-	Do(ctx context.Context, path string, text string, opts ...NarrateOption) error
+	Do(ctx context.Context, basePath string, text string, opts ...NarrateOption) (string, error)
 	GetName() string
 	SupportedOptions() []*pb.NarratorOption
 }
@@ -34,6 +35,7 @@ type NarratorRegistry interface {
 type narrateOptions struct {
 	opts     map[string]string
 	language pb.Language
+	encoding pb.AudioEncoding
 }
 type NarrateOption func(*narrateOptions)
 
@@ -47,6 +49,11 @@ func WithNarrateLanguage(language pb.Language) NarrateOption {
 		opt.language = language
 	}
 }
+func WithNarrateEncoding(encoding pb.AudioEncoding) NarrateOption {
+	return func(opt *narrateOptions) {
+		opt.encoding = encoding
+	}
+}
 
 // ============================
 // NarratorManager Implementation
@@ -58,43 +65,53 @@ func WithNarrateLanguage(language pb.Language) NarrateOption {
 type SemaphoreNarratorManager struct {
 	narrator pb.NarratorServiceClient
 
-	name    string
-	version string
-	options []*pb.NarratorOption
+	name      string
+	version   string
+	encodings []pb.AudioEncoding
+	options   []*pb.NarratorOption
 
 	mu *sync.RWMutex
 }
 
 func (n *SemaphoreNarratorManager) Do(
 	ctx context.Context,
-	path string,
+	basePath string,
 	text string,
 	opts ...NarrateOption,
-) error {
+) (string, error) {
 	var options narrateOptions
 	for _, opt := range opts {
 		opt(&options)
 	}
 
-	n.mu.Lock()
-	defer n.mu.Unlock()
-
+	if !slices.Contains(n.encodings, options.encoding) {
+		return "", &UnsupportedEncodingError{
+			Target:   n.GetName(),
+			Encoding: options.encoding.String(),
+		}
+	}
+	path := fmt.Sprintf("%s.%s", basePath, getAudioExtension(options.encoding))
 	req := &pb.NarrateRequest{
 		Path:     path,
 		Text:     text,
 		Language: options.language,
+		Encoding: options.encoding,
 		Options:  options.opts,
 	}
+
+	n.mu.Lock()
+	defer n.mu.Unlock()
+
 	res, err := n.narrator.Narrate(ctx, req)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	if res.GetError() {
-		return &NarrateError{Reason: res.GetReason()}
+		return "", &NarrateError{Reason: res.GetReason()}
 	}
 
-	return nil
+	return path, nil
 }
 func (n *SemaphoreNarratorManager) GetName() string {
 	return fmt.Sprintf("%s:%s", n.name, n.version)
@@ -121,11 +138,12 @@ func NewSemaphoreNarratorManager(
 	}
 
 	return &SemaphoreNarratorManager{
-		narrator: narrator,
-		name:     res.GetName(),
-		version:  res.GetVersion(),
-		options:  res.GetOptions(),
-		mu:       new(sync.RWMutex),
+		narrator:  narrator,
+		name:      res.GetName(),
+		version:   res.GetVersion(),
+		options:   res.GetOptions(),
+		encodings: res.GetSupportedEncoding(),
+		mu:        new(sync.RWMutex),
 	}, nil
 
 }
@@ -149,7 +167,7 @@ func (n *FileNarratorRegistry) Use(name string) {
 }
 func (n *FileNarratorRegistry) Narrators() []string {
 	keys := make([]string, 0)
-	for name, _ := range n.narrators {
+	for name := range n.narrators {
 		keys = append(keys, name)
 	}
 	return keys
@@ -164,17 +182,12 @@ func (n *FileNarratorRegistry) Do(
 		return "", UnspecifiedNarratorError
 	}
 
-	filename := fmt.Sprintf("%s.mp3", url2filename(url))
-	path := filepath.Join(n.basedir, n.cursor.GetName(), filename)
+	path := filepath.Join(n.basedir, n.cursor.GetName(), url2filename(url))
 	if Exists(path) {
 		return path, nil
 	}
 
-	err := n.cursor.Do(ctx, path, text, opts...)
-	if err != nil {
-		return "", err
-	}
-	return path, err
+	return n.cursor.Do(ctx, path, text, opts...)
 }
 
 // Ensure NarratorRegistry implements NarratorRegistry
@@ -197,4 +210,13 @@ func NewFileNarratorRegistry(
 		basedir:   basedir,
 		narrators: nms,
 	}
+}
+func getAudioExtension(encoding pb.AudioEncoding) string {
+	switch encoding {
+	case pb.AudioEncoding_AUDIO_ENCODING_MP3:
+		return "mp3"
+	case pb.AudioEncoding_AUDIO_ENCODING_M4A:
+		return "m4a"
+	}
+	return ""
 }

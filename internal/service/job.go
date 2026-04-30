@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"github.com/google/uuid"
+	pb "github.com/heptaliane/katarive-go-sdk/gen/pb/plugin/v1"
 	"golang.org/x/sync/singleflight"
 )
 
@@ -67,6 +68,8 @@ func (m *NarrateJobManager) Enqueue(ctx context.Context, url string) (string, er
 				url,
 				src.GetContent(),
 				WithNarrateLanguage(src.GetLanguage()),
+				// TODO: Allow encoding selection
+				WithNarrateEncoding(pb.AudioEncoding_AUDIO_ENCODING_MP3),
 			)
 		})
 

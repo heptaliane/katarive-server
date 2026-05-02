@@ -213,6 +213,8 @@ func NewFileNarratorRegistry(
 }
 func getAudioExtension(encoding pb.AudioEncoding) string {
 	switch encoding {
+	case pb.AudioEncoding_AUDIO_ENCODING_WAV:
+		return "wav"
 	case pb.AudioEncoding_AUDIO_ENCODING_MP3:
 		return "mp3"
 	case pb.AudioEncoding_AUDIO_ENCODING_M4A:

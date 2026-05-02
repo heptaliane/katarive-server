@@ -69,7 +69,7 @@ func (m *NarrateJobManager) Enqueue(ctx context.Context, url string) (string, er
 				src.GetContent(),
 				WithNarrateLanguage(src.GetLanguage()),
 				// TODO: Allow encoding selection
-				WithNarrateEncoding(pb.AudioEncoding_AUDIO_ENCODING_MP3),
+				WithNarrateEncoding(pb.AudioEncoding_AUDIO_ENCODING_WAV),
 			)
 		})
 

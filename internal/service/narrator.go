@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"os"
 	"path/filepath"
 	"slices"
 	"sync"
@@ -182,7 +183,10 @@ func (n *FileNarratorRegistry) Do(
 		return "", UnspecifiedNarratorError
 	}
 
-	path := filepath.Join(n.basedir, n.cursor.GetName(), url2filename(url))
+	basedir := filepath.Join(n.basedir, n.cursor.GetName())
+	os.MkdirAll(basedir, 0755)
+
+	path := filepath.Join(basedir, url2filename(url))
 	if Exists(path) {
 		return path, nil
 	}

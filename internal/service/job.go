@@ -85,6 +85,7 @@ func (m *NarrateJobManager) Enqueue(ctx context.Context, url string) (string, er
 				"url", url,
 			)
 			job.result = result
+			return
 		} else {
 			job.err = &UnexpectedTypeError{
 				Value:    v,

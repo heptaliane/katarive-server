@@ -92,6 +92,9 @@ func (n *SemaphoreNarratorManager) Do(
 		}
 	}
 	path := fmt.Sprintf("%s.%s", basePath, getAudioExtension(options.encoding))
+	if Exists(path) {
+		return path, nil
+	}
 	req := &pb.NarrateRequest{
 		Path:     path,
 		Text:     text,

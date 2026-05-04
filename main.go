@@ -12,7 +12,6 @@ import (
 )
 
 const ADDR string = ":9421"
-const HTTP_PORT string = ":9422"
 const PLUGIN_DIR string = "plugins"
 const DATA_DIR string = "data"
 const STATIC_DIR string = "web"

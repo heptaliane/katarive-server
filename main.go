@@ -9,6 +9,8 @@ import (
 	"syscall"
 
 	"github.com/hashicorp/go-hclog"
+
+	"github.com/heptaliane/katarive-server/internal/handler"
 )
 
 const ADDR string = ":9421"
@@ -22,7 +24,11 @@ const PLUGIN_LOG_LEVEL hclog.Level = hclog.Info
 func main() {
 	SetupLogger(LOG_LEVEL)
 
-	grpc, err := NewGRPCServer(PLUGIN_DIR, DATA_DIR, INTERVAL, PLUGIN_LOG_LEVEL)
+	pm := handler.NewBasePathModifier(
+		handler.WithPathRule(DATA_DIR, "file"),
+		handler.WithPathRule(STATIC_DIR, "static"),
+	)
+	grpc, err := NewGRPCServer(PLUGIN_DIR, DATA_DIR, INTERVAL, pm, PLUGIN_LOG_LEVEL)
 	if err != nil {
 		slog.Error("Failed to initialize grpc server", "error", err)
 		os.Exit(1)

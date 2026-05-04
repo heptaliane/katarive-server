@@ -19,7 +19,8 @@ func TestKatariveHandlerV1CreateNarration(t *testing.T) {
 	t.Parallel()
 
 	js := mock.NewMockNarrateJobService(gomock.NewController(t))
-	kh := handler.NewKatariveHandler(js)
+	pm := handler.NewBasePathModifier()
+	kh := handler.NewKatariveHandler(js, pm)
 
 	validUrl := "http://valid.com"
 	invalidUrl := "http://invalid.com"
@@ -70,7 +71,8 @@ func TestKatariveHandlerV1GetJobStatus(t *testing.T) {
 	failedJob := mock.NewMockNarrateJob(gomock.NewController(t))
 	progressJob := mock.NewMockNarrateJob(gomock.NewController(t))
 	js := mock.NewMockNarrateJobService(gomock.NewController(t))
-	kh := handler.NewKatariveHandler(js)
+	pm := handler.NewBasePathModifier()
+	kh := handler.NewKatariveHandler(js, pm)
 
 	validJobId := "valid"
 	notFoundJobId := "not_found"

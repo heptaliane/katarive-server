@@ -20,6 +20,7 @@ func newKatariveHandler(
 	pluginDir string,
 	destDir string,
 	interval int,
+	pathModifier handler.PathModifier,
 	logLevel hclog.Level,
 ) (*handler.KatariveHandlerV1, error) {
 	plugin, err := LoadPlugins(pluginDir, logLevel)
@@ -38,7 +39,7 @@ func newKatariveHandler(
 	}
 
 	js := service.NewNarrateJobManager(nr, sr)
-	return handler.NewKatariveHandler(js), nil
+	return handler.NewKatariveHandler(js, pathModifier), nil
 }
 func isGRPC(r *http.Request) bool {
 	contentType := r.Header.Get("Content-Type")
@@ -49,11 +50,12 @@ func NewGRPCServer(
 	pluginDir string,
 	dataDir string,
 	interval int,
+	pathModifier handler.PathModifier,
 	logLevel hclog.Level,
 ) (*grpc.Server, error) {
 	server := grpc.NewServer()
 
-	kh, err := newKatariveHandler(pluginDir, dataDir, interval, logLevel)
+	kh, err := newKatariveHandler(pluginDir, dataDir, interval, pathModifier, logLevel)
 	if err != nil {
 		return nil, err
 	}

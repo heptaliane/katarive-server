@@ -4,16 +4,35 @@ import (
 	"context"
 	"os"
 	"path/filepath"
+	"slices"
+	"strings"
 
 	"github.com/hashicorp/go-hclog"
 	"github.com/heptaliane/katarive-server/internal/service"
 )
+
+const DEFAULT_PLUGIN_PREFIX string = "default"
 
 func LoadPlugins(pluginDir string, logLevel hclog.Level) (*service.PluginRegistry, error) {
 	files, err := os.ReadDir(pluginDir)
 	if err != nil {
 		return nil, err
 	}
+
+	slices.SortFunc(files, func(a, b os.DirEntry) int {
+		nameA := a.Name()
+		nameB := b.Name()
+		hasPrefixA := strings.HasPrefix(nameA, DEFAULT_PLUGIN_PREFIX)
+		hasPrefixB := strings.HasPrefix(nameB, DEFAULT_PLUGIN_PREFIX)
+
+		if hasPrefixA && !hasPrefixB {
+			return 1
+		}
+		if !hasPrefixA && hasPrefixB {
+			return -1
+		}
+		return strings.Compare(nameA, nameB)
+	})
 
 	pr := service.NewPluginRegistry(logLevel)
 	for _, file := range files {

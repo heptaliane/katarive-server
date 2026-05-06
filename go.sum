@@ -177,8 +177,8 @@ github.com/hashicorp/memberlist v0.1.3/go.mod h1:ajVTdAv/9Im8oMAAj5G31PhhMCZJV2p
 github.com/hashicorp/serf v0.8.2/go.mod h1:6hOLApaqBFA1NXqRQAsxw9QxuDEvNxSQRwA/JwenrHc=
 github.com/hashicorp/yamux v0.1.2 h1:XtB8kyFOyHXYVFnwT5C3+Bdo8gArse7j2AQ0DA0Uey8=
 github.com/hashicorp/yamux v0.1.2/go.mod h1:C+zze2n6e/7wshOZep2A70/aQU6QBRWJO/G6FT1wIns=
-github.com/heptaliane/katarive-go-sdk v0.0.13 h1:MGh8ghmGKyd+1sOnHdrRaENwSBed8VDT8Ocs7o6GrUY=
-github.com/heptaliane/katarive-go-sdk v0.0.13/go.mod h1:wCwqFN/cJp4TQBkkd1N66RpO/M9B6xnVYZUCLEWOl0o=
+github.com/heptaliane/katarive-go-sdk v0.0.15 h1:KLiEIQTy4eiw/pyYJR7u3WdfJ8b/Tjp+ZmbXTsVxQLo=
+github.com/heptaliane/katarive-go-sdk v0.0.15/go.mod h1:wCwqFN/cJp4TQBkkd1N66RpO/M9B6xnVYZUCLEWOl0o=
 github.com/hpcloud/tail v1.0.0/go.mod h1:ab1qPbhIpdTxEkNHXyeSf5vhxWSCs/tWer42PpOxQnU=
 github.com/hudl/fargo v1.3.0/go.mod h1:y3CKSmjA+wD2gak7sUSXTAoopbhU08POFhmITJgmKTg=
 github.com/improbable-eng/grpc-web v0.15.0 h1:BN+7z6uNXZ1tQGcNAuaU1YjsLTApzkjt2tzCixLaUPQ=

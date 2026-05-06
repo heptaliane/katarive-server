@@ -19,6 +19,7 @@ import (
 type NarratorManager interface {
 	Do(ctx context.Context, basePath string, text string, opts ...NarrateOption) (string, error)
 	GetName() string
+	Speakers() []*pb.SpeakerInfo
 	SupportedOptions() []*pb.NarratorOption
 }
 
@@ -26,6 +27,7 @@ type NarratorManager interface {
 type NarratorRegistry interface {
 	Use(name string)
 	Narrators() []string
+	Speakers() []*Speaker
 	Do(ctx context.Context, url string, text string, opts ...NarrateOption) (string, error)
 }
 
@@ -34,9 +36,10 @@ type NarratorRegistry interface {
 // -----------------
 
 type narrateOptions struct {
-	opts     map[string]string
-	language pb.Language
-	encoding pb.AudioEncoding
+	opts      map[string]string
+	language  pb.Language
+	encoding  pb.AudioEncoding
+	speakerId int32
 }
 type NarrateOption func(*narrateOptions)
 
@@ -55,6 +58,17 @@ func WithNarrateEncoding(encoding pb.AudioEncoding) NarrateOption {
 		opt.encoding = encoding
 	}
 }
+func WithSpeakerId(speakerId int32) NarrateOption {
+	return func(opt *narrateOptions) {
+		opt.speakerId = speakerId
+	}
+}
+
+type Speaker struct {
+	Id       int32
+	Narrator string
+	Name     string
+}
 
 // ============================
 // NarratorManager Implementation
@@ -69,6 +83,7 @@ type SemaphoreNarratorManager struct {
 	name      string
 	version   string
 	encodings []pb.AudioEncoding
+	speakers  []*pb.SpeakerInfo
 	options   []*pb.NarratorOption
 
 	mu *sync.RWMutex
@@ -96,11 +111,12 @@ func (n *SemaphoreNarratorManager) Do(
 		return path, nil
 	}
 	req := &pb.NarrateRequest{
-		Path:     path,
-		Text:     text,
-		Language: options.language,
-		Encoding: options.encoding,
-		Options:  options.opts,
+		Path:      path,
+		Text:      text,
+		Language:  options.language,
+		Encoding:  options.encoding,
+		SpeakerId: options.speakerId,
+		Options:   options.opts,
 	}
 
 	n.mu.Lock()
@@ -119,6 +135,9 @@ func (n *SemaphoreNarratorManager) Do(
 }
 func (n *SemaphoreNarratorManager) GetName() string {
 	return fmt.Sprintf("%s:%s", n.name, n.version)
+}
+func (n *SemaphoreNarratorManager) Speakers() []*pb.SpeakerInfo {
+	return n.speakers
 }
 func (n *SemaphoreNarratorManager) SupportedOptions() []*pb.NarratorOption {
 	return n.options
@@ -145,6 +164,7 @@ func NewSemaphoreNarratorManager(
 		narrator:  narrator,
 		name:      res.GetName(),
 		version:   res.GetVersion(),
+		speakers:  res.GetSpeakers(),
 		options:   res.GetOptions(),
 		encodings: res.GetSupportedEncoding(),
 		mu:        new(sync.RWMutex),
@@ -175,6 +195,19 @@ func (n *FileNarratorRegistry) Narrators() []string {
 		keys = append(keys, name)
 	}
 	return keys
+}
+func (n *FileNarratorRegistry) Speakers() []*Speaker {
+	var speakers []*Speaker
+	for k, v := range n.narrators {
+		for _, speaker := range v.Speakers() {
+			speakers = append(speakers, &Speaker{
+				Narrator: k,
+				Id:       speaker.GetId(),
+				Name:     speaker.GetName(),
+			})
+		}
+	}
+	return speakers
 }
 func (n *FileNarratorRegistry) Do(
 	ctx context.Context,

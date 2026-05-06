@@ -8,7 +8,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/hashicorp/go-hclog v1.6.3
 	github.com/hashicorp/go-plugin v1.7.0
-	github.com/heptaliane/katarive-go-sdk v0.0.13
+	github.com/heptaliane/katarive-go-sdk v0.0.15
 	github.com/improbable-eng/grpc-web v0.15.0
 	github.com/rs/cors v1.11.1
 	go.uber.org/mock v0.6.0

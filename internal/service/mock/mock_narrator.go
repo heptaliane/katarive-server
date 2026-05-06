@@ -76,6 +76,20 @@ func (mr *MockNarratorManagerMockRecorder) GetName() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetName", reflect.TypeOf((*MockNarratorManager)(nil).GetName))
 }
 
+// Speakers mocks base method.
+func (m *MockNarratorManager) Speakers() []*pluginv1.SpeakerInfo {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Speakers")
+	ret0, _ := ret[0].([]*pluginv1.SpeakerInfo)
+	return ret0
+}
+
+// Speakers indicates an expected call of Speakers.
+func (mr *MockNarratorManagerMockRecorder) Speakers() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Speakers", reflect.TypeOf((*MockNarratorManager)(nil).Speakers))
+}
+
 // SupportedOptions mocks base method.
 func (m *MockNarratorManager) SupportedOptions() []*pluginv1.NarratorOption {
 	m.ctrl.T.Helper()
@@ -146,6 +160,20 @@ func (m *MockNarratorRegistry) Narrators() []string {
 func (mr *MockNarratorRegistryMockRecorder) Narrators() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Narrators", reflect.TypeOf((*MockNarratorRegistry)(nil).Narrators))
+}
+
+// Speakers mocks base method.
+func (m *MockNarratorRegistry) Speakers() []*service.Speaker {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Speakers")
+	ret0, _ := ret[0].([]*service.Speaker)
+	return ret0
+}
+
+// Speakers indicates an expected call of Speakers.
+func (mr *MockNarratorRegistryMockRecorder) Speakers() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Speakers", reflect.TypeOf((*MockNarratorRegistry)(nil).Speakers))
 }
 
 // Use mocks base method.

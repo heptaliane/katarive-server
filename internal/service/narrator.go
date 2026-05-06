@@ -242,18 +242,13 @@ func NewFileNarratorRegistry(
 	narrators []NarratorManager,
 ) *FileNarratorRegistry {
 	var nms = make(map[string]NarratorManager)
-	var cursor NarratorManager
 	for _, narrator := range narrators {
 		nms[narrator.GetName()] = narrator
-		if cursor == nil {
-			cursor = narrator
-		}
 	}
 
 	return &FileNarratorRegistry{
 		basedir:   basedir,
 		narrators: nms,
-		cursor:    cursor,
 	}
 }
 func getAudioExtension(encoding pb.AudioEncoding) string {

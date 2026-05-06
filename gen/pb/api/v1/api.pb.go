@@ -79,6 +79,8 @@ func (GetJobStatusResponse_Status) EnumDescriptor() ([]byte, []int) {
 type CreateNarrationRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Url           string                 `protobuf:"bytes,1,opt,name=url,proto3" json:"url,omitempty"`
+	Narrator      string                 `protobuf:"bytes,2,opt,name=narrator,proto3" json:"narrator,omitempty"`
+	SpeakerId     int32                  `protobuf:"varint,3,opt,name=speaker_id,json=speakerId,proto3" json:"speaker_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -118,6 +120,20 @@ func (x *CreateNarrationRequest) GetUrl() string {
 		return x.Url
 	}
 	return ""
+}
+
+func (x *CreateNarrationRequest) GetNarrator() string {
+	if x != nil {
+		return x.Narrator
+	}
+	return ""
+}
+
+func (x *CreateNarrationRequest) GetSpeakerId() int32 {
+	if x != nil {
+		return x.SpeakerId
+	}
+	return 0
 }
 
 type CreateNarrationResponse struct {
@@ -260,13 +276,156 @@ func (x *GetJobStatusResponse) GetPath() string {
 	return ""
 }
 
+type GetSpeakersRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetSpeakersRequest) Reset() {
+	*x = GetSpeakersRequest{}
+	mi := &file_api_v1_api_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetSpeakersRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetSpeakersRequest) ProtoMessage() {}
+
+func (x *GetSpeakersRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_v1_api_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetSpeakersRequest.ProtoReflect.Descriptor instead.
+func (*GetSpeakersRequest) Descriptor() ([]byte, []int) {
+	return file_api_v1_api_proto_rawDescGZIP(), []int{4}
+}
+
+type GetSpeakersResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Speakers      []*Speaker             `protobuf:"bytes,1,rep,name=speakers,proto3" json:"speakers,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetSpeakersResponse) Reset() {
+	*x = GetSpeakersResponse{}
+	mi := &file_api_v1_api_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetSpeakersResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetSpeakersResponse) ProtoMessage() {}
+
+func (x *GetSpeakersResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_api_v1_api_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetSpeakersResponse.ProtoReflect.Descriptor instead.
+func (*GetSpeakersResponse) Descriptor() ([]byte, []int) {
+	return file_api_v1_api_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *GetSpeakersResponse) GetSpeakers() []*Speaker {
+	if x != nil {
+		return x.Speakers
+	}
+	return nil
+}
+
+type Speaker struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Narrator      string                 `protobuf:"bytes,1,opt,name=narrator,proto3" json:"narrator,omitempty"`
+	SpeakerId     int32                  `protobuf:"varint,2,opt,name=speaker_id,json=speakerId,proto3" json:"speaker_id,omitempty"`
+	SpeakerLabel  string                 `protobuf:"bytes,3,opt,name=speaker_label,json=speakerLabel,proto3" json:"speaker_label,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Speaker) Reset() {
+	*x = Speaker{}
+	mi := &file_api_v1_api_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Speaker) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Speaker) ProtoMessage() {}
+
+func (x *Speaker) ProtoReflect() protoreflect.Message {
+	mi := &file_api_v1_api_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Speaker.ProtoReflect.Descriptor instead.
+func (*Speaker) Descriptor() ([]byte, []int) {
+	return file_api_v1_api_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *Speaker) GetNarrator() string {
+	if x != nil {
+		return x.Narrator
+	}
+	return ""
+}
+
+func (x *Speaker) GetSpeakerId() int32 {
+	if x != nil {
+		return x.SpeakerId
+	}
+	return 0
+}
+
+func (x *Speaker) GetSpeakerLabel() string {
+	if x != nil {
+		return x.SpeakerLabel
+	}
+	return ""
+}
+
 var File_api_v1_api_proto protoreflect.FileDescriptor
 
 const file_api_v1_api_proto_rawDesc = "" +
 	"\n" +
-	"\x10api/v1/api.proto\x12\x06api.v1\"*\n" +
+	"\x10api/v1/api.proto\x12\x06api.v1\"e\n" +
 	"\x16CreateNarrationRequest\x12\x10\n" +
-	"\x03url\x18\x01 \x01(\tR\x03url\")\n" +
+	"\x03url\x18\x01 \x01(\tR\x03url\x12\x1a\n" +
+	"\bnarrator\x18\x02 \x01(\tR\bnarrator\x12\x1d\n" +
+	"\n" +
+	"speaker_id\x18\x03 \x01(\x05R\tspeakerId\")\n" +
 	"\x17CreateNarrationResponse\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\"%\n" +
 	"\x13GetJobStatusRequest\x12\x0e\n" +
@@ -280,10 +439,19 @@ const file_api_v1_api_proto_rawDesc = "" +
 	"\x10STATUS_COMPLETED\x10\x02\x12\x11\n" +
 	"\rSTATUS_FAILED\x10\x03\x12\x14\n" +
 	"\x10STATUS_NOT_FOUND\x10\x04B\a\n" +
-	"\x05_path2\xb0\x01\n" +
+	"\x05_path\"\x14\n" +
+	"\x12GetSpeakersRequest\"B\n" +
+	"\x13GetSpeakersResponse\x12+\n" +
+	"\bspeakers\x18\x01 \x03(\v2\x0f.api.v1.SpeakerR\bspeakers\"i\n" +
+	"\aSpeaker\x12\x1a\n" +
+	"\bnarrator\x18\x01 \x01(\tR\bnarrator\x12\x1d\n" +
+	"\n" +
+	"speaker_id\x18\x02 \x01(\x05R\tspeakerId\x12#\n" +
+	"\rspeaker_label\x18\x03 \x01(\tR\fspeakerLabel2\xf8\x01\n" +
 	"\x0fKatariveService\x12R\n" +
 	"\x0fCreateNarration\x12\x1e.api.v1.CreateNarrationRequest\x1a\x1f.api.v1.CreateNarrationResponse\x12I\n" +
-	"\fGetJobStatus\x12\x1b.api.v1.GetJobStatusRequest\x1a\x1c.api.v1.GetJobStatusResponseB\x8a\x01\n" +
+	"\fGetJobStatus\x12\x1b.api.v1.GetJobStatusRequest\x1a\x1c.api.v1.GetJobStatusResponse\x12F\n" +
+	"\vGetSpeakers\x12\x1a.api.v1.GetSpeakersRequest\x1a\x1b.api.v1.GetSpeakersResponseB\x8a\x01\n" +
 	"\n" +
 	"com.api.v1B\bApiProtoP\x01Z9github.com/heptaliane/katarive-server/gen/pb/api/v1;apiv1\xa2\x02\x03AXX\xaa\x02\x06Api.V1\xca\x02\x06Api\\V1\xe2\x02\x12Api\\V1\\GPBMetadata\xea\x02\aApi::V1b\x06proto3"
 
@@ -300,25 +468,31 @@ func file_api_v1_api_proto_rawDescGZIP() []byte {
 }
 
 var file_api_v1_api_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_api_v1_api_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
+var file_api_v1_api_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
 var file_api_v1_api_proto_goTypes = []any{
 	(GetJobStatusResponse_Status)(0), // 0: api.v1.GetJobStatusResponse.Status
 	(*CreateNarrationRequest)(nil),   // 1: api.v1.CreateNarrationRequest
 	(*CreateNarrationResponse)(nil),  // 2: api.v1.CreateNarrationResponse
 	(*GetJobStatusRequest)(nil),      // 3: api.v1.GetJobStatusRequest
 	(*GetJobStatusResponse)(nil),     // 4: api.v1.GetJobStatusResponse
+	(*GetSpeakersRequest)(nil),       // 5: api.v1.GetSpeakersRequest
+	(*GetSpeakersResponse)(nil),      // 6: api.v1.GetSpeakersResponse
+	(*Speaker)(nil),                  // 7: api.v1.Speaker
 }
 var file_api_v1_api_proto_depIdxs = []int32{
 	0, // 0: api.v1.GetJobStatusResponse.status:type_name -> api.v1.GetJobStatusResponse.Status
-	1, // 1: api.v1.KatariveService.CreateNarration:input_type -> api.v1.CreateNarrationRequest
-	3, // 2: api.v1.KatariveService.GetJobStatus:input_type -> api.v1.GetJobStatusRequest
-	2, // 3: api.v1.KatariveService.CreateNarration:output_type -> api.v1.CreateNarrationResponse
-	4, // 4: api.v1.KatariveService.GetJobStatus:output_type -> api.v1.GetJobStatusResponse
-	3, // [3:5] is the sub-list for method output_type
-	1, // [1:3] is the sub-list for method input_type
-	1, // [1:1] is the sub-list for extension type_name
-	1, // [1:1] is the sub-list for extension extendee
-	0, // [0:1] is the sub-list for field type_name
+	7, // 1: api.v1.GetSpeakersResponse.speakers:type_name -> api.v1.Speaker
+	1, // 2: api.v1.KatariveService.CreateNarration:input_type -> api.v1.CreateNarrationRequest
+	3, // 3: api.v1.KatariveService.GetJobStatus:input_type -> api.v1.GetJobStatusRequest
+	5, // 4: api.v1.KatariveService.GetSpeakers:input_type -> api.v1.GetSpeakersRequest
+	2, // 5: api.v1.KatariveService.CreateNarration:output_type -> api.v1.CreateNarrationResponse
+	4, // 6: api.v1.KatariveService.GetJobStatus:output_type -> api.v1.GetJobStatusResponse
+	6, // 7: api.v1.KatariveService.GetSpeakers:output_type -> api.v1.GetSpeakersResponse
+	5, // [5:8] is the sub-list for method output_type
+	2, // [2:5] is the sub-list for method input_type
+	2, // [2:2] is the sub-list for extension type_name
+	2, // [2:2] is the sub-list for extension extendee
+	0, // [0:2] is the sub-list for field type_name
 }
 
 func init() { file_api_v1_api_proto_init() }
@@ -333,7 +507,7 @@ func file_api_v1_api_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_v1_api_proto_rawDesc), len(file_api_v1_api_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   4,
+			NumMessages:   7,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

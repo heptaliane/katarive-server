@@ -39,12 +39,16 @@ const (
 	// KatariveServiceGetJobStatusProcedure is the fully-qualified name of the KatariveService's
 	// GetJobStatus RPC.
 	KatariveServiceGetJobStatusProcedure = "/api.v1.KatariveService/GetJobStatus"
+	// KatariveServiceGetSpeakersProcedure is the fully-qualified name of the KatariveService's
+	// GetSpeakers RPC.
+	KatariveServiceGetSpeakersProcedure = "/api.v1.KatariveService/GetSpeakers"
 )
 
 // KatariveServiceClient is a client for the api.v1.KatariveService service.
 type KatariveServiceClient interface {
 	CreateNarration(context.Context, *connect.Request[v1.CreateNarrationRequest]) (*connect.Response[v1.CreateNarrationResponse], error)
 	GetJobStatus(context.Context, *connect.Request[v1.GetJobStatusRequest]) (*connect.Response[v1.GetJobStatusResponse], error)
+	GetSpeakers(context.Context, *connect.Request[v1.GetSpeakersRequest]) (*connect.Response[v1.GetSpeakersResponse], error)
 }
 
 // NewKatariveServiceClient constructs a client for the api.v1.KatariveService service. By default,
@@ -70,6 +74,12 @@ func NewKatariveServiceClient(httpClient connect.HTTPClient, baseURL string, opt
 			connect.WithSchema(katariveServiceMethods.ByName("GetJobStatus")),
 			connect.WithClientOptions(opts...),
 		),
+		getSpeakers: connect.NewClient[v1.GetSpeakersRequest, v1.GetSpeakersResponse](
+			httpClient,
+			baseURL+KatariveServiceGetSpeakersProcedure,
+			connect.WithSchema(katariveServiceMethods.ByName("GetSpeakers")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -77,6 +87,7 @@ func NewKatariveServiceClient(httpClient connect.HTTPClient, baseURL string, opt
 type katariveServiceClient struct {
 	createNarration *connect.Client[v1.CreateNarrationRequest, v1.CreateNarrationResponse]
 	getJobStatus    *connect.Client[v1.GetJobStatusRequest, v1.GetJobStatusResponse]
+	getSpeakers     *connect.Client[v1.GetSpeakersRequest, v1.GetSpeakersResponse]
 }
 
 // CreateNarration calls api.v1.KatariveService.CreateNarration.
@@ -89,10 +100,16 @@ func (c *katariveServiceClient) GetJobStatus(ctx context.Context, req *connect.R
 	return c.getJobStatus.CallUnary(ctx, req)
 }
 
+// GetSpeakers calls api.v1.KatariveService.GetSpeakers.
+func (c *katariveServiceClient) GetSpeakers(ctx context.Context, req *connect.Request[v1.GetSpeakersRequest]) (*connect.Response[v1.GetSpeakersResponse], error) {
+	return c.getSpeakers.CallUnary(ctx, req)
+}
+
 // KatariveServiceHandler is an implementation of the api.v1.KatariveService service.
 type KatariveServiceHandler interface {
 	CreateNarration(context.Context, *connect.Request[v1.CreateNarrationRequest]) (*connect.Response[v1.CreateNarrationResponse], error)
 	GetJobStatus(context.Context, *connect.Request[v1.GetJobStatusRequest]) (*connect.Response[v1.GetJobStatusResponse], error)
+	GetSpeakers(context.Context, *connect.Request[v1.GetSpeakersRequest]) (*connect.Response[v1.GetSpeakersResponse], error)
 }
 
 // NewKatariveServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -114,12 +131,20 @@ func NewKatariveServiceHandler(svc KatariveServiceHandler, opts ...connect.Handl
 		connect.WithSchema(katariveServiceMethods.ByName("GetJobStatus")),
 		connect.WithHandlerOptions(opts...),
 	)
+	katariveServiceGetSpeakersHandler := connect.NewUnaryHandler(
+		KatariveServiceGetSpeakersProcedure,
+		svc.GetSpeakers,
+		connect.WithSchema(katariveServiceMethods.ByName("GetSpeakers")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/api.v1.KatariveService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case KatariveServiceCreateNarrationProcedure:
 			katariveServiceCreateNarrationHandler.ServeHTTP(w, r)
 		case KatariveServiceGetJobStatusProcedure:
 			katariveServiceGetJobStatusHandler.ServeHTTP(w, r)
+		case KatariveServiceGetSpeakersProcedure:
+			katariveServiceGetSpeakersHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -135,4 +160,8 @@ func (UnimplementedKatariveServiceHandler) CreateNarration(context.Context, *con
 
 func (UnimplementedKatariveServiceHandler) GetJobStatus(context.Context, *connect.Request[v1.GetJobStatusRequest]) (*connect.Response[v1.GetJobStatusResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("api.v1.KatariveService.GetJobStatus is not implemented"))
+}
+
+func (UnimplementedKatariveServiceHandler) GetSpeakers(context.Context, *connect.Request[v1.GetSpeakersRequest]) (*connect.Response[v1.GetSpeakersResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("api.v1.KatariveService.GetSpeakers is not implemented"))
 }

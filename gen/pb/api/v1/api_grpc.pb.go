@@ -21,6 +21,7 @@ const _ = grpc.SupportPackageIsVersion9
 const (
 	KatariveService_CreateNarration_FullMethodName = "/api.v1.KatariveService/CreateNarration"
 	KatariveService_GetJobStatus_FullMethodName    = "/api.v1.KatariveService/GetJobStatus"
+	KatariveService_GetSpeakers_FullMethodName     = "/api.v1.KatariveService/GetSpeakers"
 )
 
 // KatariveServiceClient is the client API for KatariveService service.
@@ -29,6 +30,7 @@ const (
 type KatariveServiceClient interface {
 	CreateNarration(ctx context.Context, in *CreateNarrationRequest, opts ...grpc.CallOption) (*CreateNarrationResponse, error)
 	GetJobStatus(ctx context.Context, in *GetJobStatusRequest, opts ...grpc.CallOption) (*GetJobStatusResponse, error)
+	GetSpeakers(ctx context.Context, in *GetSpeakersRequest, opts ...grpc.CallOption) (*GetSpeakersResponse, error)
 }
 
 type katariveServiceClient struct {
@@ -59,12 +61,23 @@ func (c *katariveServiceClient) GetJobStatus(ctx context.Context, in *GetJobStat
 	return out, nil
 }
 
+func (c *katariveServiceClient) GetSpeakers(ctx context.Context, in *GetSpeakersRequest, opts ...grpc.CallOption) (*GetSpeakersResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetSpeakersResponse)
+	err := c.cc.Invoke(ctx, KatariveService_GetSpeakers_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // KatariveServiceServer is the server API for KatariveService service.
 // All implementations must embed UnimplementedKatariveServiceServer
 // for forward compatibility.
 type KatariveServiceServer interface {
 	CreateNarration(context.Context, *CreateNarrationRequest) (*CreateNarrationResponse, error)
 	GetJobStatus(context.Context, *GetJobStatusRequest) (*GetJobStatusResponse, error)
+	GetSpeakers(context.Context, *GetSpeakersRequest) (*GetSpeakersResponse, error)
 	mustEmbedUnimplementedKatariveServiceServer()
 }
 
@@ -80,6 +93,9 @@ func (UnimplementedKatariveServiceServer) CreateNarration(context.Context, *Crea
 }
 func (UnimplementedKatariveServiceServer) GetJobStatus(context.Context, *GetJobStatusRequest) (*GetJobStatusResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetJobStatus not implemented")
+}
+func (UnimplementedKatariveServiceServer) GetSpeakers(context.Context, *GetSpeakersRequest) (*GetSpeakersResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetSpeakers not implemented")
 }
 func (UnimplementedKatariveServiceServer) mustEmbedUnimplementedKatariveServiceServer() {}
 func (UnimplementedKatariveServiceServer) testEmbeddedByValue()                         {}
@@ -138,6 +154,24 @@ func _KatariveService_GetJobStatus_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
+func _KatariveService_GetSpeakers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetSpeakersRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KatariveServiceServer).GetSpeakers(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: KatariveService_GetSpeakers_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KatariveServiceServer).GetSpeakers(ctx, req.(*GetSpeakersRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // KatariveService_ServiceDesc is the grpc.ServiceDesc for KatariveService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -152,6 +186,10 @@ var KatariveService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetJobStatus",
 			Handler:    _KatariveService_GetJobStatus_Handler,
+		},
+		{
+			MethodName: "GetSpeakers",
+			Handler:    _KatariveService_GetSpeakers_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

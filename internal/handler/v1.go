@@ -31,7 +31,7 @@ func (h *KatariveHandlerV1) CreateNarration(
 	ctx context.Context,
 	req *pb.CreateNarrationRequest,
 ) (*pb.CreateNarrationResponse, error) {
-	jobId, err := h.js.Enqueue(ctx, req.GetUrl())
+	jobId, err := h.js.Enqueue(ctx, req.GetUrl(), req.GetNarrator(), req.GetSpeakerId())
 	if err != nil {
 		return nil, err
 	}
@@ -73,6 +73,24 @@ func (h *KatariveHandlerV1) GetJobStatus(
 	return &pb.GetJobStatusResponse{
 		Status: pb.GetJobStatusResponse_STATUS_COMPLETED,
 		Path:   &result,
+	}, nil
+}
+
+func (h *KatariveHandlerV1) GetSpeakers(
+	ctx context.Context,
+	req *pb.GetSpeakersRequest,
+) (*pb.GetSpeakersResponse, error) {
+	var speakers []*pb.Speaker
+	for _, s := range h.js.Speakers() {
+		speakers = append(speakers, &pb.Speaker{
+			Narrator:     s.Narrator,
+			SpeakerId:    s.Id,
+			SpeakerLabel: s.Name,
+		})
+	}
+
+	return &pb.GetSpeakersResponse{
+		Speakers: speakers,
 	}, nil
 }
 

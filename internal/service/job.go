@@ -16,8 +16,9 @@ import (
 
 //go:generate mockgen -source=$GOFILE -destination=mock/mock_$GOFILE -package=mock
 type NarrateJobService interface {
-	Enqueue(ctx context.Context, url string) (string, error)
+	Enqueue(ctx context.Context, url string, narrator string, speakerId int32) (string, error)
 	GetJob(jobId string) (NarrateJob, error)
+	Speakers() []*Speaker
 }
 
 //go:generate mockgen -source=$GOFILE -destination=mock/mock_$GOFILE -package=mock
@@ -41,7 +42,12 @@ type NarrateJobManager struct {
 	logger   *slog.Logger
 }
 
-func (m *NarrateJobManager) Enqueue(ctx context.Context, url string) (string, error) {
+func (m *NarrateJobManager) Enqueue(
+	ctx context.Context,
+	url string,
+	narrator string,
+	speakerId int32,
+) (string, error) {
 	jobId, err := uuid.NewV7()
 	if err != nil {
 		return "", err
@@ -63,6 +69,7 @@ func (m *NarrateJobManager) Enqueue(ctx context.Context, url string) (string, er
 				return nil, err
 			}
 
+			m.narrator.Use(narrator)
 			return m.narrator.Do(
 				ctx,
 				url,
@@ -70,6 +77,7 @@ func (m *NarrateJobManager) Enqueue(ctx context.Context, url string) (string, er
 				WithNarrateLanguage(src.GetLanguage()),
 				// TODO: Allow encoding selection
 				WithNarrateEncoding(pb.AudioEncoding_AUDIO_ENCODING_MP3),
+				WithNarrateSpeakerId(speakerId),
 			)
 		})
 
@@ -102,7 +110,6 @@ func (m *NarrateJobManager) Enqueue(ctx context.Context, url string) (string, er
 
 	return job.id, nil
 }
-
 func (m *NarrateJobManager) GetJob(jobId string) (NarrateJob, error) {
 	v, ok := m.jobs.Load(jobId)
 	if !ok {
@@ -119,6 +126,9 @@ func (m *NarrateJobManager) GetJob(jobId string) (NarrateJob, error) {
 	}
 
 	return result, nil
+}
+func (m *NarrateJobManager) Speakers() []*Speaker {
+	return m.narrator.Speakers()
 }
 
 // Ensure NarrateJobManager implements NarrateJobService

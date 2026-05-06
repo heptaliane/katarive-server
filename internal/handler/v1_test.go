@@ -26,8 +26,10 @@ func TestKatariveHandlerV1CreateNarration(t *testing.T) {
 	invalidUrl := "http://invalid.com"
 	validJobId := "jobId"
 	invalidError := errors.New("invalid job")
-	js.EXPECT().Enqueue(gomock.Any(), validUrl).Return(validJobId, nil).AnyTimes()
-	js.EXPECT().Enqueue(gomock.Any(), invalidUrl).Return("", invalidError).AnyTimes()
+	js.EXPECT().Enqueue(gomock.Any(), validUrl, gomock.Any(), gomock.Any()).
+		Return(validJobId, nil).AnyTimes()
+	js.EXPECT().Enqueue(gomock.Any(), invalidUrl, gomock.Any(), gomock.Any()).
+		Return("", invalidError).AnyTimes()
 
 	cases := map[string]struct {
 		url              string

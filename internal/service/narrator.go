@@ -58,7 +58,7 @@ func WithNarrateEncoding(encoding pb.AudioEncoding) NarrateOption {
 		opt.encoding = encoding
 	}
 }
-func WithSpeakerId(speakerId int32) NarrateOption {
+func WithNarrateSpeakerId(speakerId int32) NarrateOption {
 	return func(opt *narrateOptions) {
 		opt.speakerId = speakerId
 	}

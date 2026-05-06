@@ -42,18 +42,18 @@ func (m *MockNarrateJobService) EXPECT() *MockNarrateJobServiceMockRecorder {
 }
 
 // Enqueue mocks base method.
-func (m *MockNarrateJobService) Enqueue(ctx context.Context, url string) (string, error) {
+func (m *MockNarrateJobService) Enqueue(ctx context.Context, url, narrator string, speakerId int32) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Enqueue", ctx, url)
+	ret := m.ctrl.Call(m, "Enqueue", ctx, url, narrator, speakerId)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Enqueue indicates an expected call of Enqueue.
-func (mr *MockNarrateJobServiceMockRecorder) Enqueue(ctx, url any) *gomock.Call {
+func (mr *MockNarrateJobServiceMockRecorder) Enqueue(ctx, url, narrator, speakerId any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Enqueue", reflect.TypeOf((*MockNarrateJobService)(nil).Enqueue), ctx, url)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Enqueue", reflect.TypeOf((*MockNarrateJobService)(nil).Enqueue), ctx, url, narrator, speakerId)
 }
 
 // GetJob mocks base method.
@@ -69,6 +69,20 @@ func (m *MockNarrateJobService) GetJob(jobId string) (service.NarrateJob, error)
 func (mr *MockNarrateJobServiceMockRecorder) GetJob(jobId any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetJob", reflect.TypeOf((*MockNarrateJobService)(nil).GetJob), jobId)
+}
+
+// Speakers mocks base method.
+func (m *MockNarrateJobService) Speakers() []*service.Speaker {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Speakers")
+	ret0, _ := ret[0].([]*service.Speaker)
+	return ret0
+}
+
+// Speakers indicates an expected call of Speakers.
+func (mr *MockNarrateJobServiceMockRecorder) Speakers() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Speakers", reflect.TypeOf((*MockNarrateJobService)(nil).Speakers))
 }
 
 // MockNarrateJob is a mock of NarrateJob interface.

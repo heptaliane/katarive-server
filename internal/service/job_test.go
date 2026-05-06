@@ -38,6 +38,7 @@ func TestNarrateJobManager(t *testing.T) {
 	sr.EXPECT().Get(gomock.Any(), validUrl).Return(source, nil).AnyTimes()
 	sr.EXPECT().Get(gomock.Any(), narrateErrorUrl).Return(source, nil).AnyTimes()
 	sr.EXPECT().Get(gomock.Any(), invalidUrl).Return(nil, getSourceError).AnyTimes()
+	nr.EXPECT().Use(gomock.Any()).Return().AnyTimes()
 	nr.EXPECT().Do(
 		gomock.Any(),
 		validUrl,
@@ -75,7 +76,7 @@ func TestNarrateJobManager(t *testing.T) {
 			t.Parallel()
 
 			ctx := context.Background()
-			jobId, err := jm.Enqueue(ctx, tc.url)
+			jobId, err := jm.Enqueue(ctx, tc.url, "dummy-narrator", 1)
 			if err != nil {
 				t.Errorf("Failed to enqueue job: %v", err)
 				return

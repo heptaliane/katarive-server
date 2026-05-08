@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"path/filepath"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -20,6 +21,7 @@ import (
 func TestSemaphoreNarratorManager(t *testing.T) {
 	t.Parallel()
 
+	basedir := t.TempDir()
 	validText := "valid"
 	invalidText := "invalid"
 	invalidReason := "invalid reason"
@@ -27,7 +29,7 @@ func TestSemaphoreNarratorManager(t *testing.T) {
 	validEncoding := pb.AudioEncoding_AUDIO_ENCODING_MP3
 	invalidEncoding := pb.AudioEncoding_AUDIO_ENCODING_M4A
 	basepath := "dummy"
-	validPath := "dummy.mp3"
+	validPath := filepath.Join(basedir, "narrator:v1/000/dummy.mp3")
 	options := []*pb.NarratorOption{
 		{
 			Id:          "id-1",
@@ -114,7 +116,7 @@ func TestSemaphoreNarratorManager(t *testing.T) {
 			t.Parallel()
 
 			ctx := context.Background()
-			nm, err := service.NewSemaphoreNarratorManager(ctx, narrator)
+			nm, err := service.NewSemaphoreNarratorManager(ctx, basedir, narrator)
 			if err != nil {
 				t.Errorf("Failed to create NarratorManager: %v", err)
 				return
@@ -164,8 +166,6 @@ func TestSemaphoreNarratorManager(t *testing.T) {
 func TestNarratorRegistry(t *testing.T) {
 	t.Parallel()
 
-	basedir := t.TempDir()
-
 	nm := mock.NewMockNarratorManager(gomock.NewController(t))
 	nms := []service.NarratorManager{nm}
 
@@ -189,7 +189,7 @@ func TestNarratorRegistry(t *testing.T) {
 			return path, nil
 		}).AnyTimes()
 
-	nr := service.NewFileNarratorRegistry(basedir, nms)
+	nr := service.NewFileNarratorRegistry(nms)
 
 	cases := []struct {
 		label         string

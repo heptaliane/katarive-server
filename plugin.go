@@ -55,14 +55,14 @@ func NewNarrator(
 
 	var narrators []service.NarratorManager
 	for _, rawNarrator := range plugins.GetNarrators() {
-		narrator, err := service.NewSemaphoreNarratorManager(ctx, rawNarrator)
+		narrator, err := service.NewSemaphoreNarratorManager(ctx, destDir, rawNarrator)
 		if err != nil {
 			return nil, err
 		}
 		narrators = append(narrators, narrator)
 	}
 
-	return service.NewFileNarratorRegistry(destDir, narrators), nil
+	return service.NewFileNarratorRegistry(narrators), nil
 }
 func NewSource(
 	destDir string,

@@ -17,7 +17,7 @@ import (
 
 //go:generate mockgen -source=$GOFILE -destination=mock/mock_$GOFILE -package=mock
 type NarratorManager interface {
-	Do(ctx context.Context, basePath string, text string, opts ...NarrateOption) (string, error)
+	Do(ctx context.Context, filename string, text string, opts ...NarrateOption) (string, error)
 	GetName() string
 	Speakers() []*pb.SpeakerInfo
 	SupportedOptions() []*pb.NarratorOption
@@ -79,6 +79,7 @@ type Speaker struct {
 // ----------------------
 type SemaphoreNarratorManager struct {
 	narrator pb.NarratorServiceClient
+	basedir  string
 
 	name      string
 	version   string
@@ -91,7 +92,7 @@ type SemaphoreNarratorManager struct {
 
 func (n *SemaphoreNarratorManager) Do(
 	ctx context.Context,
-	basePath string,
+	filename string,
 	text string,
 	opts ...NarrateOption,
 ) (string, error) {
@@ -106,10 +107,17 @@ func (n *SemaphoreNarratorManager) Do(
 			Encoding: options.encoding.String(),
 		}
 	}
-	path := fmt.Sprintf("%s.%s", basePath, getAudioExtension(options.encoding))
+
+	basedir := filepath.Join(n.basedir, n.GetName(), fmt.Sprintf("%03d", options.speakerId))
+	os.MkdirAll(basedir, 0755)
+	path := filepath.Join(
+		basedir,
+		fmt.Sprintf("%s.%s", filename, getAudioExtension(options.encoding)),
+	)
 	if Exists(path) {
 		return path, nil
 	}
+
 	req := &pb.NarrateRequest{
 		Path:      path,
 		Text:      text,
@@ -152,6 +160,7 @@ var _ NarratorManager = new(SemaphoreNarratorManager)
 
 func NewSemaphoreNarratorManager(
 	ctx context.Context,
+	basedir string,
 	narrator pb.NarratorServiceClient,
 ) (*SemaphoreNarratorManager, error) {
 	req := &pb.GetNarratorServiceMetadataRequest{}
@@ -162,6 +171,7 @@ func NewSemaphoreNarratorManager(
 
 	return &SemaphoreNarratorManager{
 		narrator:  narrator,
+		basedir:   basedir,
 		name:      res.GetName(),
 		version:   res.GetVersion(),
 		speakers:  res.GetSpeakers(),
@@ -181,7 +191,6 @@ func NewSemaphoreNarratorManager(
 // ------------------
 
 type FileNarratorRegistry struct {
-	basedir   string
 	narrators map[string]NarratorManager
 	cursor    NarratorManager
 }
@@ -219,15 +228,7 @@ func (n *FileNarratorRegistry) Do(
 		return "", UnspecifiedNarratorError
 	}
 
-	basedir := filepath.Join(n.basedir, n.cursor.GetName())
-	os.MkdirAll(basedir, 0755)
-
-	path := filepath.Join(basedir, url2filename(url))
-	if Exists(path) {
-		return path, nil
-	}
-
-	return n.cursor.Do(ctx, path, text, opts...)
+	return n.cursor.Do(ctx, url2filename(url), text, opts...)
 }
 
 // Ensure NarratorRegistry implements NarratorRegistry
@@ -238,7 +239,6 @@ var _ NarratorRegistry = new(FileNarratorRegistry)
 // -----------------
 
 func NewFileNarratorRegistry(
-	basedir string,
 	narrators []NarratorManager,
 ) *FileNarratorRegistry {
 	var nms = make(map[string]NarratorManager)
@@ -247,7 +247,6 @@ func NewFileNarratorRegistry(
 	}
 
 	return &FileNarratorRegistry{
-		basedir:   basedir,
 		narrators: nms,
 	}
 }

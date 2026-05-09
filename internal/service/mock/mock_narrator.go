@@ -43,9 +43,9 @@ func (m *MockNarratorManager) EXPECT() *MockNarratorManagerMockRecorder {
 }
 
 // Do mocks base method.
-func (m *MockNarratorManager) Do(ctx context.Context, basePath, text string, opts ...service.NarrateOption) (string, error) {
+func (m *MockNarratorManager) Do(ctx context.Context, filename, text string, opts ...service.NarrateOption) (string, error) {
 	m.ctrl.T.Helper()
-	varargs := []any{ctx, basePath, text}
+	varargs := []any{ctx, filename, text}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
@@ -56,9 +56,9 @@ func (m *MockNarratorManager) Do(ctx context.Context, basePath, text string, opt
 }
 
 // Do indicates an expected call of Do.
-func (mr *MockNarratorManagerMockRecorder) Do(ctx, basePath, text any, opts ...any) *gomock.Call {
+func (mr *MockNarratorManagerMockRecorder) Do(ctx, filename, text any, opts ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]any{ctx, basePath, text}, opts...)
+	varargs := append([]any{ctx, filename, text}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Do", reflect.TypeOf((*MockNarratorManager)(nil).Do), varargs...)
 }
 

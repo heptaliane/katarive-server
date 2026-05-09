@@ -55,19 +55,34 @@ func (mr *MockSourceManagerMockRecorder) GetName() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetName", reflect.TypeOf((*MockSourceManager)(nil).GetName))
 }
 
-// GetSource mocks base method.
-func (m *MockSourceManager) GetSource(ctx context.Context, url string) (*pluginv1.GetSourceResponse, error) {
+// GetSourceCollection mocks base method.
+func (m *MockSourceManager) GetSourceCollection(ctx context.Context, url string) (*pluginv1.GetSourceCollectionResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetSource", ctx, url)
-	ret0, _ := ret[0].(*pluginv1.GetSourceResponse)
+	ret := m.ctrl.Call(m, "GetSourceCollection", ctx, url)
+	ret0, _ := ret[0].(*pluginv1.GetSourceCollectionResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetSource indicates an expected call of GetSource.
-func (mr *MockSourceManagerMockRecorder) GetSource(ctx, url any) *gomock.Call {
+// GetSourceCollection indicates an expected call of GetSourceCollection.
+func (mr *MockSourceManagerMockRecorder) GetSourceCollection(ctx, url any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSource", reflect.TypeOf((*MockSourceManager)(nil).GetSource), ctx, url)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSourceCollection", reflect.TypeOf((*MockSourceManager)(nil).GetSourceCollection), ctx, url)
+}
+
+// GetSourceItem mocks base method.
+func (m *MockSourceManager) GetSourceItem(ctx context.Context, url string) (*pluginv1.GetSourceItemResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetSourceItem", ctx, url)
+	ret0, _ := ret[0].(*pluginv1.GetSourceItemResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetSourceItem indicates an expected call of GetSourceItem.
+func (mr *MockSourceManagerMockRecorder) GetSourceItem(ctx, url any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSourceItem", reflect.TypeOf((*MockSourceManager)(nil).GetSourceItem), ctx, url)
 }
 
 // IsSupportedURL mocks base method.
@@ -82,21 +97,6 @@ func (m *MockSourceManager) IsSupportedURL(url string) bool {
 func (mr *MockSourceManagerMockRecorder) IsSupportedURL(url any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsSupportedURL", reflect.TypeOf((*MockSourceManager)(nil).IsSupportedURL), url)
-}
-
-// ListSources mocks base method.
-func (m *MockSourceManager) ListSources(ctx context.Context, url string) (*pluginv1.ListSourcesResponse, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListSources", ctx, url)
-	ret0, _ := ret[0].(*pluginv1.ListSourcesResponse)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ListSources indicates an expected call of ListSources.
-func (mr *MockSourceManagerMockRecorder) ListSources(ctx, url any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListSources", reflect.TypeOf((*MockSourceManager)(nil).ListSources), ctx, url)
 }
 
 // MockSourceRegistry is a mock of SourceRegistry interface.
@@ -123,17 +123,32 @@ func (m *MockSourceRegistry) EXPECT() *MockSourceRegistryMockRecorder {
 	return m.recorder
 }
 
-// Get mocks base method.
-func (m *MockSourceRegistry) Get(ctx context.Context, url string) (*pluginv1.GetSourceResponse, error) {
+// SourceCollection mocks base method.
+func (m *MockSourceRegistry) SourceCollection(ctx context.Context, url string) (*pluginv1.GetSourceCollectionResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Get", ctx, url)
-	ret0, _ := ret[0].(*pluginv1.GetSourceResponse)
+	ret := m.ctrl.Call(m, "SourceCollection", ctx, url)
+	ret0, _ := ret[0].(*pluginv1.GetSourceCollectionResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// Get indicates an expected call of Get.
-func (mr *MockSourceRegistryMockRecorder) Get(ctx, url any) *gomock.Call {
+// SourceCollection indicates an expected call of SourceCollection.
+func (mr *MockSourceRegistryMockRecorder) SourceCollection(ctx, url any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockSourceRegistry)(nil).Get), ctx, url)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SourceCollection", reflect.TypeOf((*MockSourceRegistry)(nil).SourceCollection), ctx, url)
+}
+
+// SourceItem mocks base method.
+func (m *MockSourceRegistry) SourceItem(ctx context.Context, url string) (*pluginv1.GetSourceItemResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SourceItem", ctx, url)
+	ret0, _ := ret[0].(*pluginv1.GetSourceItemResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SourceItem indicates an expected call of SourceItem.
+func (mr *MockSourceRegistryMockRecorder) SourceItem(ctx, url any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SourceItem", reflect.TypeOf((*MockSourceRegistry)(nil).SourceItem), ctx, url)
 }

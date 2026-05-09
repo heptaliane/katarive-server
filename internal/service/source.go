@@ -18,15 +18,16 @@ import (
 
 //go:generate mockgen -source=$GOFILE -destination=mock/mock_$GOFILE -package=mock
 type SourceManager interface {
-	GetSource(ctx context.Context, url string) (*pb.GetSourceResponse, error)
-	ListSources(ctx context.Context, url string) (*pb.ListSourcesResponse, error)
+	GetSourceItem(ctx context.Context, url string) (*pb.GetSourceItemResponse, error)
+	GetSourceCollection(ctx context.Context, url string) (*pb.GetSourceCollectionResponse, error)
 	IsSupportedURL(url string) bool
 	GetName() string
 }
 
 //go:generate mockgen -source=$GOFILE -destination=mock/mock_$GOFILE -package=mock
 type SourceRegistry interface {
-	Get(ctx context.Context, url string) (*pb.GetSourceResponse, error)
+	SourceItem(ctx context.Context, url string) (*pb.GetSourceItemResponse, error)
+	SourceCollection(ctx context.Context, url string) (*pb.GetSourceCollectionResponse, error)
 }
 
 // ============================
@@ -48,35 +49,35 @@ type SemaphoreSourceManager struct {
 	options *semaphoreSourceManagerOptions
 }
 
-func (s *SemaphoreSourceManager) GetSource(
+func (s *SemaphoreSourceManager) GetSourceItem(
 	ctx context.Context,
 	url string,
-) (*pb.GetSourceResponse, error) {
+) (*pb.GetSourceItemResponse, error) {
 	s.mu.Lock()
 	defer func() {
 		time.Sleep(s.options.interval)
 		s.mu.Unlock()
 	}()
 
-	req := &pb.GetSourceRequest{
+	req := &pb.GetSourceItemRequest{
 		Url: url,
 	}
-	return s.source.GetSource(ctx, req)
+	return s.source.GetSourceItem(ctx, req)
 }
-func (s *SemaphoreSourceManager) ListSources(
+func (s *SemaphoreSourceManager) GetSourceCollection(
 	ctx context.Context,
 	url string,
-) (*pb.ListSourcesResponse, error) {
+) (*pb.GetSourceCollectionResponse, error) {
 	s.mu.Lock()
 	defer func() {
 		time.Sleep(s.options.interval)
 		s.mu.Unlock()
 	}()
 
-	req := &pb.ListSourcesRequest{
+	req := &pb.GetSourceCollectionRequest{
 		Url: url,
 	}
-	return s.source.ListSources(ctx, req)
+	return s.source.GetSourceCollection(ctx, req)
 }
 func (s *SemaphoreSourceManager) IsSupportedURL(url string) bool {
 	return s.pattern.Match([]byte(url))
@@ -147,10 +148,10 @@ type FileSourceRegistry struct {
 	logger  *slog.Logger
 }
 
-func (s *FileSourceRegistry) Get(
+func (s *FileSourceRegistry) SourceItem(
 	ctx context.Context,
 	url string,
-) (*pb.GetSourceResponse, error) {
+) (*pb.GetSourceItemResponse, error) {
 	// Find supported SourceManager
 	var sm SourceManager
 	for _, source := range s.sources {
@@ -167,21 +168,58 @@ func (s *FileSourceRegistry) Get(
 	filename := fmt.Sprintf("%s.json", url2filename(url))
 	path := filepath.Join(s.basedir, sm.GetName(), filename)
 	if Exists(path) {
-		s.logger.DebugContext(ctx, "Source cache hit", "url", url, "path", path)
-		return LoadJson[pb.GetSourceResponse](path)
+		s.logger.DebugContext(ctx, "Source item cache hit", "url", url, "path", path)
+		return LoadJson[pb.GetSourceItemResponse](path)
 	}
 
-	res, err := sm.GetSource(ctx, url)
+	res, err := sm.GetSourceItem(ctx, url)
 	if err != nil {
 		return nil, err
 	}
-	s.logger.DebugContext(ctx, "Source fetched", "url", url)
+	s.logger.DebugContext(ctx, "Source item fetched", "url", url)
 
 	err = DumpJson(path, res)
 	if err != nil {
 		return nil, err
 	}
-	s.logger.DebugContext(ctx, "Source saved", "url", url, "path", path)
+	s.logger.DebugContext(ctx, "Source item saved", "url", url, "path", path)
+	return res, nil
+}
+func (s *FileSourceRegistry) SourceCollection(
+	ctx context.Context,
+	url string,
+) (*pb.GetSourceCollectionResponse, error) {
+	// Find supported SourceManager
+	var sm SourceManager
+	for _, source := range s.sources {
+		if source.IsSupportedURL(url) {
+			sm = source
+			break
+		}
+	}
+	if sm == nil {
+		return nil, &UnsupportedSourceURLError{URL: url}
+	}
+	s.logger.DebugContext(ctx, "SourceManager found", "type", sm.GetName(), "url", url)
+
+	filename := fmt.Sprintf("%s.collection.json", url2filename(url))
+	path := filepath.Join(s.basedir, sm.GetName(), filename)
+	if Exists(path) {
+		s.logger.DebugContext(ctx, "Source collection cache hit", "url", url, "path", path)
+		return LoadJson[pb.GetSourceCollectionResponse](path)
+	}
+
+	res, err := sm.GetSourceCollection(ctx, url)
+	if err != nil {
+		return nil, err
+	}
+	s.logger.DebugContext(ctx, "Source item fetched", "url", url)
+
+	err = DumpJson(path, res)
+	if err != nil {
+		return nil, err
+	}
+	s.logger.DebugContext(ctx, "Source item saved", "url", url, "path", path)
 	return res, nil
 }
 

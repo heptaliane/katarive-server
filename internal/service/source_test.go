@@ -2,10 +2,10 @@ package service_test
 
 import (
 	"context"
+	"errors"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/google/go-cmp/cmp/cmpopts"
 	pbmock "github.com/heptaliane/katarive-go-sdk/gen/mock/plugin/v1"
 	pb "github.com/heptaliane/katarive-go-sdk/gen/pb/plugin/v1"
 	"go.uber.org/mock/gomock"
@@ -19,36 +19,41 @@ import (
 func TestSemaphoreSourceManager(t *testing.T) {
 	t.Parallel()
 
-	gsr := &pb.GetSourceResponse{
-		Title:    "example title",
-		Content:  "example content",
-		Language: pb.Language_LANGUAGE_ENGLISH,
+	collectionId := "collection-id"
+	supportedUrl := "http://example.com/1"
+	gsr := &pb.GetSourceItemResponse{
+		Item: &pb.SourceItem{
+			Id:           "id",
+			CollectionId: &collectionId,
+			Url:          supportedUrl,
+			Title:        "example title",
+			Content:      "example content",
+			Language:     pb.Language_LANGUAGE_ENGLISH,
+		},
 	}
 	gssmr := &pb.GetSourceServiceMetadataResponse{
 		Name:             "example",
 		Version:          "v1",
 		SupportedPattern: `^http://example\.com/.*`,
 	}
-	lsr := &pb.ListSourcesResponse{
-		Name: "example name",
-		Sources: []*pb.SourceInfo{
+	cr := &pb.GetSourceCollectionResponse{
+		Sources: []*pb.SourceSummary{
 			{
-				Id:    1,
+				Id:    "1",
 				Title: "example title",
 				Url:   "http://example.com/1",
 			},
 		},
 	}
-	supportedUrl := "http://example.com/1"
 
 	source := pbmock.NewMockSourceServiceClient(gomock.NewController(t))
 
-	source.EXPECT().GetSource(gomock.Any(), gomock.Any()).
+	source.EXPECT().GetSourceItem(gomock.Any(), gomock.Any()).
 		DoAndReturn(func(
 			ctx context.Context,
-			req *pb.GetSourceRequest,
+			req *pb.GetSourceItemRequest,
 			opt ...grpc.CallOption,
-		) (*pb.GetSourceResponse, error) {
+		) (*pb.GetSourceItemResponse, error) {
 			if req.Url == supportedUrl {
 				return gsr, nil
 			}
@@ -56,14 +61,14 @@ func TestSemaphoreSourceManager(t *testing.T) {
 		}).AnyTimes()
 	source.EXPECT().GetSourceServiceMetadata(gomock.Any(), gomock.Any()).
 		Return(gssmr, nil).AnyTimes()
-	source.EXPECT().ListSources(gomock.Any(), gomock.Any()).
+	source.EXPECT().GetSourceCollection(gomock.Any(), gomock.Any()).
 		DoAndReturn(func(
 			ctx context.Context,
-			req *pb.ListSourcesRequest,
+			req *pb.GetSourceCollectionRequest,
 			opt ...grpc.CallOption,
-		) (*pb.ListSourcesResponse, error) {
+		) (*pb.GetSourceCollectionResponse, error) {
 			if req.Url == supportedUrl {
-				return lsr, nil
+				return cr, nil
 			}
 			return nil, &service.UnsupportedSourceURLError{URL: req.Url}
 		}).AnyTimes()
@@ -76,8 +81,8 @@ func TestSemaphoreSourceManager(t *testing.T) {
 
 	cases := map[string]struct {
 		url                    string
-		expectedSource         *pb.GetSourceResponse
-		expectedList           *pb.ListSourcesResponse
+		expectedSource         *pb.GetSourceItemResponse
+		expectedList           *pb.GetSourceCollectionResponse
 		expectedIsError        bool
 		expectedIsSupportedURL bool
 		expectedName           string
@@ -85,7 +90,7 @@ func TestSemaphoreSourceManager(t *testing.T) {
 		"supported": {
 			url:                    "http://example.com/1",
 			expectedSource:         gsr,
-			expectedList:           lsr,
+			expectedList:           cr,
 			expectedIsError:        false,
 			expectedIsSupportedURL: true,
 			expectedName:           "example:v1",
@@ -103,7 +108,7 @@ func TestSemaphoreSourceManager(t *testing.T) {
 			t.Parallel()
 
 			ctx := context.Background()
-			actualSource, err := sm.GetSource(ctx, tc.url)
+			actualSource, err := sm.GetSourceItem(ctx, tc.url)
 			if err != nil {
 				if !tc.expectedIsError {
 					t.Errorf("Unexpected error: %v", err)
@@ -120,7 +125,7 @@ func TestSemaphoreSourceManager(t *testing.T) {
 					return
 				}
 			}
-			actualList, err := sm.ListSources(ctx, tc.url)
+			actualList, err := sm.GetSourceCollection(ctx, tc.url)
 			if err != nil {
 				if !tc.expectedIsError {
 					t.Errorf("Unexpected error: %v", err)
@@ -163,9 +168,21 @@ func TestFileSourceRegistry(t *testing.T) {
 	t.Parallel()
 
 	basedir := t.TempDir()
-	source := &pb.GetSourceResponse{
-		Title:   "title",
-		Content: "content",
+	source := &pb.GetSourceItemResponse{
+		Item: &pb.SourceItem{
+			Id:      "id",
+			Title:   "title",
+			Content: "content",
+		},
+	}
+	collection := &pb.GetSourceCollectionResponse{
+		Sources: []*pb.SourceSummary{
+			{
+				Id:    "1",
+				Title: "example title",
+				Url:   "http://example.com/1",
+			},
+		},
 	}
 
 	sm := mock.NewMockSourceManager(gomock.NewController(t))
@@ -177,34 +194,47 @@ func TestFileSourceRegistry(t *testing.T) {
 	sm.EXPECT().IsSupportedURL(supportedUrl).Return(true).AnyTimes()
 	sm.EXPECT().IsSupportedURL(unsupportedUrl).Return(false).AnyTimes()
 	sm.EXPECT().GetName().Return("mock").AnyTimes()
-	sm.EXPECT().GetSource(gomock.Any(), supportedUrl).Return(source, nil).Times(1)
+	sm.EXPECT().GetSourceItem(gomock.Any(), supportedUrl).Return(source, nil).Times(1)
+	sm.EXPECT().GetSourceCollection(gomock.Any(), supportedUrl).
+		Return(collection, nil).Times(1)
 
 	cases := []struct {
-		name           string
-		url            string
-		expectedSource *pb.GetSourceResponse
+		name               string
+		url                string
+		expectedSource     *pb.GetSourceItemResponse
+		expectedCollection *pb.GetSourceCollectionResponse
 	}{
 		{
-			name:           "new_file",
-			url:            supportedUrl,
-			expectedSource: source,
+			name:               "new_file",
+			url:                supportedUrl,
+			expectedSource:     source,
+			expectedCollection: collection,
 		},
 		{
-			name:           "exists_file",
-			url:            supportedUrl,
-			expectedSource: source,
+			name:               "exists_file",
+			url:                supportedUrl,
+			expectedSource:     source,
+			expectedCollection: collection,
 		},
 		{
-			name:           "unsupported",
-			url:            unsupportedUrl,
-			expectedSource: nil,
+			name:               "unsupported",
+			url:                unsupportedUrl,
+			expectedSource:     nil,
+			expectedCollection: nil,
 		},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
+			var errs error
 			ctx := context.Background()
-			actualSource, err := sr.Get(ctx, tc.url)
+
+			actualItem, err := sr.SourceItem(ctx, tc.url)
+			errs = errors.Join(errs, err)
+
+			actualCollection, err := sr.SourceCollection(ctx, tc.url)
+			errs = errors.Join(errs, err)
+
 			if tc.expectedSource == nil {
 				if err == nil {
 					t.Errorf("Expect error but got nil")
@@ -215,9 +245,14 @@ func TestFileSourceRegistry(t *testing.T) {
 					t.Errorf("Unexpected error: %v", err)
 					return
 				}
-				opt := cmpopts.IgnoreUnexported(pb.GetSourceResponse{})
-				if diff := cmp.Diff(actualSource, tc.expectedSource, opt); diff != "" {
-					t.Errorf("Unmatched GetSource result (got: -, want: +):\n%s", diff)
+				diff := cmp.Diff(actualItem, tc.expectedSource, protocmp.Transform())
+				if diff != "" {
+					t.Errorf("Unmatched SourceItem result (got: -, want: +):\n%s", diff)
+					return
+				}
+				diff = cmp.Diff(actualCollection, tc.expectedCollection, protocmp.Transform())
+				if diff != "" {
+					t.Errorf("Unmatched SourceCollection result (got: -, want: +):\n%s", diff)
 					return
 				}
 			}

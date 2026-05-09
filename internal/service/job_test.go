@@ -23,9 +23,11 @@ func TestNarrateJobManager(t *testing.T) {
 	validUrl := "http://example.com"
 	invalidUrl := "http://invalid.com"
 	narrateErrorUrl := "http://narrrate-error.com"
-	source := &pb.GetSourceResponse{
-		Content:  "source_content",
-		Language: pb.Language_LANGUAGE_ENGLISH,
+	si := &pb.GetSourceItemResponse{
+		Item: &pb.SourceItem{
+			Content:  "source_content",
+			Language: pb.Language_LANGUAGE_ENGLISH,
+		},
 	}
 	getSourceError := errors.New("Source.Get failed")
 	result := "ok-result"
@@ -35,20 +37,20 @@ func TestNarrateJobManager(t *testing.T) {
 		t.Fatalf("Failed to create jobInterval: %v", err)
 	}
 
-	sr.EXPECT().Get(gomock.Any(), validUrl).Return(source, nil).AnyTimes()
-	sr.EXPECT().Get(gomock.Any(), narrateErrorUrl).Return(source, nil).AnyTimes()
-	sr.EXPECT().Get(gomock.Any(), invalidUrl).Return(nil, getSourceError).AnyTimes()
+	sr.EXPECT().SourceItem(gomock.Any(), validUrl).Return(si, nil).AnyTimes()
+	sr.EXPECT().SourceItem(gomock.Any(), narrateErrorUrl).Return(si, nil).AnyTimes()
+	sr.EXPECT().SourceItem(gomock.Any(), invalidUrl).Return(nil, getSourceError).AnyTimes()
 	nr.EXPECT().Use(gomock.Any()).Return().AnyTimes()
 	nr.EXPECT().Do(
 		gomock.Any(),
 		validUrl,
-		source.GetContent(),
+		si.GetItem().GetContent(),
 		gomock.Any(),
 	).Return(result, nil).AnyTimes()
 	nr.EXPECT().Do(
 		gomock.Any(),
 		narrateErrorUrl,
-		source.GetContent(),
+		si.GetItem().GetContent(),
 		gomock.Any(),
 	).Return("", narrateError).AnyTimes()
 

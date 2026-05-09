@@ -64,17 +64,18 @@ func (m *NarrateJobManager) Enqueue(
 		m.logger.InfoContext(ctx, "Start narrate job", "id", jobId, "url", url)
 		v, err, _ := m.group.Do(url, func() (any, error) {
 			ctx = context.WithoutCancel(ctx)
-			src, err := m.source.Get(ctx, url)
+			src, err := m.source.SourceItem(ctx, url)
 			if err != nil {
 				return nil, err
 			}
 
+			item := src.GetItem()
 			m.narrator.Use(narrator)
 			return m.narrator.Do(
 				ctx,
 				url,
-				src.GetContent(),
-				WithNarrateLanguage(src.GetLanguage()),
+				item.GetContent(),
+				WithNarrateLanguage(item.GetLanguage()),
 				// TODO: Allow encoding selection
 				WithNarrateEncoding(pb.AudioEncoding_AUDIO_ENCODING_MP3),
 				WithNarrateSpeakerId(speakerId),

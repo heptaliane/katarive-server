@@ -3,7 +3,6 @@ package service_test
 import (
 	"context"
 	"errors"
-	"fmt"
 	"path/filepath"
 	"testing"
 
@@ -176,17 +175,11 @@ func TestNarratorRegistry(t *testing.T) {
 	nm.EXPECT().Do(gomock.Any(), gomock.Any(), text).
 		DoAndReturn(func(
 			ctx context.Context,
-			basePath string,
+			filename string,
 			text string,
 			opts ...service.NarrateOption,
 		) (string, error) {
-			path := fmt.Sprintf("%s.mp3", basePath)
-			f, err := service.NewFile(path)
-			if err != nil {
-				t.Fatalf("Failed to create file: %v", err)
-			}
-			defer f.Close()
-			return path, nil
+			return filename, nil
 		}).AnyTimes()
 
 	nr := service.NewFileNarratorRegistry(nms)

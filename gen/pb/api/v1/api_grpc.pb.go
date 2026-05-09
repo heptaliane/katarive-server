@@ -19,10 +19,10 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	KatariveService_CreateNarration_FullMethodName = "/api.v1.KatariveService/CreateNarration"
-	KatariveService_GetJobStatus_FullMethodName    = "/api.v1.KatariveService/GetJobStatus"
-	KatariveService_GetSpeakers_FullMethodName     = "/api.v1.KatariveService/GetSpeakers"
-	KatariveService_ListSources_FullMethodName     = "/api.v1.KatariveService/ListSources"
+	KatariveService_CreateNarration_FullMethodName     = "/api.v1.KatariveService/CreateNarration"
+	KatariveService_GetJobStatus_FullMethodName        = "/api.v1.KatariveService/GetJobStatus"
+	KatariveService_GetSpeakers_FullMethodName         = "/api.v1.KatariveService/GetSpeakers"
+	KatariveService_GetSourceCollection_FullMethodName = "/api.v1.KatariveService/GetSourceCollection"
 )
 
 // KatariveServiceClient is the client API for KatariveService service.
@@ -32,7 +32,7 @@ type KatariveServiceClient interface {
 	CreateNarration(ctx context.Context, in *CreateNarrationRequest, opts ...grpc.CallOption) (*CreateNarrationResponse, error)
 	GetJobStatus(ctx context.Context, in *GetJobStatusRequest, opts ...grpc.CallOption) (*GetJobStatusResponse, error)
 	GetSpeakers(ctx context.Context, in *GetSpeakersRequest, opts ...grpc.CallOption) (*GetSpeakersResponse, error)
-	ListSources(ctx context.Context, in *ListSourcesRequest, opts ...grpc.CallOption) (*ListSourcesResponse, error)
+	GetSourceCollection(ctx context.Context, in *GetSourceCollectionRequest, opts ...grpc.CallOption) (*GetSourceCollectionResponse, error)
 }
 
 type katariveServiceClient struct {
@@ -73,10 +73,10 @@ func (c *katariveServiceClient) GetSpeakers(ctx context.Context, in *GetSpeakers
 	return out, nil
 }
 
-func (c *katariveServiceClient) ListSources(ctx context.Context, in *ListSourcesRequest, opts ...grpc.CallOption) (*ListSourcesResponse, error) {
+func (c *katariveServiceClient) GetSourceCollection(ctx context.Context, in *GetSourceCollectionRequest, opts ...grpc.CallOption) (*GetSourceCollectionResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ListSourcesResponse)
-	err := c.cc.Invoke(ctx, KatariveService_ListSources_FullMethodName, in, out, cOpts...)
+	out := new(GetSourceCollectionResponse)
+	err := c.cc.Invoke(ctx, KatariveService_GetSourceCollection_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -90,7 +90,7 @@ type KatariveServiceServer interface {
 	CreateNarration(context.Context, *CreateNarrationRequest) (*CreateNarrationResponse, error)
 	GetJobStatus(context.Context, *GetJobStatusRequest) (*GetJobStatusResponse, error)
 	GetSpeakers(context.Context, *GetSpeakersRequest) (*GetSpeakersResponse, error)
-	ListSources(context.Context, *ListSourcesRequest) (*ListSourcesResponse, error)
+	GetSourceCollection(context.Context, *GetSourceCollectionRequest) (*GetSourceCollectionResponse, error)
 	mustEmbedUnimplementedKatariveServiceServer()
 }
 
@@ -110,8 +110,8 @@ func (UnimplementedKatariveServiceServer) GetJobStatus(context.Context, *GetJobS
 func (UnimplementedKatariveServiceServer) GetSpeakers(context.Context, *GetSpeakersRequest) (*GetSpeakersResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetSpeakers not implemented")
 }
-func (UnimplementedKatariveServiceServer) ListSources(context.Context, *ListSourcesRequest) (*ListSourcesResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method ListSources not implemented")
+func (UnimplementedKatariveServiceServer) GetSourceCollection(context.Context, *GetSourceCollectionRequest) (*GetSourceCollectionResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetSourceCollection not implemented")
 }
 func (UnimplementedKatariveServiceServer) mustEmbedUnimplementedKatariveServiceServer() {}
 func (UnimplementedKatariveServiceServer) testEmbeddedByValue()                         {}
@@ -188,20 +188,20 @@ func _KatariveService_GetSpeakers_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
-func _KatariveService_ListSources_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ListSourcesRequest)
+func _KatariveService_GetSourceCollection_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetSourceCollectionRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(KatariveServiceServer).ListSources(ctx, in)
+		return srv.(KatariveServiceServer).GetSourceCollection(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: KatariveService_ListSources_FullMethodName,
+		FullMethod: KatariveService_GetSourceCollection_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(KatariveServiceServer).ListSources(ctx, req.(*ListSourcesRequest))
+		return srv.(KatariveServiceServer).GetSourceCollection(ctx, req.(*GetSourceCollectionRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -226,8 +226,8 @@ var KatariveService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _KatariveService_GetSpeakers_Handler,
 		},
 		{
-			MethodName: "ListSources",
-			Handler:    _KatariveService_ListSources_Handler,
+			MethodName: "GetSourceCollection",
+			Handler:    _KatariveService_GetSourceCollection_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

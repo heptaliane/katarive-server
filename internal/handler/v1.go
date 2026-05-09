@@ -94,6 +94,14 @@ func (h *KatariveHandlerV1) GetSpeakers(
 	}, nil
 }
 
+func (h *KatariveHandlerV1) GetSourceCollection(
+	ctx context.Context,
+	req *pb.GetSourceCollectionRequest,
+) (*pb.GetSourceCollectionResponse, error) {
+	// TODO: implement this
+	return nil, nil
+}
+
 // Check KatariveServiceServer implementation
 var _ pb.KatariveServiceServer = new(KatariveHandlerV1)
 

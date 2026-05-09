@@ -42,9 +42,9 @@ const (
 	// KatariveServiceGetSpeakersProcedure is the fully-qualified name of the KatariveService's
 	// GetSpeakers RPC.
 	KatariveServiceGetSpeakersProcedure = "/api.v1.KatariveService/GetSpeakers"
-	// KatariveServiceListSourcesProcedure is the fully-qualified name of the KatariveService's
-	// ListSources RPC.
-	KatariveServiceListSourcesProcedure = "/api.v1.KatariveService/ListSources"
+	// KatariveServiceGetSourceCollectionProcedure is the fully-qualified name of the KatariveService's
+	// GetSourceCollection RPC.
+	KatariveServiceGetSourceCollectionProcedure = "/api.v1.KatariveService/GetSourceCollection"
 )
 
 // KatariveServiceClient is a client for the api.v1.KatariveService service.
@@ -52,7 +52,7 @@ type KatariveServiceClient interface {
 	CreateNarration(context.Context, *connect.Request[v1.CreateNarrationRequest]) (*connect.Response[v1.CreateNarrationResponse], error)
 	GetJobStatus(context.Context, *connect.Request[v1.GetJobStatusRequest]) (*connect.Response[v1.GetJobStatusResponse], error)
 	GetSpeakers(context.Context, *connect.Request[v1.GetSpeakersRequest]) (*connect.Response[v1.GetSpeakersResponse], error)
-	ListSources(context.Context, *connect.Request[v1.ListSourcesRequest]) (*connect.Response[v1.ListSourcesResponse], error)
+	GetSourceCollection(context.Context, *connect.Request[v1.GetSourceCollectionRequest]) (*connect.Response[v1.GetSourceCollectionResponse], error)
 }
 
 // NewKatariveServiceClient constructs a client for the api.v1.KatariveService service. By default,
@@ -84,10 +84,10 @@ func NewKatariveServiceClient(httpClient connect.HTTPClient, baseURL string, opt
 			connect.WithSchema(katariveServiceMethods.ByName("GetSpeakers")),
 			connect.WithClientOptions(opts...),
 		),
-		listSources: connect.NewClient[v1.ListSourcesRequest, v1.ListSourcesResponse](
+		getSourceCollection: connect.NewClient[v1.GetSourceCollectionRequest, v1.GetSourceCollectionResponse](
 			httpClient,
-			baseURL+KatariveServiceListSourcesProcedure,
-			connect.WithSchema(katariveServiceMethods.ByName("ListSources")),
+			baseURL+KatariveServiceGetSourceCollectionProcedure,
+			connect.WithSchema(katariveServiceMethods.ByName("GetSourceCollection")),
 			connect.WithClientOptions(opts...),
 		),
 	}
@@ -95,10 +95,10 @@ func NewKatariveServiceClient(httpClient connect.HTTPClient, baseURL string, opt
 
 // katariveServiceClient implements KatariveServiceClient.
 type katariveServiceClient struct {
-	createNarration *connect.Client[v1.CreateNarrationRequest, v1.CreateNarrationResponse]
-	getJobStatus    *connect.Client[v1.GetJobStatusRequest, v1.GetJobStatusResponse]
-	getSpeakers     *connect.Client[v1.GetSpeakersRequest, v1.GetSpeakersResponse]
-	listSources     *connect.Client[v1.ListSourcesRequest, v1.ListSourcesResponse]
+	createNarration     *connect.Client[v1.CreateNarrationRequest, v1.CreateNarrationResponse]
+	getJobStatus        *connect.Client[v1.GetJobStatusRequest, v1.GetJobStatusResponse]
+	getSpeakers         *connect.Client[v1.GetSpeakersRequest, v1.GetSpeakersResponse]
+	getSourceCollection *connect.Client[v1.GetSourceCollectionRequest, v1.GetSourceCollectionResponse]
 }
 
 // CreateNarration calls api.v1.KatariveService.CreateNarration.
@@ -116,9 +116,9 @@ func (c *katariveServiceClient) GetSpeakers(ctx context.Context, req *connect.Re
 	return c.getSpeakers.CallUnary(ctx, req)
 }
 
-// ListSources calls api.v1.KatariveService.ListSources.
-func (c *katariveServiceClient) ListSources(ctx context.Context, req *connect.Request[v1.ListSourcesRequest]) (*connect.Response[v1.ListSourcesResponse], error) {
-	return c.listSources.CallUnary(ctx, req)
+// GetSourceCollection calls api.v1.KatariveService.GetSourceCollection.
+func (c *katariveServiceClient) GetSourceCollection(ctx context.Context, req *connect.Request[v1.GetSourceCollectionRequest]) (*connect.Response[v1.GetSourceCollectionResponse], error) {
+	return c.getSourceCollection.CallUnary(ctx, req)
 }
 
 // KatariveServiceHandler is an implementation of the api.v1.KatariveService service.
@@ -126,7 +126,7 @@ type KatariveServiceHandler interface {
 	CreateNarration(context.Context, *connect.Request[v1.CreateNarrationRequest]) (*connect.Response[v1.CreateNarrationResponse], error)
 	GetJobStatus(context.Context, *connect.Request[v1.GetJobStatusRequest]) (*connect.Response[v1.GetJobStatusResponse], error)
 	GetSpeakers(context.Context, *connect.Request[v1.GetSpeakersRequest]) (*connect.Response[v1.GetSpeakersResponse], error)
-	ListSources(context.Context, *connect.Request[v1.ListSourcesRequest]) (*connect.Response[v1.ListSourcesResponse], error)
+	GetSourceCollection(context.Context, *connect.Request[v1.GetSourceCollectionRequest]) (*connect.Response[v1.GetSourceCollectionResponse], error)
 }
 
 // NewKatariveServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -154,10 +154,10 @@ func NewKatariveServiceHandler(svc KatariveServiceHandler, opts ...connect.Handl
 		connect.WithSchema(katariveServiceMethods.ByName("GetSpeakers")),
 		connect.WithHandlerOptions(opts...),
 	)
-	katariveServiceListSourcesHandler := connect.NewUnaryHandler(
-		KatariveServiceListSourcesProcedure,
-		svc.ListSources,
-		connect.WithSchema(katariveServiceMethods.ByName("ListSources")),
+	katariveServiceGetSourceCollectionHandler := connect.NewUnaryHandler(
+		KatariveServiceGetSourceCollectionProcedure,
+		svc.GetSourceCollection,
+		connect.WithSchema(katariveServiceMethods.ByName("GetSourceCollection")),
 		connect.WithHandlerOptions(opts...),
 	)
 	return "/api.v1.KatariveService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -168,8 +168,8 @@ func NewKatariveServiceHandler(svc KatariveServiceHandler, opts ...connect.Handl
 			katariveServiceGetJobStatusHandler.ServeHTTP(w, r)
 		case KatariveServiceGetSpeakersProcedure:
 			katariveServiceGetSpeakersHandler.ServeHTTP(w, r)
-		case KatariveServiceListSourcesProcedure:
-			katariveServiceListSourcesHandler.ServeHTTP(w, r)
+		case KatariveServiceGetSourceCollectionProcedure:
+			katariveServiceGetSourceCollectionHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -191,6 +191,6 @@ func (UnimplementedKatariveServiceHandler) GetSpeakers(context.Context, *connect
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("api.v1.KatariveService.GetSpeakers is not implemented"))
 }
 
-func (UnimplementedKatariveServiceHandler) ListSources(context.Context, *connect.Request[v1.ListSourcesRequest]) (*connect.Response[v1.ListSourcesResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("api.v1.KatariveService.ListSources is not implemented"))
+func (UnimplementedKatariveServiceHandler) GetSourceCollection(context.Context, *connect.Request[v1.GetSourceCollectionRequest]) (*connect.Response[v1.GetSourceCollectionResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("api.v1.KatariveService.GetSourceCollection is not implemented"))
 }

@@ -84,6 +84,21 @@ func (mr *MockSourceManagerMockRecorder) IsSupportedURL(url any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsSupportedURL", reflect.TypeOf((*MockSourceManager)(nil).IsSupportedURL), url)
 }
 
+// ListSources mocks base method.
+func (m *MockSourceManager) ListSources(ctx context.Context, url string) (*pluginv1.ListSourcesResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListSources", ctx, url)
+	ret0, _ := ret[0].(*pluginv1.ListSourcesResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListSources indicates an expected call of ListSources.
+func (mr *MockSourceManagerMockRecorder) ListSources(ctx, url any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListSources", reflect.TypeOf((*MockSourceManager)(nil).ListSources), ctx, url)
+}
+
 // MockSourceRegistry is a mock of SourceRegistry interface.
 type MockSourceRegistry struct {
 	ctrl     *gomock.Controller

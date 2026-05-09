@@ -416,6 +416,162 @@ func (x *Speaker) GetSpeakerLabel() string {
 	return ""
 }
 
+type ListSourcesRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Url           string                 `protobuf:"bytes,1,opt,name=url,proto3" json:"url,omitempty"`
+	DisableCache  bool                   `protobuf:"varint,2,opt,name=disable_cache,json=disableCache,proto3" json:"disable_cache,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListSourcesRequest) Reset() {
+	*x = ListSourcesRequest{}
+	mi := &file_api_v1_api_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListSourcesRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListSourcesRequest) ProtoMessage() {}
+
+func (x *ListSourcesRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_v1_api_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListSourcesRequest.ProtoReflect.Descriptor instead.
+func (*ListSourcesRequest) Descriptor() ([]byte, []int) {
+	return file_api_v1_api_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *ListSourcesRequest) GetUrl() string {
+	if x != nil {
+		return x.Url
+	}
+	return ""
+}
+
+func (x *ListSourcesRequest) GetDisableCache() bool {
+	if x != nil {
+		return x.DisableCache
+	}
+	return false
+}
+
+type ListSourcesResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	Sources       []*SourceInfo          `protobuf:"bytes,2,rep,name=sources,proto3" json:"sources,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListSourcesResponse) Reset() {
+	*x = ListSourcesResponse{}
+	mi := &file_api_v1_api_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListSourcesResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListSourcesResponse) ProtoMessage() {}
+
+func (x *ListSourcesResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_api_v1_api_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListSourcesResponse.ProtoReflect.Descriptor instead.
+func (*ListSourcesResponse) Descriptor() ([]byte, []int) {
+	return file_api_v1_api_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *ListSourcesResponse) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *ListSourcesResponse) GetSources() []*SourceInfo {
+	if x != nil {
+		return x.Sources
+	}
+	return nil
+}
+
+type SourceInfo struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Title         string                 `protobuf:"bytes,1,opt,name=title,proto3" json:"title,omitempty"`
+	Url           string                 `protobuf:"bytes,2,opt,name=url,proto3" json:"url,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SourceInfo) Reset() {
+	*x = SourceInfo{}
+	mi := &file_api_v1_api_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SourceInfo) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SourceInfo) ProtoMessage() {}
+
+func (x *SourceInfo) ProtoReflect() protoreflect.Message {
+	mi := &file_api_v1_api_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SourceInfo.ProtoReflect.Descriptor instead.
+func (*SourceInfo) Descriptor() ([]byte, []int) {
+	return file_api_v1_api_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *SourceInfo) GetTitle() string {
+	if x != nil {
+		return x.Title
+	}
+	return ""
+}
+
+func (x *SourceInfo) GetUrl() string {
+	if x != nil {
+		return x.Url
+	}
+	return ""
+}
+
 var File_api_v1_api_proto protoreflect.FileDescriptor
 
 const file_api_v1_api_proto_rawDesc = "" +
@@ -447,11 +603,22 @@ const file_api_v1_api_proto_rawDesc = "" +
 	"\bnarrator\x18\x01 \x01(\tR\bnarrator\x12\x1d\n" +
 	"\n" +
 	"speaker_id\x18\x02 \x01(\x05R\tspeakerId\x12#\n" +
-	"\rspeaker_label\x18\x03 \x01(\tR\fspeakerLabel2\xf8\x01\n" +
+	"\rspeaker_label\x18\x03 \x01(\tR\fspeakerLabel\"K\n" +
+	"\x12ListSourcesRequest\x12\x10\n" +
+	"\x03url\x18\x01 \x01(\tR\x03url\x12#\n" +
+	"\rdisable_cache\x18\x02 \x01(\bR\fdisableCache\"W\n" +
+	"\x13ListSourcesResponse\x12\x12\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\x12,\n" +
+	"\asources\x18\x02 \x03(\v2\x12.api.v1.SourceInfoR\asources\"4\n" +
+	"\n" +
+	"SourceInfo\x12\x14\n" +
+	"\x05title\x18\x01 \x01(\tR\x05title\x12\x10\n" +
+	"\x03url\x18\x02 \x01(\tR\x03url2\xc0\x02\n" +
 	"\x0fKatariveService\x12R\n" +
 	"\x0fCreateNarration\x12\x1e.api.v1.CreateNarrationRequest\x1a\x1f.api.v1.CreateNarrationResponse\x12I\n" +
 	"\fGetJobStatus\x12\x1b.api.v1.GetJobStatusRequest\x1a\x1c.api.v1.GetJobStatusResponse\x12F\n" +
-	"\vGetSpeakers\x12\x1a.api.v1.GetSpeakersRequest\x1a\x1b.api.v1.GetSpeakersResponseB\x8a\x01\n" +
+	"\vGetSpeakers\x12\x1a.api.v1.GetSpeakersRequest\x1a\x1b.api.v1.GetSpeakersResponse\x12F\n" +
+	"\vListSources\x12\x1a.api.v1.ListSourcesRequest\x1a\x1b.api.v1.ListSourcesResponseB\x8a\x01\n" +
 	"\n" +
 	"com.api.v1B\bApiProtoP\x01Z9github.com/heptaliane/katarive-server/gen/pb/api/v1;apiv1\xa2\x02\x03AXX\xaa\x02\x06Api.V1\xca\x02\x06Api\\V1\xe2\x02\x12Api\\V1\\GPBMetadata\xea\x02\aApi::V1b\x06proto3"
 
@@ -468,7 +635,7 @@ func file_api_v1_api_proto_rawDescGZIP() []byte {
 }
 
 var file_api_v1_api_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_api_v1_api_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
+var file_api_v1_api_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
 var file_api_v1_api_proto_goTypes = []any{
 	(GetJobStatusResponse_Status)(0), // 0: api.v1.GetJobStatusResponse.Status
 	(*CreateNarrationRequest)(nil),   // 1: api.v1.CreateNarrationRequest
@@ -478,21 +645,27 @@ var file_api_v1_api_proto_goTypes = []any{
 	(*GetSpeakersRequest)(nil),       // 5: api.v1.GetSpeakersRequest
 	(*GetSpeakersResponse)(nil),      // 6: api.v1.GetSpeakersResponse
 	(*Speaker)(nil),                  // 7: api.v1.Speaker
+	(*ListSourcesRequest)(nil),       // 8: api.v1.ListSourcesRequest
+	(*ListSourcesResponse)(nil),      // 9: api.v1.ListSourcesResponse
+	(*SourceInfo)(nil),               // 10: api.v1.SourceInfo
 }
 var file_api_v1_api_proto_depIdxs = []int32{
-	0, // 0: api.v1.GetJobStatusResponse.status:type_name -> api.v1.GetJobStatusResponse.Status
-	7, // 1: api.v1.GetSpeakersResponse.speakers:type_name -> api.v1.Speaker
-	1, // 2: api.v1.KatariveService.CreateNarration:input_type -> api.v1.CreateNarrationRequest
-	3, // 3: api.v1.KatariveService.GetJobStatus:input_type -> api.v1.GetJobStatusRequest
-	5, // 4: api.v1.KatariveService.GetSpeakers:input_type -> api.v1.GetSpeakersRequest
-	2, // 5: api.v1.KatariveService.CreateNarration:output_type -> api.v1.CreateNarrationResponse
-	4, // 6: api.v1.KatariveService.GetJobStatus:output_type -> api.v1.GetJobStatusResponse
-	6, // 7: api.v1.KatariveService.GetSpeakers:output_type -> api.v1.GetSpeakersResponse
-	5, // [5:8] is the sub-list for method output_type
-	2, // [2:5] is the sub-list for method input_type
-	2, // [2:2] is the sub-list for extension type_name
-	2, // [2:2] is the sub-list for extension extendee
-	0, // [0:2] is the sub-list for field type_name
+	0,  // 0: api.v1.GetJobStatusResponse.status:type_name -> api.v1.GetJobStatusResponse.Status
+	7,  // 1: api.v1.GetSpeakersResponse.speakers:type_name -> api.v1.Speaker
+	10, // 2: api.v1.ListSourcesResponse.sources:type_name -> api.v1.SourceInfo
+	1,  // 3: api.v1.KatariveService.CreateNarration:input_type -> api.v1.CreateNarrationRequest
+	3,  // 4: api.v1.KatariveService.GetJobStatus:input_type -> api.v1.GetJobStatusRequest
+	5,  // 5: api.v1.KatariveService.GetSpeakers:input_type -> api.v1.GetSpeakersRequest
+	8,  // 6: api.v1.KatariveService.ListSources:input_type -> api.v1.ListSourcesRequest
+	2,  // 7: api.v1.KatariveService.CreateNarration:output_type -> api.v1.CreateNarrationResponse
+	4,  // 8: api.v1.KatariveService.GetJobStatus:output_type -> api.v1.GetJobStatusResponse
+	6,  // 9: api.v1.KatariveService.GetSpeakers:output_type -> api.v1.GetSpeakersResponse
+	9,  // 10: api.v1.KatariveService.ListSources:output_type -> api.v1.ListSourcesResponse
+	7,  // [7:11] is the sub-list for method output_type
+	3,  // [3:7] is the sub-list for method input_type
+	3,  // [3:3] is the sub-list for extension type_name
+	3,  // [3:3] is the sub-list for extension extendee
+	0,  // [0:3] is the sub-list for field type_name
 }
 
 func init() { file_api_v1_api_proto_init() }
@@ -507,7 +680,7 @@ func file_api_v1_api_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_v1_api_proto_rawDesc), len(file_api_v1_api_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   7,
+			NumMessages:   10,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

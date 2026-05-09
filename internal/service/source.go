@@ -19,6 +19,7 @@ import (
 //go:generate mockgen -source=$GOFILE -destination=mock/mock_$GOFILE -package=mock
 type SourceManager interface {
 	GetSource(ctx context.Context, url string) (*pb.GetSourceResponse, error)
+	ListSources(ctx context.Context, url string) (*pb.ListSourcesResponse, error)
 	IsSupportedURL(url string) bool
 	GetName() string
 }
@@ -61,6 +62,21 @@ func (s *SemaphoreSourceManager) GetSource(
 		Url: url,
 	}
 	return s.source.GetSource(ctx, req)
+}
+func (s *SemaphoreSourceManager) ListSources(
+	ctx context.Context,
+	url string,
+) (*pb.ListSourcesResponse, error) {
+	s.mu.Lock()
+	defer func() {
+		time.Sleep(s.options.interval)
+		s.mu.Unlock()
+	}()
+
+	req := &pb.ListSourcesRequest{
+		Url: url,
+	}
+	return s.source.ListSources(ctx, req)
 }
 func (s *SemaphoreSourceManager) IsSupportedURL(url string) bool {
 	return s.pattern.Match([]byte(url))

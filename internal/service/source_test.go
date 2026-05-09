@@ -10,6 +10,7 @@ import (
 	pb "github.com/heptaliane/katarive-go-sdk/gen/pb/plugin/v1"
 	"go.uber.org/mock/gomock"
 	"google.golang.org/grpc"
+	"google.golang.org/protobuf/testing/protocmp"
 
 	"github.com/heptaliane/katarive-server/internal/service"
 	"github.com/heptaliane/katarive-server/internal/service/mock"
@@ -28,6 +29,16 @@ func TestSemaphoreSourceManager(t *testing.T) {
 		Version:          "v1",
 		SupportedPattern: `^http://example\.com/.*`,
 	}
+	lsr := &pb.ListSourcesResponse{
+		Name: "example name",
+		Sources: []*pb.SourceInfo{
+			{
+				Id:    1,
+				Title: "example title",
+				Url:   "http://example.com/1",
+			},
+		},
+	}
 	supportedUrl := "http://example.com/1"
 
 	source := pbmock.NewMockSourceServiceClient(gomock.NewController(t))
@@ -45,6 +56,17 @@ func TestSemaphoreSourceManager(t *testing.T) {
 		}).AnyTimes()
 	source.EXPECT().GetSourceServiceMetadata(gomock.Any(), gomock.Any()).
 		Return(gssmr, nil).AnyTimes()
+	source.EXPECT().ListSources(gomock.Any(), gomock.Any()).
+		DoAndReturn(func(
+			ctx context.Context,
+			req *pb.ListSourcesRequest,
+			opt ...grpc.CallOption,
+		) (*pb.ListSourcesResponse, error) {
+			if req.Url == supportedUrl {
+				return lsr, nil
+			}
+			return nil, &service.UnsupportedSourceURLError{URL: req.Url}
+		}).AnyTimes()
 
 	ctx := context.Background()
 	sm, err := service.NewSemaphoreSourceManager(ctx, source)
@@ -55,6 +77,7 @@ func TestSemaphoreSourceManager(t *testing.T) {
 	cases := map[string]struct {
 		url                    string
 		expectedSource         *pb.GetSourceResponse
+		expectedList           *pb.ListSourcesResponse
 		expectedIsError        bool
 		expectedIsSupportedURL bool
 		expectedName           string
@@ -62,6 +85,7 @@ func TestSemaphoreSourceManager(t *testing.T) {
 		"supported": {
 			url:                    "http://example.com/1",
 			expectedSource:         gsr,
+			expectedList:           lsr,
 			expectedIsError:        false,
 			expectedIsSupportedURL: true,
 			expectedName:           "example:v1",
@@ -90,9 +114,26 @@ func TestSemaphoreSourceManager(t *testing.T) {
 					t.Errorf("Error expected but got nil")
 					return
 				}
-				opt := cmpopts.IgnoreUnexported(pb.GetSourceResponse{})
-				if diff := cmp.Diff(actualSource, tc.expectedSource, opt); diff != "" {
+				diff := cmp.Diff(actualSource, tc.expectedSource, protocmp.Transform())
+				if diff != "" {
 					t.Errorf("Unmatched GetSource result (got: -, want: +):\n%s", diff)
+					return
+				}
+			}
+			actualList, err := sm.ListSources(ctx, tc.url)
+			if err != nil {
+				if !tc.expectedIsError {
+					t.Errorf("Unexpected error: %v", err)
+					return
+				}
+			} else {
+				if tc.expectedIsError {
+					t.Errorf("Error expected but got nil")
+					return
+				}
+				diff := cmp.Diff(actualList, tc.expectedList, protocmp.Transform())
+				if diff != "" {
+					t.Errorf("Unmatched ListSources result (got: -, want: +):\n%s", diff)
 					return
 				}
 			}

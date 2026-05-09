@@ -22,7 +22,6 @@ func TestSemaphoreSourceManager(t *testing.T) {
 		Title:    "example title",
 		Content:  "example content",
 		Language: pb.Language_LANGUAGE_ENGLISH,
-		NextUrl:  "http://example.com/2",
 	}
 	gssmr := &pb.GetSourceServiceMetadataResponse{
 		Name:             "example",
@@ -126,7 +125,6 @@ func TestFileSourceRegistry(t *testing.T) {
 	source := &pb.GetSourceResponse{
 		Title:   "title",
 		Content: "content",
-		NextUrl: "http://example.com/2",
 	}
 
 	sm := mock.NewMockSourceManager(gomock.NewController(t))

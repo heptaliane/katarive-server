@@ -13,7 +13,7 @@ import (
 	context "context"
 	reflect "reflect"
 
-	v1 "github.com/heptaliane/katarive-go-sdk/gen/pb/plugin/v1"
+	pluginv1 "github.com/heptaliane/katarive-go-sdk/gen/pb/plugin/v1"
 	model "github.com/heptaliane/katarive-server/internal/model"
 	gomock "go.uber.org/mock/gomock"
 )
@@ -43,10 +43,10 @@ func (m *MockSourceManager) EXPECT() *MockSourceManagerMockRecorder {
 }
 
 // GetSourceCollection mocks base method.
-func (m *MockSourceManager) GetSourceCollection(ctx context.Context, req *v1.GetSourceCollectionRequest) (*v1.GetSourceCollectionResponse, error) {
+func (m *MockSourceManager) GetSourceCollection(ctx context.Context, req *pluginv1.GetSourceCollectionRequest) (*pluginv1.GetSourceCollectionResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetSourceCollection", ctx, req)
-	ret0, _ := ret[0].(*v1.GetSourceCollectionResponse)
+	ret0, _ := ret[0].(*pluginv1.GetSourceCollectionResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -58,10 +58,10 @@ func (mr *MockSourceManagerMockRecorder) GetSourceCollection(ctx, req any) *gomo
 }
 
 // GetSourceItem mocks base method.
-func (m *MockSourceManager) GetSourceItem(ctx context.Context, req *v1.GetSourceItemRequest) (*v1.GetSourceItemResponse, error) {
+func (m *MockSourceManager) GetSourceItem(ctx context.Context, req *pluginv1.GetSourceItemRequest) (*pluginv1.GetSourceItemResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetSourceItem", ctx, req)
-	ret0, _ := ret[0].(*v1.GetSourceItemResponse)
+	ret0, _ := ret[0].(*pluginv1.GetSourceItemResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -125,57 +125,46 @@ func (m *MockSourceRegistry) EXPECT() *MockSourceRegistryMockRecorder {
 }
 
 // SourceCollection mocks base method.
-func (m *MockSourceRegistry) SourceCollection(ctx context.Context, collectionId string) *model.SourceCollection {
+func (m *MockSourceRegistry) SourceCollection(ctx context.Context, url string) (*model.SourceCollection, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SourceCollection", ctx, collectionId)
+	ret := m.ctrl.Call(m, "SourceCollection", ctx, url)
 	ret0, _ := ret[0].(*model.SourceCollection)
-	return ret0
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // SourceCollection indicates an expected call of SourceCollection.
-func (mr *MockSourceRegistryMockRecorder) SourceCollection(ctx, collectionId any) *gomock.Call {
+func (mr *MockSourceRegistryMockRecorder) SourceCollection(ctx, url any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SourceCollection", reflect.TypeOf((*MockSourceRegistry)(nil).SourceCollection), ctx, collectionId)
-}
-
-// SourceId mocks base method.
-func (m *MockSourceRegistry) SourceId(ctx context.Context, url string) string {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SourceId", ctx, url)
-	ret0, _ := ret[0].(string)
-	return ret0
-}
-
-// SourceId indicates an expected call of SourceId.
-func (mr *MockSourceRegistryMockRecorder) SourceId(ctx, url any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SourceId", reflect.TypeOf((*MockSourceRegistry)(nil).SourceId), ctx, url)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SourceCollection", reflect.TypeOf((*MockSourceRegistry)(nil).SourceCollection), ctx, url)
 }
 
 // SourceItem mocks base method.
-func (m *MockSourceRegistry) SourceItem(ctx context.Context, itemId string) *model.SourceItem {
+func (m *MockSourceRegistry) SourceItem(ctx context.Context, url string) (*model.SourceItem, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SourceItem", ctx, itemId)
+	ret := m.ctrl.Call(m, "SourceItem", ctx, url)
 	ret0, _ := ret[0].(*model.SourceItem)
-	return ret0
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // SourceItem indicates an expected call of SourceItem.
-func (mr *MockSourceRegistryMockRecorder) SourceItem(ctx, itemId any) *gomock.Call {
+func (mr *MockSourceRegistryMockRecorder) SourceItem(ctx, url any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SourceItem", reflect.TypeOf((*MockSourceRegistry)(nil).SourceItem), ctx, itemId)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SourceItem", reflect.TypeOf((*MockSourceRegistry)(nil).SourceItem), ctx, url)
 }
 
 // SourceItems mocks base method.
-func (m *MockSourceRegistry) SourceItems(ctx context.Context, collectionId string) []*model.SourceSummary {
+func (m *MockSourceRegistry) SourceItems(ctx context.Context, url string) ([]*model.SourceSummary, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SourceItems", ctx, collectionId)
+	ret := m.ctrl.Call(m, "SourceItems", ctx, url)
 	ret0, _ := ret[0].([]*model.SourceSummary)
-	return ret0
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // SourceItems indicates an expected call of SourceItems.
-func (mr *MockSourceRegistryMockRecorder) SourceItems(ctx, collectionId any) *gomock.Call {
+func (mr *MockSourceRegistryMockRecorder) SourceItems(ctx, url any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SourceItems", reflect.TypeOf((*MockSourceRegistry)(nil).SourceItems), ctx, collectionId)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SourceItems", reflect.TypeOf((*MockSourceRegistry)(nil).SourceItems), ctx, url)
 }

@@ -24,8 +24,7 @@ type SourceManager interface {
 
 //go:generate mockgen -source=$GOFILE -destination=mock/mock_$GOFILE -package=mock
 type SourceRegistry interface {
-	SourceId(ctx context.Context, url string) string
-	SourceItem(ctx context.Context, itemId string) *model.SourceItem
-	SourceCollection(ctx context.Context, collectionId string) *model.SourceCollection
-	SourceItems(ctx context.Context, collectionId string) []*model.SourceSummary
+	SourceItem(ctx context.Context, url string) (*model.SourceItem, error)
+	SourceCollection(ctx context.Context, url string) (*model.SourceCollection, error)
+	SourceItems(ctx context.Context, url string) ([]*model.SourceSummary, error)
 }

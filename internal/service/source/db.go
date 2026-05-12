@@ -96,10 +96,13 @@ func (r *DatabaseSourceRegistry) getOrCreateSourceCollection(
 	plugin := sm.Name()
 
 	var collection SourceCollection
-	err = r.db.First(&collection, &SourceCollection{
-		Url:    url,
-		Plugin: plugin,
-	}).Error
+	err = r.db.
+		Preload("Items").
+		Preload("CollectionTags.Tag").
+		First(&collection, &SourceCollection{
+			Url:    url,
+			Plugin: plugin,
+		}).Error
 	if err == nil {
 		return &collection, nil
 	}

@@ -138,6 +138,7 @@ func (r *DatabaseSourceRegistry) getOrCreateSourceCollection(
 		if err != nil {
 			return nil, err
 		}
+		ctag.Tag = tag
 
 		ctags = append(ctags, ctag)
 	}

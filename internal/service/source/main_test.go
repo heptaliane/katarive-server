@@ -99,7 +99,7 @@ func setupGetSourceCollectionResponse() {
 	gscr1.Sources = []*pb.SourceSummary{
 		{
 			Id:    "item1",
-			Title: "item-title1",
+			Title: "title1",
 			Url:   "http://example.com/1",
 		},
 	}
@@ -114,12 +114,12 @@ func setupGetSourceCollectionResponse() {
 	gscr2.Sources = []*pb.SourceSummary{
 		{
 			Id:    "item2",
-			Title: "item-title2",
+			Title: "title2",
 			Url:   "http://example.com/2",
 		},
 		{
 			Id:    "item3",
-			Title: "item-title3",
+			Title: "title3",
 			Url:   "http://example.com/3",
 		},
 	}

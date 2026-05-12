@@ -261,7 +261,9 @@ func (i *SourceItem) Assignments() clause.Set {
 	if i.Content != nil {
 		fields["content"] = i.Content
 	}
-	fields["language"] = i.Language
+	if i.Language != 0 {
+		fields["language"] = i.Language
+	}
 	return clause.Assignments(fields)
 }
 func (i *SourceItem) FromSourceItem(si *model.SourceItem) {

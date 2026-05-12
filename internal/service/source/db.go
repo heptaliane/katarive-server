@@ -142,8 +142,8 @@ func (r *DatabaseSourceRegistry) getOrCreateSourceCollection(
 		ctags = append(ctags, ctag)
 	}
 
-	sss := res.GetSources()
-	for _, ss := range sss {
+	var items []SourceItem
+	for _, ss := range res.GetSources() {
 		var item SourceItem
 		item.FromSourceSummary(ss)
 		item.Plugin = plugin
@@ -155,7 +155,12 @@ func (r *DatabaseSourceRegistry) getOrCreateSourceCollection(
 		if err != nil {
 			return nil, err
 		}
+
+		items = append(items, item)
 	}
+
+	collection.CollectionTags = ctags
+	collection.Items = items
 
 	return &collection, nil
 }
@@ -214,10 +219,9 @@ type CollectionTag struct {
 func (c *SourceCollection) FromSourceCollection(sc *model.SourceCollection) {
 	c.Id = sc.GetId()
 	c.Url = sc.GetUrl()
-	c.Title = sc.GetUrl()
+	c.Title = sc.GetTitle()
 	c.Description = sc.GetDescription()
 	c.Author = sc.GetAuthor()
-
 }
 func (c *SourceCollection) IntoSourceCollection() *model.SourceCollection {
 	var tags []string

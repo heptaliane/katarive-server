@@ -12,6 +12,15 @@ import (
 var gssmr pb.GetSourceServiceMetadataResponse
 var gsir pb.GetSourceItemResponse
 var gscr pb.GetSourceCollectionResponse
+var gsir1 pb.GetSourceItemResponse
+var gsir2 pb.GetSourceItemResponse
+var gscr1 pb.GetSourceCollectionResponse
+var gscr2 pb.GetSourceCollectionResponse
+
+const SM1_NAME string = "sm1"
+const SM2_NAME string = "sm2"
+const SM1_URL string = "http://example.com/1"
+const SM2_URL string = "http://example.com/2"
 
 func TestMain(m *testing.M) {
 	setupGetSourceServiceMetadataResponse()
@@ -39,6 +48,24 @@ func setupGetSourceItemResponse() {
 		Content:      "content",
 		Language:     pb.Language_LANGUAGE_ENGLISH,
 	}
+	collection1 := "collection1"
+	collection2 := "collection2"
+	gsir1.Item = &pb.SourceItem{
+		Id:           "item1",
+		CollectionId: &collection1,
+		Url:          SM1_URL,
+		Title:        "title1",
+		Content:      "content1",
+		Language:     pb.Language_LANGUAGE_ENGLISH,
+	}
+	gsir2.Item = &pb.SourceItem{
+		Id:           "item2",
+		CollectionId: &collection2,
+		Url:          SM2_URL,
+		Title:        "title2",
+		Content:      "content2",
+		Language:     pb.Language_LANGUAGE_ENGLISH,
+	}
 }
 func setupGetSourceCollectionResponse() {
 	gscr.Collection = &pb.SourceCollection{
@@ -59,6 +86,41 @@ func setupGetSourceCollectionResponse() {
 			Id:    "item-id-2",
 			Title: "item-title-2",
 			Url:   "http://example.com/2",
+		},
+	}
+	gscr1.Collection = &pb.SourceCollection{
+		Id:          "collection1",
+		Url:         "http://example.com/1",
+		Title:       "collection-title1",
+		Description: "collection-description1",
+		Author:      "collction-author1",
+		Tags:        []string{"tag1", "tag2"},
+	}
+	gscr1.Sources = []*pb.SourceSummary{
+		{
+			Id:    "item1",
+			Title: "item-title1",
+			Url:   "http://example.com/1",
+		},
+	}
+	gscr2.Collection = &pb.SourceCollection{
+		Id:          "collection2",
+		Url:         "http://example.com/2",
+		Title:       "collection-title2",
+		Description: "collection-description2",
+		Author:      "collction-author2",
+		Tags:        []string{"tag1", "tag3"},
+	}
+	gscr2.Sources = []*pb.SourceSummary{
+		{
+			Id:    "item2",
+			Title: "item-title2",
+			Url:   "http://example.com/2",
+		},
+		{
+			Id:    "item3",
+			Title: "item-title3",
+			Url:   "http://example.com/3",
 		},
 	}
 }

@@ -12,7 +12,7 @@ import (
 )
 
 type DatabaseSourceRegistry struct {
-	db  gorm.DB
+	db  *gorm.DB
 	sms []SourceManager
 }
 
@@ -158,6 +158,22 @@ func (r *DatabaseSourceRegistry) getOrCreateSourceCollection(
 	}
 
 	return &collection, nil
+}
+func NewDatabaseSourceRegistry(
+	db *gorm.DB,
+	sms []SourceManager,
+) *DatabaseSourceRegistry {
+	db.AutoMigrate(
+		&SourceCollection{},
+		&SourceItem{},
+		&Tag{},
+		&CollectionTag{},
+	)
+
+	return &DatabaseSourceRegistry{
+		db:  db,
+		sms: sms,
+	}
 }
 
 // GORM models

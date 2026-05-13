@@ -10,14 +10,14 @@ import (
 
 //go:generate mockgen -source=$GOFILE -destination=mock/mock_$GOFILE -package=mock
 type NarratorManager interface {
-	Metadata() *model.NarrateManagerMetadata
+	Metadata() *model.NarratorManagerMetadata
 
 	Narrate(ctx context.Context, req *pb.NarrateRequest) (*pb.NarrateResponse, error)
 }
 
 //go:generate mockgen -source=$GOFILE -destination=mock/mock_$GOFILE -package=mock
 type NarrateRegistry interface {
-	Metadata() []*model.NarrateManagerMetadata
+	Metadata() []*model.NarratorManagerMetadata
 
 	Do(ctx context.Context, source *model.SourceItem, opts ...NarrateOption) error
 }

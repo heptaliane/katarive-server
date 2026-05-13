@@ -44,10 +44,10 @@ func (m *MockNarratorManager) EXPECT() *MockNarratorManagerMockRecorder {
 }
 
 // Metadata mocks base method.
-func (m *MockNarratorManager) Metadata() *model.NarrateManagerMetadata {
+func (m *MockNarratorManager) Metadata() *model.NarratorManagerMetadata {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Metadata")
-	ret0, _ := ret[0].(*model.NarrateManagerMetadata)
+	ret0, _ := ret[0].(*model.NarratorManagerMetadata)
 	return ret0
 }
 
@@ -116,10 +116,10 @@ func (mr *MockNarrateRegistryMockRecorder) Do(ctx, source any, opts ...any) *gom
 }
 
 // Metadata mocks base method.
-func (m *MockNarrateRegistry) Metadata() []*model.NarrateManagerMetadata {
+func (m *MockNarrateRegistry) Metadata() []*model.NarratorManagerMetadata {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Metadata")
-	ret0, _ := ret[0].([]*model.NarrateManagerMetadata)
+	ret0, _ := ret[0].([]*model.NarratorManagerMetadata)
 	return ret0
 }
 

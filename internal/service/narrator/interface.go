@@ -28,7 +28,7 @@ type NarrateRegistry interface {
 
 type narrateOption struct {
 	language  *pb.Language
-	encoding  *pb.AudioEncoding
+	encoding  pb.AudioEncoding
 	speakerId int32
 	narrator  string
 }
@@ -39,7 +39,7 @@ func WithLanguage(language *pb.Language) NarrateOption {
 		opt.language = language
 	}
 }
-func WithEncoding(encoding *pb.AudioEncoding) NarrateOption {
+func WithEncoding(encoding pb.AudioEncoding) NarrateOption {
 	return func(opt *narrateOption) {
 		opt.encoding = encoding
 	}

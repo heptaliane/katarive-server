@@ -6,6 +6,6 @@ import (
 
 type NarratorManagerMetadata struct {
 	Name      string
-	Encodings []*pb.AudioEncoding
+	Encodings []pb.AudioEncoding
 	Speakers  []*pb.SpeakerInfo
 }

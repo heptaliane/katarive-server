@@ -15,7 +15,7 @@ type SemaphoreNarratorManager struct {
 
 	name      string
 	version   string
-	encodings []*pb.AudioEncoding
+	encodings []pb.AudioEncoding
 	speakers  []*pb.SpeakerInfo
 
 	mu *sync.RWMutex
@@ -40,3 +40,20 @@ func (n *SemaphoreNarratorManager) Narrate(
 
 // Ensure NarratorManager implementation
 var _ NarratorManager = new(SemaphoreNarratorManager)
+
+// Helpers
+func NewSemaphoreNarratorManager(ctx context.Context, client pb.NarratorServiceClient) (*SemaphoreNarratorManager, error) {
+	req := &pb.GetNarratorServiceMetadataRequest{}
+	res, err := client.GetNarratorServiceMetadata(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	return &SemaphoreNarratorManager{
+		client:    client,
+		name:      res.GetName(),
+		version:   res.GetVersion(),
+		encodings: res.GetSupportedEncoding(),
+		speakers:  res.GetSpeakers(),
+		mu:        new(sync.RWMutex),
+	}, nil
+}

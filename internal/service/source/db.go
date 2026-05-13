@@ -76,6 +76,9 @@ func (r *DatabaseSourceRegistry) SourceItems(
 	return collection.IntoSourceItems(), nil
 }
 
+// Ensure SourceRegistry implementation
+var _ SourceRegistry = new(DatabaseSourceRegistry)
+
 // helpers
 func (r *DatabaseSourceRegistry) find(url string) (SourceManager, error) {
 	for _, sm := range r.sms {

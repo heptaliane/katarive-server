@@ -82,7 +82,7 @@ func TestSemaphoreNarratorManagerMetadata(t *testing.T) {
 	}
 
 	actual := snm.Metadata()
-	if diff := cmp.Diff(expected, actual); diff != "" {
+	if diff := cmp.Diff(expected, actual, protocmp.Transform()); diff != "" {
 		t.Errorf("Metadata mismatch (-want +got):\n%s", diff)
 		return
 	}

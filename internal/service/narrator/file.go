@@ -58,7 +58,7 @@ func (r *FileNarratorRegistry) Do(
 }
 
 // helpers
-func NewFileNarratorMetadata(
+func NewFileNarratorRegistry(
 	ctx context.Context,
 	basedir string,
 	nms []NarratorManager,

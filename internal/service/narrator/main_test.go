@@ -37,6 +37,10 @@ func setupGetNarratorServiceMetadataResponse() {
 			pb.AudioEncoding_AUDIO_ENCODING_MP3,
 			pb.AudioEncoding_AUDIO_ENCODING_M4A,
 		},
+		Speakers: []*pb.SpeakerInfo{
+			{Id: 1, Name: "speaker1"},
+			{Id: 2, Name: "speaker2"},
+		},
 	}
 }
 func setupNarrateResponse() {

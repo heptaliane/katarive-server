@@ -8,6 +8,7 @@ import (
 	pb "github.com/heptaliane/katarive-go-sdk/gen/pb/plugin/v1"
 	"google.golang.org/protobuf/testing/protocmp"
 
+	"github.com/heptaliane/katarive-server/internal/model"
 	"github.com/heptaliane/katarive-server/internal/service/narrator"
 )
 
@@ -60,5 +61,29 @@ func TestSemaphoreNarratorManagerNarrate(t *testing.T) {
 				return
 			}
 		})
+	}
+}
+func TestSemaphoreNarratorManagerMetadata(t *testing.T) {
+	t.Parallel()
+
+	expected := &model.NarratorManagerMetadata{
+		Name:      "narrator.v1",
+		Encodings: gnsmr.SupportedEncoding,
+		Speakers:  gnsmr.Speakers,
+	}
+
+	client := setupNarratorServiceClient(t)
+
+	ctx := context.Background()
+	snm, err := narrator.NewSemaphoreNarratorManager(ctx, client)
+	if err != nil {
+		t.Errorf("Failed to create NarratorManager: %v", err)
+		return
+	}
+
+	actual := snm.Metadata()
+	if diff := cmp.Diff(expected, actual); diff != "" {
+		t.Errorf("Metadata mismatch (-want +got):\n%s", diff)
+		return
 	}
 }

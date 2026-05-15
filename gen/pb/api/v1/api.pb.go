@@ -180,27 +180,27 @@ func (x *QueueNarrationResponse) GetId() string {
 	return ""
 }
 
-type GetNarrationResultRequest struct {
+type GetNarrationRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *GetNarrationResultRequest) Reset() {
-	*x = GetNarrationResultRequest{}
+func (x *GetNarrationRequest) Reset() {
+	*x = GetNarrationRequest{}
 	mi := &file_api_v1_api_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *GetNarrationResultRequest) String() string {
+func (x *GetNarrationRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*GetNarrationResultRequest) ProtoMessage() {}
+func (*GetNarrationRequest) ProtoMessage() {}
 
-func (x *GetNarrationResultRequest) ProtoReflect() protoreflect.Message {
+func (x *GetNarrationRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_api_v1_api_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -212,19 +212,19 @@ func (x *GetNarrationResultRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use GetNarrationResultRequest.ProtoReflect.Descriptor instead.
-func (*GetNarrationResultRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use GetNarrationRequest.ProtoReflect.Descriptor instead.
+func (*GetNarrationRequest) Descriptor() ([]byte, []int) {
 	return file_api_v1_api_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *GetNarrationResultRequest) GetId() string {
+func (x *GetNarrationRequest) GetId() string {
 	if x != nil {
 		return x.Id
 	}
 	return ""
 }
 
-type GetNarrationResultResponse struct {
+type GetNarrationResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Status        JobStatus              `protobuf:"varint,1,opt,name=status,proto3,enum=api.v1.JobStatus" json:"status,omitempty"`
 	Path          *string                `protobuf:"bytes,2,opt,name=path,proto3,oneof" json:"path,omitempty"`
@@ -232,20 +232,20 @@ type GetNarrationResultResponse struct {
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *GetNarrationResultResponse) Reset() {
-	*x = GetNarrationResultResponse{}
+func (x *GetNarrationResponse) Reset() {
+	*x = GetNarrationResponse{}
 	mi := &file_api_v1_api_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *GetNarrationResultResponse) String() string {
+func (x *GetNarrationResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*GetNarrationResultResponse) ProtoMessage() {}
+func (*GetNarrationResponse) ProtoMessage() {}
 
-func (x *GetNarrationResultResponse) ProtoReflect() protoreflect.Message {
+func (x *GetNarrationResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_api_v1_api_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -257,19 +257,19 @@ func (x *GetNarrationResultResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use GetNarrationResultResponse.ProtoReflect.Descriptor instead.
-func (*GetNarrationResultResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use GetNarrationResponse.ProtoReflect.Descriptor instead.
+func (*GetNarrationResponse) Descriptor() ([]byte, []int) {
 	return file_api_v1_api_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *GetNarrationResultResponse) GetStatus() JobStatus {
+func (x *GetNarrationResponse) GetStatus() JobStatus {
 	if x != nil {
 		return x.Status
 	}
 	return JobStatus_JOB_STATUS_UNSPECIFIED
 }
 
-func (x *GetNarrationResultResponse) GetPath() string {
+func (x *GetNarrationResponse) GetPath() string {
 	if x != nil && x.Path != nil {
 		return *x.Path
 	}
@@ -1015,10 +1015,10 @@ const file_api_v1_api_proto_rawDesc = "" +
 	"\n" +
 	"speaker_id\x18\x03 \x01(\x05R\tspeakerId\"(\n" +
 	"\x16QueueNarrationResponse\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\"+\n" +
-	"\x19GetNarrationResultRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\"i\n" +
-	"\x1aGetNarrationResultResponse\x12)\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\"%\n" +
+	"\x13GetNarrationRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\"c\n" +
+	"\x14GetNarrationResponse\x12)\n" +
 	"\x06status\x18\x01 \x01(\x0e2\x11.api.v1.JobStatusR\x06status\x12\x17\n" +
 	"\x04path\x18\x02 \x01(\tH\x00R\x04path\x88\x01\x01B\a\n" +
 	"\x05_path\"\x15\n" +
@@ -1075,10 +1075,10 @@ const file_api_v1_api_proto_rawDesc = "" +
 	"\x16JOB_STATUS_PROGRESSING\x10\x01\x12\x18\n" +
 	"\x14JOB_STATUS_COMPLETED\x10\x02\x12\x15\n" +
 	"\x11JOB_STATUS_FAILED\x10\x03\x12\x18\n" +
-	"\x14JOB_STATUS_NOT_FOUND\x10\x042\xf2\x04\n" +
+	"\x14JOB_STATUS_NOT_FOUND\x10\x042\xe0\x04\n" +
 	"\x0fKatariveService\x12O\n" +
-	"\x0eQueueNarration\x12\x1d.api.v1.QueueNarrationRequest\x1a\x1e.api.v1.QueueNarrationResponse\x12[\n" +
-	"\x12GetNarrationResult\x12!.api.v1.GetNarrationResultRequest\x1a\".api.v1.GetNarrationResultResponse\x12I\n" +
+	"\x0eQueueNarration\x12\x1d.api.v1.QueueNarrationRequest\x1a\x1e.api.v1.QueueNarrationResponse\x12I\n" +
+	"\fGetNarration\x12\x1b.api.v1.GetNarrationRequest\x1a\x1c.api.v1.GetNarrationResponse\x12I\n" +
 	"\fGetNarrators\x12\x1b.api.v1.GetNarratorsRequest\x1a\x1c.api.v1.GetNarratorsResponse\x12R\n" +
 	"\x0fQueueSourceItem\x12\x1e.api.v1.QueueSourceItemRequest\x1a\x1f.api.v1.QueueSourceItemResponse\x12L\n" +
 	"\rGetSourceItem\x12\x1c.api.v1.GetSourceItemRequest\x1a\x1d.api.v1.GetSourceItemResponse\x12d\n" +
@@ -1105,8 +1105,8 @@ var file_api_v1_api_proto_goTypes = []any{
 	(JobStatus)(0),                        // 0: api.v1.JobStatus
 	(*QueueNarrationRequest)(nil),         // 1: api.v1.QueueNarrationRequest
 	(*QueueNarrationResponse)(nil),        // 2: api.v1.QueueNarrationResponse
-	(*GetNarrationResultRequest)(nil),     // 3: api.v1.GetNarrationResultRequest
-	(*GetNarrationResultResponse)(nil),    // 4: api.v1.GetNarrationResultResponse
+	(*GetNarrationRequest)(nil),           // 3: api.v1.GetNarrationRequest
+	(*GetNarrationResponse)(nil),          // 4: api.v1.GetNarrationResponse
 	(*GetNarratorsRequest)(nil),           // 5: api.v1.GetNarratorsRequest
 	(*GetNarratorsResponse)(nil),          // 6: api.v1.GetNarratorsResponse
 	(*Narrator)(nil),                      // 7: api.v1.Narrator
@@ -1123,7 +1123,7 @@ var file_api_v1_api_proto_goTypes = []any{
 	(*SourceCollection)(nil),              // 18: api.v1.SourceCollection
 }
 var file_api_v1_api_proto_depIdxs = []int32{
-	0,  // 0: api.v1.GetNarrationResultResponse.status:type_name -> api.v1.JobStatus
+	0,  // 0: api.v1.GetNarrationResponse.status:type_name -> api.v1.JobStatus
 	7,  // 1: api.v1.GetNarratorsResponse.narrator:type_name -> api.v1.Narrator
 	8,  // 2: api.v1.Narrator.speakers:type_name -> api.v1.Speaker
 	0,  // 3: api.v1.GetSourceItemResponse.status:type_name -> api.v1.JobStatus
@@ -1132,14 +1132,14 @@ var file_api_v1_api_proto_depIdxs = []int32{
 	18, // 6: api.v1.GetSourceCollectionResponse.collection:type_name -> api.v1.SourceCollection
 	17, // 7: api.v1.GetSourceCollectionResponse.sources:type_name -> api.v1.SourceSummary
 	1,  // 8: api.v1.KatariveService.QueueNarration:input_type -> api.v1.QueueNarrationRequest
-	3,  // 9: api.v1.KatariveService.GetNarrationResult:input_type -> api.v1.GetNarrationResultRequest
+	3,  // 9: api.v1.KatariveService.GetNarration:input_type -> api.v1.GetNarrationRequest
 	5,  // 10: api.v1.KatariveService.GetNarrators:input_type -> api.v1.GetNarratorsRequest
 	9,  // 11: api.v1.KatariveService.QueueSourceItem:input_type -> api.v1.QueueSourceItemRequest
 	11, // 12: api.v1.KatariveService.GetSourceItem:input_type -> api.v1.GetSourceItemRequest
 	13, // 13: api.v1.KatariveService.QueueSourceCollection:input_type -> api.v1.QueueSourceCollectionRequest
 	15, // 14: api.v1.KatariveService.GetSourceCollection:input_type -> api.v1.GetSourceCollectionRequest
 	2,  // 15: api.v1.KatariveService.QueueNarration:output_type -> api.v1.QueueNarrationResponse
-	4,  // 16: api.v1.KatariveService.GetNarrationResult:output_type -> api.v1.GetNarrationResultResponse
+	4,  // 16: api.v1.KatariveService.GetNarration:output_type -> api.v1.GetNarrationResponse
 	6,  // 17: api.v1.KatariveService.GetNarrators:output_type -> api.v1.GetNarratorsResponse
 	10, // 18: api.v1.KatariveService.QueueSourceItem:output_type -> api.v1.QueueSourceItemResponse
 	12, // 19: api.v1.KatariveService.GetSourceItem:output_type -> api.v1.GetSourceItemResponse

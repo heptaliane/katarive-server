@@ -33,15 +33,24 @@ const (
 // reflection-formatted method names, remove the leading slash and convert the remaining slash to a
 // period.
 const (
-	// KatariveServiceCreateNarrationProcedure is the fully-qualified name of the KatariveService's
-	// CreateNarration RPC.
-	KatariveServiceCreateNarrationProcedure = "/api.v1.KatariveService/CreateNarration"
-	// KatariveServiceGetJobStatusProcedure is the fully-qualified name of the KatariveService's
-	// GetJobStatus RPC.
-	KatariveServiceGetJobStatusProcedure = "/api.v1.KatariveService/GetJobStatus"
-	// KatariveServiceGetSpeakersProcedure is the fully-qualified name of the KatariveService's
-	// GetSpeakers RPC.
-	KatariveServiceGetSpeakersProcedure = "/api.v1.KatariveService/GetSpeakers"
+	// KatariveServiceQueueNarrationProcedure is the fully-qualified name of the KatariveService's
+	// QueueNarration RPC.
+	KatariveServiceQueueNarrationProcedure = "/api.v1.KatariveService/QueueNarration"
+	// KatariveServiceGetNarrationResultProcedure is the fully-qualified name of the KatariveService's
+	// GetNarrationResult RPC.
+	KatariveServiceGetNarrationResultProcedure = "/api.v1.KatariveService/GetNarrationResult"
+	// KatariveServiceGetNarratorsProcedure is the fully-qualified name of the KatariveService's
+	// GetNarrators RPC.
+	KatariveServiceGetNarratorsProcedure = "/api.v1.KatariveService/GetNarrators"
+	// KatariveServiceQueueSourceItemProcedure is the fully-qualified name of the KatariveService's
+	// QueueSourceItem RPC.
+	KatariveServiceQueueSourceItemProcedure = "/api.v1.KatariveService/QueueSourceItem"
+	// KatariveServiceGetSourceItemProcedure is the fully-qualified name of the KatariveService's
+	// GetSourceItem RPC.
+	KatariveServiceGetSourceItemProcedure = "/api.v1.KatariveService/GetSourceItem"
+	// KatariveServiceQueueSourceCollectionProcedure is the fully-qualified name of the
+	// KatariveService's QueueSourceCollection RPC.
+	KatariveServiceQueueSourceCollectionProcedure = "/api.v1.KatariveService/QueueSourceCollection"
 	// KatariveServiceGetSourceCollectionProcedure is the fully-qualified name of the KatariveService's
 	// GetSourceCollection RPC.
 	KatariveServiceGetSourceCollectionProcedure = "/api.v1.KatariveService/GetSourceCollection"
@@ -49,9 +58,12 @@ const (
 
 // KatariveServiceClient is a client for the api.v1.KatariveService service.
 type KatariveServiceClient interface {
-	CreateNarration(context.Context, *connect.Request[v1.CreateNarrationRequest]) (*connect.Response[v1.CreateNarrationResponse], error)
-	GetJobStatus(context.Context, *connect.Request[v1.GetJobStatusRequest]) (*connect.Response[v1.GetJobStatusResponse], error)
-	GetSpeakers(context.Context, *connect.Request[v1.GetSpeakersRequest]) (*connect.Response[v1.GetSpeakersResponse], error)
+	QueueNarration(context.Context, *connect.Request[v1.QueueNarrationRequest]) (*connect.Response[v1.QueueNarrationResponse], error)
+	GetNarrationResult(context.Context, *connect.Request[v1.GetNarrationResultRequest]) (*connect.Response[v1.GetNarrationResultResponse], error)
+	GetNarrators(context.Context, *connect.Request[v1.GetNarratorsRequest]) (*connect.Response[v1.GetNarratorsResponse], error)
+	QueueSourceItem(context.Context, *connect.Request[v1.QueueSourceItemRequest]) (*connect.Response[v1.QueueSourceItemResponse], error)
+	GetSourceItem(context.Context, *connect.Request[v1.GetSourceItemRequest]) (*connect.Response[v1.GetSourceItemResponse], error)
+	QueueSourceCollection(context.Context, *connect.Request[v1.QueueSourceCollectionRequest]) (*connect.Response[v1.QueueSourceCollectionResponse], error)
 	GetSourceCollection(context.Context, *connect.Request[v1.GetSourceCollectionRequest]) (*connect.Response[v1.GetSourceCollectionResponse], error)
 }
 
@@ -66,22 +78,40 @@ func NewKatariveServiceClient(httpClient connect.HTTPClient, baseURL string, opt
 	baseURL = strings.TrimRight(baseURL, "/")
 	katariveServiceMethods := v1.File_api_v1_api_proto.Services().ByName("KatariveService").Methods()
 	return &katariveServiceClient{
-		createNarration: connect.NewClient[v1.CreateNarrationRequest, v1.CreateNarrationResponse](
+		queueNarration: connect.NewClient[v1.QueueNarrationRequest, v1.QueueNarrationResponse](
 			httpClient,
-			baseURL+KatariveServiceCreateNarrationProcedure,
-			connect.WithSchema(katariveServiceMethods.ByName("CreateNarration")),
+			baseURL+KatariveServiceQueueNarrationProcedure,
+			connect.WithSchema(katariveServiceMethods.ByName("QueueNarration")),
 			connect.WithClientOptions(opts...),
 		),
-		getJobStatus: connect.NewClient[v1.GetJobStatusRequest, v1.GetJobStatusResponse](
+		getNarrationResult: connect.NewClient[v1.GetNarrationResultRequest, v1.GetNarrationResultResponse](
 			httpClient,
-			baseURL+KatariveServiceGetJobStatusProcedure,
-			connect.WithSchema(katariveServiceMethods.ByName("GetJobStatus")),
+			baseURL+KatariveServiceGetNarrationResultProcedure,
+			connect.WithSchema(katariveServiceMethods.ByName("GetNarrationResult")),
 			connect.WithClientOptions(opts...),
 		),
-		getSpeakers: connect.NewClient[v1.GetSpeakersRequest, v1.GetSpeakersResponse](
+		getNarrators: connect.NewClient[v1.GetNarratorsRequest, v1.GetNarratorsResponse](
 			httpClient,
-			baseURL+KatariveServiceGetSpeakersProcedure,
-			connect.WithSchema(katariveServiceMethods.ByName("GetSpeakers")),
+			baseURL+KatariveServiceGetNarratorsProcedure,
+			connect.WithSchema(katariveServiceMethods.ByName("GetNarrators")),
+			connect.WithClientOptions(opts...),
+		),
+		queueSourceItem: connect.NewClient[v1.QueueSourceItemRequest, v1.QueueSourceItemResponse](
+			httpClient,
+			baseURL+KatariveServiceQueueSourceItemProcedure,
+			connect.WithSchema(katariveServiceMethods.ByName("QueueSourceItem")),
+			connect.WithClientOptions(opts...),
+		),
+		getSourceItem: connect.NewClient[v1.GetSourceItemRequest, v1.GetSourceItemResponse](
+			httpClient,
+			baseURL+KatariveServiceGetSourceItemProcedure,
+			connect.WithSchema(katariveServiceMethods.ByName("GetSourceItem")),
+			connect.WithClientOptions(opts...),
+		),
+		queueSourceCollection: connect.NewClient[v1.QueueSourceCollectionRequest, v1.QueueSourceCollectionResponse](
+			httpClient,
+			baseURL+KatariveServiceQueueSourceCollectionProcedure,
+			connect.WithSchema(katariveServiceMethods.ByName("QueueSourceCollection")),
 			connect.WithClientOptions(opts...),
 		),
 		getSourceCollection: connect.NewClient[v1.GetSourceCollectionRequest, v1.GetSourceCollectionResponse](
@@ -95,25 +125,43 @@ func NewKatariveServiceClient(httpClient connect.HTTPClient, baseURL string, opt
 
 // katariveServiceClient implements KatariveServiceClient.
 type katariveServiceClient struct {
-	createNarration     *connect.Client[v1.CreateNarrationRequest, v1.CreateNarrationResponse]
-	getJobStatus        *connect.Client[v1.GetJobStatusRequest, v1.GetJobStatusResponse]
-	getSpeakers         *connect.Client[v1.GetSpeakersRequest, v1.GetSpeakersResponse]
-	getSourceCollection *connect.Client[v1.GetSourceCollectionRequest, v1.GetSourceCollectionResponse]
+	queueNarration        *connect.Client[v1.QueueNarrationRequest, v1.QueueNarrationResponse]
+	getNarrationResult    *connect.Client[v1.GetNarrationResultRequest, v1.GetNarrationResultResponse]
+	getNarrators          *connect.Client[v1.GetNarratorsRequest, v1.GetNarratorsResponse]
+	queueSourceItem       *connect.Client[v1.QueueSourceItemRequest, v1.QueueSourceItemResponse]
+	getSourceItem         *connect.Client[v1.GetSourceItemRequest, v1.GetSourceItemResponse]
+	queueSourceCollection *connect.Client[v1.QueueSourceCollectionRequest, v1.QueueSourceCollectionResponse]
+	getSourceCollection   *connect.Client[v1.GetSourceCollectionRequest, v1.GetSourceCollectionResponse]
 }
 
-// CreateNarration calls api.v1.KatariveService.CreateNarration.
-func (c *katariveServiceClient) CreateNarration(ctx context.Context, req *connect.Request[v1.CreateNarrationRequest]) (*connect.Response[v1.CreateNarrationResponse], error) {
-	return c.createNarration.CallUnary(ctx, req)
+// QueueNarration calls api.v1.KatariveService.QueueNarration.
+func (c *katariveServiceClient) QueueNarration(ctx context.Context, req *connect.Request[v1.QueueNarrationRequest]) (*connect.Response[v1.QueueNarrationResponse], error) {
+	return c.queueNarration.CallUnary(ctx, req)
 }
 
-// GetJobStatus calls api.v1.KatariveService.GetJobStatus.
-func (c *katariveServiceClient) GetJobStatus(ctx context.Context, req *connect.Request[v1.GetJobStatusRequest]) (*connect.Response[v1.GetJobStatusResponse], error) {
-	return c.getJobStatus.CallUnary(ctx, req)
+// GetNarrationResult calls api.v1.KatariveService.GetNarrationResult.
+func (c *katariveServiceClient) GetNarrationResult(ctx context.Context, req *connect.Request[v1.GetNarrationResultRequest]) (*connect.Response[v1.GetNarrationResultResponse], error) {
+	return c.getNarrationResult.CallUnary(ctx, req)
 }
 
-// GetSpeakers calls api.v1.KatariveService.GetSpeakers.
-func (c *katariveServiceClient) GetSpeakers(ctx context.Context, req *connect.Request[v1.GetSpeakersRequest]) (*connect.Response[v1.GetSpeakersResponse], error) {
-	return c.getSpeakers.CallUnary(ctx, req)
+// GetNarrators calls api.v1.KatariveService.GetNarrators.
+func (c *katariveServiceClient) GetNarrators(ctx context.Context, req *connect.Request[v1.GetNarratorsRequest]) (*connect.Response[v1.GetNarratorsResponse], error) {
+	return c.getNarrators.CallUnary(ctx, req)
+}
+
+// QueueSourceItem calls api.v1.KatariveService.QueueSourceItem.
+func (c *katariveServiceClient) QueueSourceItem(ctx context.Context, req *connect.Request[v1.QueueSourceItemRequest]) (*connect.Response[v1.QueueSourceItemResponse], error) {
+	return c.queueSourceItem.CallUnary(ctx, req)
+}
+
+// GetSourceItem calls api.v1.KatariveService.GetSourceItem.
+func (c *katariveServiceClient) GetSourceItem(ctx context.Context, req *connect.Request[v1.GetSourceItemRequest]) (*connect.Response[v1.GetSourceItemResponse], error) {
+	return c.getSourceItem.CallUnary(ctx, req)
+}
+
+// QueueSourceCollection calls api.v1.KatariveService.QueueSourceCollection.
+func (c *katariveServiceClient) QueueSourceCollection(ctx context.Context, req *connect.Request[v1.QueueSourceCollectionRequest]) (*connect.Response[v1.QueueSourceCollectionResponse], error) {
+	return c.queueSourceCollection.CallUnary(ctx, req)
 }
 
 // GetSourceCollection calls api.v1.KatariveService.GetSourceCollection.
@@ -123,9 +171,12 @@ func (c *katariveServiceClient) GetSourceCollection(ctx context.Context, req *co
 
 // KatariveServiceHandler is an implementation of the api.v1.KatariveService service.
 type KatariveServiceHandler interface {
-	CreateNarration(context.Context, *connect.Request[v1.CreateNarrationRequest]) (*connect.Response[v1.CreateNarrationResponse], error)
-	GetJobStatus(context.Context, *connect.Request[v1.GetJobStatusRequest]) (*connect.Response[v1.GetJobStatusResponse], error)
-	GetSpeakers(context.Context, *connect.Request[v1.GetSpeakersRequest]) (*connect.Response[v1.GetSpeakersResponse], error)
+	QueueNarration(context.Context, *connect.Request[v1.QueueNarrationRequest]) (*connect.Response[v1.QueueNarrationResponse], error)
+	GetNarrationResult(context.Context, *connect.Request[v1.GetNarrationResultRequest]) (*connect.Response[v1.GetNarrationResultResponse], error)
+	GetNarrators(context.Context, *connect.Request[v1.GetNarratorsRequest]) (*connect.Response[v1.GetNarratorsResponse], error)
+	QueueSourceItem(context.Context, *connect.Request[v1.QueueSourceItemRequest]) (*connect.Response[v1.QueueSourceItemResponse], error)
+	GetSourceItem(context.Context, *connect.Request[v1.GetSourceItemRequest]) (*connect.Response[v1.GetSourceItemResponse], error)
+	QueueSourceCollection(context.Context, *connect.Request[v1.QueueSourceCollectionRequest]) (*connect.Response[v1.QueueSourceCollectionResponse], error)
 	GetSourceCollection(context.Context, *connect.Request[v1.GetSourceCollectionRequest]) (*connect.Response[v1.GetSourceCollectionResponse], error)
 }
 
@@ -136,22 +187,40 @@ type KatariveServiceHandler interface {
 // and JSON codecs. They also support gzip compression.
 func NewKatariveServiceHandler(svc KatariveServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
 	katariveServiceMethods := v1.File_api_v1_api_proto.Services().ByName("KatariveService").Methods()
-	katariveServiceCreateNarrationHandler := connect.NewUnaryHandler(
-		KatariveServiceCreateNarrationProcedure,
-		svc.CreateNarration,
-		connect.WithSchema(katariveServiceMethods.ByName("CreateNarration")),
+	katariveServiceQueueNarrationHandler := connect.NewUnaryHandler(
+		KatariveServiceQueueNarrationProcedure,
+		svc.QueueNarration,
+		connect.WithSchema(katariveServiceMethods.ByName("QueueNarration")),
 		connect.WithHandlerOptions(opts...),
 	)
-	katariveServiceGetJobStatusHandler := connect.NewUnaryHandler(
-		KatariveServiceGetJobStatusProcedure,
-		svc.GetJobStatus,
-		connect.WithSchema(katariveServiceMethods.ByName("GetJobStatus")),
+	katariveServiceGetNarrationResultHandler := connect.NewUnaryHandler(
+		KatariveServiceGetNarrationResultProcedure,
+		svc.GetNarrationResult,
+		connect.WithSchema(katariveServiceMethods.ByName("GetNarrationResult")),
 		connect.WithHandlerOptions(opts...),
 	)
-	katariveServiceGetSpeakersHandler := connect.NewUnaryHandler(
-		KatariveServiceGetSpeakersProcedure,
-		svc.GetSpeakers,
-		connect.WithSchema(katariveServiceMethods.ByName("GetSpeakers")),
+	katariveServiceGetNarratorsHandler := connect.NewUnaryHandler(
+		KatariveServiceGetNarratorsProcedure,
+		svc.GetNarrators,
+		connect.WithSchema(katariveServiceMethods.ByName("GetNarrators")),
+		connect.WithHandlerOptions(opts...),
+	)
+	katariveServiceQueueSourceItemHandler := connect.NewUnaryHandler(
+		KatariveServiceQueueSourceItemProcedure,
+		svc.QueueSourceItem,
+		connect.WithSchema(katariveServiceMethods.ByName("QueueSourceItem")),
+		connect.WithHandlerOptions(opts...),
+	)
+	katariveServiceGetSourceItemHandler := connect.NewUnaryHandler(
+		KatariveServiceGetSourceItemProcedure,
+		svc.GetSourceItem,
+		connect.WithSchema(katariveServiceMethods.ByName("GetSourceItem")),
+		connect.WithHandlerOptions(opts...),
+	)
+	katariveServiceQueueSourceCollectionHandler := connect.NewUnaryHandler(
+		KatariveServiceQueueSourceCollectionProcedure,
+		svc.QueueSourceCollection,
+		connect.WithSchema(katariveServiceMethods.ByName("QueueSourceCollection")),
 		connect.WithHandlerOptions(opts...),
 	)
 	katariveServiceGetSourceCollectionHandler := connect.NewUnaryHandler(
@@ -162,12 +231,18 @@ func NewKatariveServiceHandler(svc KatariveServiceHandler, opts ...connect.Handl
 	)
 	return "/api.v1.KatariveService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
-		case KatariveServiceCreateNarrationProcedure:
-			katariveServiceCreateNarrationHandler.ServeHTTP(w, r)
-		case KatariveServiceGetJobStatusProcedure:
-			katariveServiceGetJobStatusHandler.ServeHTTP(w, r)
-		case KatariveServiceGetSpeakersProcedure:
-			katariveServiceGetSpeakersHandler.ServeHTTP(w, r)
+		case KatariveServiceQueueNarrationProcedure:
+			katariveServiceQueueNarrationHandler.ServeHTTP(w, r)
+		case KatariveServiceGetNarrationResultProcedure:
+			katariveServiceGetNarrationResultHandler.ServeHTTP(w, r)
+		case KatariveServiceGetNarratorsProcedure:
+			katariveServiceGetNarratorsHandler.ServeHTTP(w, r)
+		case KatariveServiceQueueSourceItemProcedure:
+			katariveServiceQueueSourceItemHandler.ServeHTTP(w, r)
+		case KatariveServiceGetSourceItemProcedure:
+			katariveServiceGetSourceItemHandler.ServeHTTP(w, r)
+		case KatariveServiceQueueSourceCollectionProcedure:
+			katariveServiceQueueSourceCollectionHandler.ServeHTTP(w, r)
 		case KatariveServiceGetSourceCollectionProcedure:
 			katariveServiceGetSourceCollectionHandler.ServeHTTP(w, r)
 		default:
@@ -179,16 +254,28 @@ func NewKatariveServiceHandler(svc KatariveServiceHandler, opts ...connect.Handl
 // UnimplementedKatariveServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedKatariveServiceHandler struct{}
 
-func (UnimplementedKatariveServiceHandler) CreateNarration(context.Context, *connect.Request[v1.CreateNarrationRequest]) (*connect.Response[v1.CreateNarrationResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("api.v1.KatariveService.CreateNarration is not implemented"))
+func (UnimplementedKatariveServiceHandler) QueueNarration(context.Context, *connect.Request[v1.QueueNarrationRequest]) (*connect.Response[v1.QueueNarrationResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("api.v1.KatariveService.QueueNarration is not implemented"))
 }
 
-func (UnimplementedKatariveServiceHandler) GetJobStatus(context.Context, *connect.Request[v1.GetJobStatusRequest]) (*connect.Response[v1.GetJobStatusResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("api.v1.KatariveService.GetJobStatus is not implemented"))
+func (UnimplementedKatariveServiceHandler) GetNarrationResult(context.Context, *connect.Request[v1.GetNarrationResultRequest]) (*connect.Response[v1.GetNarrationResultResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("api.v1.KatariveService.GetNarrationResult is not implemented"))
 }
 
-func (UnimplementedKatariveServiceHandler) GetSpeakers(context.Context, *connect.Request[v1.GetSpeakersRequest]) (*connect.Response[v1.GetSpeakersResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("api.v1.KatariveService.GetSpeakers is not implemented"))
+func (UnimplementedKatariveServiceHandler) GetNarrators(context.Context, *connect.Request[v1.GetNarratorsRequest]) (*connect.Response[v1.GetNarratorsResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("api.v1.KatariveService.GetNarrators is not implemented"))
+}
+
+func (UnimplementedKatariveServiceHandler) QueueSourceItem(context.Context, *connect.Request[v1.QueueSourceItemRequest]) (*connect.Response[v1.QueueSourceItemResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("api.v1.KatariveService.QueueSourceItem is not implemented"))
+}
+
+func (UnimplementedKatariveServiceHandler) GetSourceItem(context.Context, *connect.Request[v1.GetSourceItemRequest]) (*connect.Response[v1.GetSourceItemResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("api.v1.KatariveService.GetSourceItem is not implemented"))
+}
+
+func (UnimplementedKatariveServiceHandler) QueueSourceCollection(context.Context, *connect.Request[v1.QueueSourceCollectionRequest]) (*connect.Response[v1.QueueSourceCollectionResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("api.v1.KatariveService.QueueSourceCollection is not implemented"))
 }
 
 func (UnimplementedKatariveServiceHandler) GetSourceCollection(context.Context, *connect.Request[v1.GetSourceCollectionRequest]) (*connect.Response[v1.GetSourceCollectionResponse], error) {

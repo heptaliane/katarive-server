@@ -110,3 +110,6 @@ func (q *PluginNarrationJobQueue) Get(id string) (NarrationJob, error) {
 
 	return job, nil
 }
+
+// Ensure PluginNarrationJobQueue implements NarrationJobQueue
+var _ NarrationJobQueue = new(PluginNarrationJobQueue)

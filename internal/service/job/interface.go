@@ -18,7 +18,7 @@ type Job[T any] interface {
 //go:generate mockgen -source=$GOFILE -destination=mock/mock_$GOFILE -package=mock
 type JobQueue[S, T any] interface {
 	Queue(ctx context.Context, opts ...JobOption[S]) (string, error)
-	Get(id string) (*Job[T], error)
+	Get(id string) (Job[T], error)
 }
 
 type NarrationJob = Job[string]

@@ -9,7 +9,6 @@ import (
 	"google.golang.org/protobuf/testing/protocmp"
 
 	pb "github.com/heptaliane/katarive-server/gen/pb/api/v1"
-	"github.com/heptaliane/katarive-server/internal/handler"
 )
 
 func TestKatariveHandlerV1Narration(t *testing.T) {
@@ -17,10 +16,7 @@ func TestKatariveHandlerV1Narration(t *testing.T) {
 
 	p := VALID_PATH
 
-	sr := newSourceRegistry(t)
-	nr := newNarrateRegistry(t)
-	pm := handler.NewBasePathModifier()
-	h := handler.NewKatariveHandlerV1(sr, nr, pm)
+	h := newKatariveHandlerV1(t)
 
 	cases := map[string]struct {
 		url              string
@@ -74,6 +70,54 @@ func TestKatariveHandlerV1Narration(t *testing.T) {
 			diff := cmp.Diff(tc.expectedResponse, jres, protocmp.Transform())
 			if diff != "" {
 				t.Errorf("GetNarration returns unexpected response (-want +got):\n%s", diff)
+				return
+			}
+		})
+	}
+}
+func TestKatariveHandlerV1GetNarrators(t *testing.T) {
+	t.Parallel()
+
+	h := newKatariveHandlerV1(t)
+
+	cases := map[string]struct {
+		expected *pb.GetNarratorsResponse
+	}{
+		"valid": {
+			expected: &pb.GetNarratorsResponse{
+				Narrator: []*pb.Narrator{
+					{
+						Name: "narrator1",
+						Speakers: []*pb.Speaker{
+							{Id: 1, Label: "narrator1-name1"},
+						},
+					},
+					{
+						Name: "narrator2",
+						Speakers: []*pb.Speaker{
+							{Id: 1, Label: "narrator2-name1"},
+							{Id: 2, Label: "narrator2-name2"},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			ctx := context.Background()
+			req := &pb.GetNarratorsRequest{}
+			res, err := h.GetNarrators(ctx, req)
+			if err != nil {
+				t.Errorf("GetNarrators returns unexpected error: %v", err)
+				return
+			}
+			diff := cmp.Diff(tc.expected, res, protocmp.Transform())
+			if diff != "" {
+				t.Errorf("GetNarrators unmatch (-want +got):\n%s", diff)
 				return
 			}
 		})

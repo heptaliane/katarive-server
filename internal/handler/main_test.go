@@ -9,6 +9,7 @@ import (
 	pb "github.com/heptaliane/katarive-go-sdk/gen/pb/plugin/v1"
 	"go.uber.org/mock/gomock"
 
+	"github.com/heptaliane/katarive-server/internal/handler"
 	"github.com/heptaliane/katarive-server/internal/model"
 	"github.com/heptaliane/katarive-server/internal/service/narrator"
 	nmock "github.com/heptaliane/katarive-server/internal/service/narrator/mock"
@@ -113,4 +114,10 @@ func newNarrateRegistry(t *testing.T) narrator.NarrateRegistry {
 	nr.EXPECT().Metadata().Return(nmms).AnyTimes()
 	nr.EXPECT().Do(gomock.Any(), gomock.Any(), gomock.Any()).Return(VALID_PATH, nil).AnyTimes()
 	return nr
+}
+func newKatariveHandlerV1(t *testing.T) *handler.KatariveHandlerV1 {
+	sr := newSourceRegistry(t)
+	nr := newNarrateRegistry(t)
+	pm := handler.NewBasePathModifier()
+	return handler.NewKatariveHandlerV1(sr, nr, pm)
 }

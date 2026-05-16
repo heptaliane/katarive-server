@@ -2,47 +2,40 @@ package handler_test
 
 import (
 	"context"
-	"errors"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/google/go-cmp/cmp/cmpopts"
-	"go.uber.org/mock/gomock"
+	"google.golang.org/protobuf/testing/protocmp"
 
 	pb "github.com/heptaliane/katarive-server/gen/pb/api/v1"
 	"github.com/heptaliane/katarive-server/internal/handler"
-	"github.com/heptaliane/katarive-server/internal/service"
-	"github.com/heptaliane/katarive-server/internal/service/mock"
 )
 
-func TestKatariveHandlerV1CreateNarration(t *testing.T) {
+func TestKatariveHandlerV1Narration(t *testing.T) {
 	t.Parallel()
 
-	js := mock.NewMockNarrateJobService(gomock.NewController(t))
-	pm := handler.NewBasePathModifier()
-	kh := handler.NewKatariveHandler(js, pm)
+	p := VALID_PATH
 
-	validUrl := "http://valid.com"
-	invalidUrl := "http://invalid.com"
-	validJobId := "jobId"
-	invalidError := errors.New("invalid job")
-	js.EXPECT().Enqueue(gomock.Any(), validUrl, gomock.Any(), gomock.Any()).
-		Return(validJobId, nil).AnyTimes()
-	js.EXPECT().Enqueue(gomock.Any(), invalidUrl, gomock.Any(), gomock.Any()).
-		Return("", invalidError).AnyTimes()
+	sr := newSourceRegistry(t)
+	nr := newNarrateRegistry(t)
+	pm := handler.NewBasePathModifier()
+	h := handler.NewKatariveHandlerV1(sr, nr, pm)
 
 	cases := map[string]struct {
 		url              string
-		expectedResponse *pb.CreateNarrationResponse
-		expectedError    error
+		expectedResponse *pb.GetNarrationResponse
+		expectedJobError error
 	}{
-		"valid": {
-			url:              validUrl,
-			expectedResponse: &pb.CreateNarrationResponse{Id: validJobId},
+		"valid_url": {
+			url: VALID_URL,
+			expectedResponse: &pb.GetNarrationResponse{
+				Status: pb.JobStatus_JOB_STATUS_COMPLETED,
+				Path:   &p,
+			},
 		},
-		"invalid": {
-			url:           invalidUrl,
-			expectedError: invalidError,
+		"invalid_url": {
+			url:              VALID_URL,
+			expectedJobError: sie,
 		},
 	}
 
@@ -51,100 +44,32 @@ func TestKatariveHandlerV1CreateNarration(t *testing.T) {
 			t.Parallel()
 
 			ctx := context.Background()
-			req := &pb.CreateNarrationRequest{Url: tc.url}
-			res, err := kh.CreateNarration(ctx, req)
-			if err != tc.expectedError {
-				t.Errorf("Unmatched error: expected %v but got %v", err, tc.expectedError)
-				return
-			}
-			opt := cmpopts.IgnoreUnexported(pb.CreateNarrationResponse{})
-			if diff := cmp.Diff(tc.expectedResponse, res, opt); diff != "" {
-				t.Errorf("Unmatched CrateNarrationResponse (got: -, want: +):\n%s", diff)
-				return
-			}
-		})
-	}
-}
-
-func TestKatariveHandlerV1GetJobStatus(t *testing.T) {
-	t.Parallel()
-
-	completedJob := mock.NewMockNarrateJob(gomock.NewController(t))
-	failedJob := mock.NewMockNarrateJob(gomock.NewController(t))
-	progressJob := mock.NewMockNarrateJob(gomock.NewController(t))
-	js := mock.NewMockNarrateJobService(gomock.NewController(t))
-	pm := handler.NewBasePathModifier()
-	kh := handler.NewKatariveHandler(js, pm)
-
-	validJobId := "valid"
-	notFoundJobId := "not_found"
-	getJobFailedJobId := "job_failed"
-	getResultFailedJobId := "result_failed"
-	progressJobId := "progress"
-	notFoundError := &service.JobNotFoundError{JobId: notFoundJobId}
-	validPath := "/path/to/file"
-
-	js.EXPECT().GetJob(validJobId).Return(completedJob, nil).AnyTimes()
-	js.EXPECT().GetJob(notFoundJobId).Return(nil, notFoundError).AnyTimes()
-	js.EXPECT().GetJob(getJobFailedJobId).Return(nil, errors.New("some error")).AnyTimes()
-	js.EXPECT().GetJob(getResultFailedJobId).Return(failedJob, nil).AnyTimes()
-	js.EXPECT().GetJob(progressJobId).Return(progressJob, nil).AnyTimes()
-	completedJob.EXPECT().GetResult().Return(validPath, nil).Times(1)
-	failedJob.EXPECT().GetResult().Return("", errors.New("some error")).Times(1)
-	progressJob.EXPECT().GetResult().Return("", nil).Times(1)
-
-	cases := map[string]struct {
-		jobId            string
-		expectedResponse *pb.GetJobStatusResponse
-	}{
-		"valid": {
-			jobId: validJobId,
-			expectedResponse: &pb.GetJobStatusResponse{
-				Status: pb.GetJobStatusResponse_STATUS_COMPLETED,
-				Path:   &validPath,
-			},
-		},
-		"notFound": {
-			jobId: notFoundJobId,
-			expectedResponse: &pb.GetJobStatusResponse{
-				Status: pb.GetJobStatusResponse_STATUS_NOT_FOUND,
-			},
-		},
-		"getJob-failed": {
-			jobId: getJobFailedJobId,
-			expectedResponse: &pb.GetJobStatusResponse{
-				Status: pb.GetJobStatusResponse_STATUS_FAILED,
-			},
-		},
-		"getResult-failed": {
-			jobId: getResultFailedJobId,
-			expectedResponse: &pb.GetJobStatusResponse{
-				Status: pb.GetJobStatusResponse_STATUS_FAILED,
-			},
-		},
-		"progress": {
-			jobId: progressJobId,
-			expectedResponse: &pb.GetJobStatusResponse{
-				Status: pb.GetJobStatusResponse_STATUS_PROGRESSING,
-			},
-		},
-	}
-
-	for name, tc := range cases {
-		t.Run(name, func(t *testing.T) {
-			t.Parallel()
-
-			ctx := context.Background()
-			req := &pb.GetJobStatusRequest{Id: tc.jobId}
-			res, err := kh.GetJobStatus(ctx, req)
+			qreq := &pb.QueueNarrationRequest{Url: tc.url}
+			qres, err := h.QueueNarration(ctx, qreq)
 			if err != nil {
-				t.Errorf("Unexpected error: %v", err)
+				t.Errorf("QueueNarration returns unexpected error: %v", err)
 				return
 			}
 
-			opt := cmpopts.IgnoreUnexported(pb.GetJobStatusResponse{})
-			if diff := cmp.Diff(res, tc.expectedResponse, opt); diff != "" {
-				t.Errorf("Unmatched GetJobStatusResponse (got: -, want: +):\n%s", diff)
+			jreq := &pb.GetNarrationRequest{Id: qres.GetId()}
+			jres, err := h.GetNarration(ctx, jreq)
+			if tc.expectedJobError != nil {
+				if err == nil {
+					t.Errorf("GetNarration doesn't return error")
+					return
+				}
+				if diff := cmp.Diff(tc.expectedJobError.Error(), err.Error()); diff != "" {
+					t.Errorf("GetNarration returns unexpected error (-want +got):\n%s", diff)
+				}
+				return
+			}
+			if err != nil {
+				t.Errorf("GetNarration returns unexpected error: %v", err)
+				return
+			}
+			diff := cmp.Diff(tc.expectedResponse, jres, protocmp.Transform())
+			if diff != "" {
+				t.Errorf("GetNarration returns unexpected response (-want +got):\n%s", diff)
 				return
 			}
 		})

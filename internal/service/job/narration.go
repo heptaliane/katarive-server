@@ -51,13 +51,11 @@ func (q *PluginNarrationJobQueue) Queue(
 				return nil, err
 			}
 
-			path := q.nr.Do(
+			return q.nr.Do(
 				ctx, src,
 				narrator.WithSpeaker(options.speakerId),
 				narrator.WithNarrator(options.narrator),
 			)
-
-			return path, nil
 		})
 
 		job.mu.Lock()
@@ -119,13 +117,12 @@ func NewNarrationJobQueue(
 	sr source.SourceRegistry,
 	nr narrator.NarrateRegistry,
 	group *singleflight.Group,
-	logger *slog.Logger,
 ) *PluginNarrationJobQueue {
 	return &PluginNarrationJobQueue{
 		sr:     sr,
 		nr:     nr,
 		jobs:   new(sync.Map),
 		group:  group,
-		logger: logger,
+		logger: slog.Default(),
 	}
 }

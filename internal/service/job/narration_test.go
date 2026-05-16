@@ -11,7 +11,7 @@ import (
 	"github.com/heptaliane/katarive-server/internal/service/job"
 )
 
-func TestPluginSourceItemsJobQueue(t *testing.T) {
+func TestPluginNarrationJobQueue(t *testing.T) {
 	t.Parallel()
 
 	cases := map[string]struct {
@@ -24,7 +24,7 @@ func TestPluginSourceItemsJobQueue(t *testing.T) {
 		},
 		"job_failed": {
 			url:           "http://invalid.com",
-			expectedError: sise,
+			expectedError: sie,
 		},
 	}
 
@@ -32,13 +32,14 @@ func TestPluginSourceItemsJobQueue(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			jq := job.NewSoruceItemsJobQueue(
+			jq := job.NewNarrationJobQueue(
 				setupSourceRegistry(t),
+				setupNarrateRegistry(t),
 				new(singleflight.Group),
 			)
 
 			ctx := context.Background()
-			id, err := jq.Queue(ctx, job.WithSourceItemsUrl(tc.url))
+			id, err := jq.Queue(ctx, job.WithNarrationUrl(tc.url))
 			if err != nil {
 				t.Errorf("Queue returns unexpected error: %v", err)
 				return

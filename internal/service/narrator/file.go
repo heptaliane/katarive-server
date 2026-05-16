@@ -57,6 +57,9 @@ func (r *FileNarratorRegistry) Do(
 	return path, err
 }
 
+// Ensure FileNarratorRegistry implements NarrateRegistry
+var _ NarrateRegistry = new(FileNarratorRegistry)
+
 // helpers
 func NewFileNarratorRegistry(
 	ctx context.Context,

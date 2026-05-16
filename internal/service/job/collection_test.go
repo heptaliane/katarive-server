@@ -24,7 +24,7 @@ func TestPluginSourceCollectionJobQueue(t *testing.T) {
 		},
 		"job_failed": {
 			url:           "http://invalid.com",
-			expectedError: sie,
+			expectedError: sce,
 		},
 	}
 

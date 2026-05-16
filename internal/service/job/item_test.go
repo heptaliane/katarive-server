@@ -32,7 +32,7 @@ func TestPluginSourceItemJobQueue(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			jq := job.NewSoruceItemJobQueue(
+			jq := job.NewSourceItemJobQueue(
 				setupSourceRegistry(t),
 				new(singleflight.Group),
 			)

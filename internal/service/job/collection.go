@@ -104,12 +104,11 @@ var _ SourceCollectionJobQueue = new(PluginSourceCollectionJobQueue)
 func NewSoruceCollectionJobQueue(
 	sr source.SourceRegistry,
 	group *singleflight.Group,
-	logger *slog.Logger,
 ) *PluginSourceCollectionJobQueue {
 	return &PluginSourceCollectionJobQueue{
 		sr:     sr,
 		jobs:   new(sync.Map),
 		group:  group,
-		logger: logger,
+		logger: slog.Default(),
 	}
 }

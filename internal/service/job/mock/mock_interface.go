@@ -42,6 +42,20 @@ func (m *MockJob[T]) EXPECT() *MockJobMockRecorder[T] {
 	return m.recorder
 }
 
+// Error mocks base method.
+func (m *MockJob[T]) Error() error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Error")
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Error indicates an expected call of Error.
+func (mr *MockJobMockRecorder[T]) Error() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Error", reflect.TypeOf((*MockJob[T])(nil).Error))
+}
+
 // Result mocks base method.
 func (m *MockJob[T]) Result() *T {
 	m.ctrl.T.Helper()
@@ -95,11 +109,12 @@ func (m *MockJobQueue[S, T]) EXPECT() *MockJobQueueMockRecorder[S, T] {
 }
 
 // Get mocks base method.
-func (m *MockJobQueue[S, T]) Get(id string) *job.Job[T] {
+func (m *MockJobQueue[S, T]) Get(id string) (job.Job[T], error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Get", id)
-	ret0, _ := ret[0].(*job.Job[T])
-	return ret0
+	ret0, _ := ret[0].(job.Job[T])
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // Get indicates an expected call of Get.
@@ -109,13 +124,16 @@ func (mr *MockJobQueueMockRecorder[S, T]) Get(id any) *gomock.Call {
 }
 
 // Queue mocks base method.
-func (m *MockJobQueue[S, T]) Queue(ctx context.Context, opts ...job.JobOption[S]) {
+func (m *MockJobQueue[S, T]) Queue(ctx context.Context, opts ...job.JobOption[S]) (string, error) {
 	m.ctrl.T.Helper()
 	varargs := []any{ctx}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	m.ctrl.Call(m, "Queue", varargs...)
+	ret := m.ctrl.Call(m, "Queue", varargs...)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // Queue indicates an expected call of Queue.

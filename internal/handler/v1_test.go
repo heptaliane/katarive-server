@@ -3,6 +3,7 @@ package handler_test
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/google/go-cmp/cmp"
 	"google.golang.org/protobuf/testing/protocmp"
@@ -34,7 +35,10 @@ func TestKatariveHandlerV1Narration(t *testing.T) {
 			},
 		},
 		"invalid_url": {
-			url:              VALID_URL,
+			url: "http://invalid.com",
+			expectedResponse: &pb.GetNarrationResponse{
+				Status: pb.JobStatus_JOB_STATUS_FAILED,
+			},
 			expectedJobError: sie,
 		},
 	}
@@ -51,6 +55,8 @@ func TestKatariveHandlerV1Narration(t *testing.T) {
 				return
 			}
 
+			time.Sleep(interval)
+
 			jreq := &pb.GetNarrationRequest{Id: qres.GetId()}
 			jres, err := h.GetNarration(ctx, jreq)
 			if tc.expectedJobError != nil {
@@ -61,12 +67,10 @@ func TestKatariveHandlerV1Narration(t *testing.T) {
 				if diff := cmp.Diff(tc.expectedJobError.Error(), err.Error()); diff != "" {
 					t.Errorf("GetNarration returns unexpected error (-want +got):\n%s", diff)
 				}
-				return
-			}
-			if err != nil {
+			} else if err != nil {
 				t.Errorf("GetNarration returns unexpected error: %v", err)
-				return
 			}
+
 			diff := cmp.Diff(tc.expectedResponse, jres, protocmp.Transform())
 			if diff != "" {
 				t.Errorf("GetNarration returns unexpected response (-want +got):\n%s", diff)

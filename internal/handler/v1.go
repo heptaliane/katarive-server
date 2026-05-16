@@ -51,13 +51,13 @@ func (h *KatariveHandlerV1) GetNarration(
 	result := job.Result()
 	var path *string
 	if result != nil {
-		modified := h.pm.Do(*path)
+		modified := h.pm.Do(*result)
 		path = &modified
 	}
 
 	return &pb.GetNarrationResponse{
 		Status: job.Status(),
-		Path:   result,
+		Path:   path,
 	}, job.Error()
 }
 func (h *KatariveHandlerV1) GetNarrators(

@@ -11,15 +11,16 @@ import (
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
 	"google.golang.org/grpc"
+	"gorm.io/gorm"
 
 	"github.com/heptaliane/katarive-server/internal/handler"
-	"github.com/heptaliane/katarive-server/internal/service"
 )
 
 func newKatariveHandler(
 	pluginDir string,
 	destDir string,
 	interval int,
+	database *gorm.DB,
 	pathModifier handler.PathModifier,
 	logLevel hclog.Level,
 ) (*handler.KatariveHandlerV1, error) {
@@ -33,13 +34,12 @@ func newKatariveHandler(
 		return nil, err
 	}
 
-	sr, err := NewSource(destDir, interval, plugin)
+	sr, err := NewSource(interval, database, plugin)
 	if err != nil {
 		return nil, err
 	}
 
-	js := service.NewNarrateJobManager(nr, sr)
-	return handler.NewKatariveHandler(js, pathModifier), nil
+	return handler.NewKatariveHandlerV1(sr, nr, pathModifier), nil
 }
 func isGRPC(r *http.Request) bool {
 	contentType := r.Header.Get("Content-Type")
@@ -50,12 +50,13 @@ func NewGRPCServer(
 	pluginDir string,
 	dataDir string,
 	interval int,
+	database *gorm.DB,
 	pathModifier handler.PathModifier,
 	logLevel hclog.Level,
 ) (*grpc.Server, error) {
 	server := grpc.NewServer()
 
-	kh, err := newKatariveHandler(pluginDir, dataDir, interval, pathModifier, logLevel)
+	kh, err := newKatariveHandler(pluginDir, dataDir, interval, database, pathModifier, logLevel)
 	if err != nil {
 		return nil, err
 	}

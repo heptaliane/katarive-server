@@ -9,6 +9,8 @@ import (
 	"syscall"
 
 	"github.com/hashicorp/go-hclog"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
 
 	"github.com/heptaliane/katarive-server/internal/handler"
 )
@@ -18,17 +20,24 @@ const PLUGIN_DIR string = "plugins"
 const DATA_DIR string = "data"
 const STATIC_DIR string = "web"
 const INTERVAL int = 1000
+const DB_PATH string = "data/source.db"
 const LOG_LEVEL slog.Level = slog.LevelDebug
 const PLUGIN_LOG_LEVEL hclog.Level = hclog.Info
 
 func main() {
 	SetupLogger(LOG_LEVEL)
 
+	database, err := gorm.Open(sqlite.Open(DB_PATH), &gorm.Config{})
+	if err != nil {
+		slog.Error("Failed to establish connection to database: %v", "error", err)
+		os.Exit(1)
+	}
+
 	pm := handler.NewBasePathModifier(
 		handler.WithPathRule(DATA_DIR, "file"),
 		handler.WithPathRule(STATIC_DIR, "static"),
 	)
-	grpc, err := NewGRPCServer(PLUGIN_DIR, DATA_DIR, INTERVAL, pm, PLUGIN_LOG_LEVEL)
+	grpc, err := NewGRPCServer(PLUGIN_DIR, DATA_DIR, INTERVAL, database, pm, PLUGIN_LOG_LEVEL)
 	if err != nil {
 		slog.Error("Failed to initialize grpc server", "error", err)
 		os.Exit(1)

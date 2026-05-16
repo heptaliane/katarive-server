@@ -2,112 +2,195 @@ package handler
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"regexp"
 
-	pb "github.com/heptaliane/katarive-server/gen/pb/api/v1"
-	"github.com/heptaliane/katarive-server/internal/service"
+	ppb "github.com/heptaliane/katarive-go-sdk/gen/pb/plugin/v1"
+	apb "github.com/heptaliane/katarive-server/gen/pb/api/v1"
+	"golang.org/x/sync/singleflight"
+
+	"github.com/heptaliane/katarive-server/internal/service/job"
+	"github.com/heptaliane/katarive-server/internal/service/narrator"
+	"github.com/heptaliane/katarive-server/internal/service/source"
 )
 
 type KatariveHandlerV1 struct {
-	pb.UnimplementedKatariveServiceServer
+	apb.UnimplementedKatariveServiceServer
 
-	js service.NarrateJobService
+	sr   source.SourceRegistry
+	nr   narrator.NarrateRegistry
+	nq   job.NarrationJobQueue
+	scq  job.SourceCollectionJobQueue
+	siq  job.SourceItemJobQueue
+	sisq job.SourceItemsJobQueue
+
 	pm PathModifier
 }
 
-func NewKatariveHandler(
-	js service.NarrateJobService,
-	pm PathModifier,
-) *KatariveHandlerV1 {
-	return &KatariveHandlerV1{
-		js: js,
-		pm: pm,
-	}
-}
-
-func (h *KatariveHandlerV1) CreateNarration(
+func (h *KatariveHandlerV1) QueueNarration(
 	ctx context.Context,
-	req *pb.CreateNarrationRequest,
-) (*pb.CreateNarrationResponse, error) {
-	jobId, err := h.js.Enqueue(ctx, req.GetUrl(), req.GetNarrator(), req.GetSpeakerId())
+	req *apb.QueueNarrationRequest,
+) (*apb.QueueNarrationResponse, error) {
+	ctx = context.WithoutCancel(ctx)
+	jobId, err := h.nq.Queue(
+		ctx,
+		job.WithNarrationUrl(req.GetUrl()),
+		job.WithNarrationNarrator(req.GetNarrator()),
+		job.WithNarrationSpeakerId(req.GetSpeakerId()),
+		job.WithNarrationEncoding(ppb.AudioEncoding_AUDIO_ENCODING_MP3),
+	)
+	return &apb.QueueNarrationResponse{Id: jobId}, err
+}
+func (h *KatariveHandlerV1) GetNarration(
+	ctx context.Context,
+	req *apb.GetNarrationRequest,
+) (*apb.GetNarrationResponse, error) {
+	job, err := h.nq.Get(req.GetId())
 	if err != nil {
 		return nil, err
 	}
 
-	return &pb.CreateNarrationResponse{
-		Id: jobId,
-	}, nil
-}
+	result := job.Result()
+	var path *string
+	if result != nil {
+		modified := h.pm.Do(*result)
+		path = &modified
+	}
 
-func (h *KatariveHandlerV1) GetJobStatus(
+	return &apb.GetNarrationResponse{
+		Status: job.Status(),
+		Path:   path,
+	}, job.Error()
+}
+func (h *KatariveHandlerV1) GetNarrators(
 	ctx context.Context,
-	req *pb.GetJobStatusRequest,
-) (*pb.GetJobStatusResponse, error) {
-	job, err := h.js.GetJob(req.GetId())
-	if err != nil {
-		var notFound *service.JobNotFoundError
-		if errors.As(err, &notFound) {
-			return &pb.GetJobStatusResponse{
-				Status: pb.GetJobStatusResponse_STATUS_NOT_FOUND,
-			}, nil
+	req *apb.GetNarratorsRequest,
+) (*apb.GetNarratorsResponse, error) {
+	narrators := h.nr.Metadata()
+
+	var res apb.GetNarratorsResponse
+	for _, n := range narrators {
+		var speakers []*apb.Speaker
+		for _, s := range n.Speakers {
+			speakers = append(speakers, &apb.Speaker{
+				Id:    s.GetId(),
+				Label: s.GetName(),
+			})
 		}
-		return &pb.GetJobStatusResponse{
-			Status: pb.GetJobStatusResponse_STATUS_FAILED,
-		}, nil
-	}
-
-	result, err := job.GetResult()
-	if err != nil {
-		return &pb.GetJobStatusResponse{
-			Status: pb.GetJobStatusResponse_STATUS_FAILED,
-		}, nil
-	}
-	if result == "" {
-		return &pb.GetJobStatusResponse{
-			Status: pb.GetJobStatusResponse_STATUS_PROGRESSING,
-		}, nil
-	}
-	result = h.pm.Do(result)
-	return &pb.GetJobStatusResponse{
-		Status: pb.GetJobStatusResponse_STATUS_COMPLETED,
-		Path:   &result,
-	}, nil
-}
-
-func (h *KatariveHandlerV1) GetSpeakers(
-	ctx context.Context,
-	req *pb.GetSpeakersRequest,
-) (*pb.GetSpeakersResponse, error) {
-	var speakers []*pb.Speaker
-	for _, s := range h.js.Speakers() {
-		speakers = append(speakers, &pb.Speaker{
-			Narrator:     s.Narrator,
-			SpeakerId:    s.Id,
-			SpeakerLabel: s.Name,
+		res.Narrator = append(res.Narrator, &apb.Narrator{
+			Name:     n.Name,
+			Speakers: speakers,
 		})
 	}
 
-	return &pb.GetSpeakersResponse{
-		Speakers: speakers,
-	}, nil
+	return &res, nil
 }
+func (h *KatariveHandlerV1) QueueSourceItem(
+	ctx context.Context,
+	req *apb.QueueSourceItemRequest,
+) (*apb.QueueSourceItemResponse, error) {
+	ctx = context.WithoutCancel(ctx)
+	jobId, err := h.siq.Queue(ctx, job.WithSourceItemUrl(req.GetUrl()))
+	return &apb.QueueSourceItemResponse{Id: jobId}, err
+}
+func (h *KatariveHandlerV1) GetSourceItem(
+	ctx context.Context,
+	req *apb.GetSourceItemRequest,
+) (*apb.GetSourceItemResponse, error) {
+	job, err := h.siq.Get(req.GetId())
+	if err != nil {
+		return nil, err
+	}
 
+	result := job.Result()
+	var metadata *apb.SourceSummary
+	var contentPtr *string
+	if result != nil {
+		metadata = &apb.SourceSummary{
+			Id:    result.GetId(),
+			Url:   result.GetUrl(),
+			Title: result.GetTitle(),
+		}
+		content := result.GetContent()
+		contentPtr = &content
+	}
+
+	return &apb.GetSourceItemResponse{
+		Status:   job.Status(),
+		Metadata: metadata,
+		Content:  contentPtr,
+	}, job.Error()
+}
+func (h *KatariveHandlerV1) QueueSourceCollection(
+	ctx context.Context,
+	req *apb.QueueSourceCollectionRequest,
+) (*apb.QueueSourceCollectionResponse, error) {
+	ctx = context.WithoutCancel(ctx)
+	jobId, err := h.scq.Queue(
+		ctx,
+		job.WithSourceCollectionUrl(req.GetUrl()),
+	)
+	return &apb.QueueSourceCollectionResponse{Id: jobId}, err
+}
 func (h *KatariveHandlerV1) GetSourceCollection(
 	ctx context.Context,
-	req *pb.GetSourceCollectionRequest,
-) (*pb.GetSourceCollectionResponse, error) {
-	// TODO: implement this
-	return nil, nil
+	req *apb.GetSourceCollectionRequest,
+) (*apb.GetSourceCollectionResponse, error) {
+	job, err := h.scq.Get(req.GetId())
+	if err != nil {
+		return nil, err
+	}
+
+	result := job.Result()
+	var collection *apb.SourceCollection
+	var sources []*apb.SourceSummary
+	if result != nil {
+		collection = &apb.SourceCollection{
+			Id:          result.GetId(),
+			Url:         result.GetUrl(),
+			Title:       result.GetTitle(),
+			Description: result.GetDescription(),
+			Author:      result.GetAuthor(),
+			Tags:        result.GetTags(),
+		}
+	}
+
+	// TODO: Set Sources
+
+	return &apb.GetSourceCollectionResponse{
+		Status:     job.Status(),
+		Collection: collection,
+		Sources:    sources,
+	}, job.Error()
 }
 
 // Check KatariveServiceServer implementation
-var _ pb.KatariveServiceServer = new(KatariveHandlerV1)
+var _ apb.KatariveServiceServer = new(KatariveHandlerV1)
 
 // -----------------
 // helper components
 // -----------------
+func NewKatariveHandlerV1(
+	sr source.SourceRegistry,
+	nr narrator.NarrateRegistry,
+	pm PathModifier,
+) *KatariveHandlerV1 {
+	ngrp := new(singleflight.Group)
+	scgrp := new(singleflight.Group)
+	sigrp := new(singleflight.Group)
+	sisgrp := scgrp
+
+	return &KatariveHandlerV1{
+		sr:   sr,
+		nr:   nr,
+		nq:   job.NewNarrationJobQueue(sr, nr, ngrp),
+		scq:  job.NewSourceCollectionJobQueue(sr, scgrp),
+		siq:  job.NewSourceItemJobQueue(sr, sigrp),
+		sisq: job.NewSourceItemsJobQueue(sr, sisgrp),
+		pm:   pm,
+	}
+}
+
 type PathModifier interface {
 	Do(path string) string
 }

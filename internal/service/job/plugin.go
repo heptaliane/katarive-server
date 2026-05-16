@@ -54,5 +54,8 @@ var _ SourceCollectionJob = new(PluginSourceCollectionJob)
 
 // helpers
 func NewPluginJob[T any]() *PluginJob[T] {
-	return &PluginJob[T]{mu: new(sync.RWMutex)}
+	return &PluginJob[T]{
+		status: pb.JobStatus_JOB_STATUS_PROGRESSING,
+		mu:     new(sync.RWMutex),
+	}
 }

@@ -71,6 +71,7 @@ func (q *PluginNarrationJobQueue) Queue(
 				"result", result,
 			)
 			job.data = &result
+			job.status = pb.JobStatus_JOB_STATUS_COMPLETED
 			return
 		} else {
 			job.err = &model.UnexpectedTypeError{Value: v, Expected: new(string)}
@@ -82,6 +83,7 @@ func (q *PluginNarrationJobQueue) Queue(
 			"url", options.url,
 			"error", job.err,
 		)
+		job.status = pb.JobStatus_JOB_STATUS_FAILED
 	}()
 
 	return jobId, nil

@@ -59,6 +59,7 @@ func (q *PluginSourceItemsJobQueue) Queue(
 				"url", options.url,
 			)
 			job.data = &result
+			job.status = pb.JobStatus_JOB_STATUS_COMPLETED
 			return
 		} else {
 			job.err = &model.UnexpectedTypeError{Value: v, Expected: new([]*model.SourceSummary)}
@@ -70,6 +71,7 @@ func (q *PluginSourceItemsJobQueue) Queue(
 			"url", options.url,
 			"error", job.err,
 		)
+		job.status = pb.JobStatus_JOB_STATUS_FAILED
 	}()
 
 	return jobId, nil

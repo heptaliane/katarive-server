@@ -9,26 +9,26 @@ import (
 )
 
 //go:generate mockgen -source=$GOFILE -destination=mock/mock_$GOFILE -package=mock
-type Job[S, T any] interface {
-	Run(opts ...JobOption[S])
+type Job[T any] interface {
 	Result() *T
+	Error() error
 	Status() pb.JobStatus
 }
 
 //go:generate mockgen -source=$GOFILE -destination=mock/mock_$GOFILE -package=mock
 type JobQueue[S, T any] interface {
-	Queue(ctx context.Context, opts ...JobOption[S])
-	Get(id string) *Job[S, T]
+	Queue(ctx context.Context, opts ...JobOption[S]) (string, error)
+	Get(id string) (*Job[T], error)
 }
 
-type NarrationJob Job[narrationJobOption, string]
-type SourceItemJob Job[sourceItemJobOption, model.SourceItem]
-type SourceItemsJob Job[sourceItemsJobOption, []*model.SourceSummary]
-type SourceCollectionJob Job[sourceCollectionJobOption, model.SourceCollection]
-type NarrationJobQueue JobQueue[narrationJobOption, string]
-type SourceItemJobQueue JobQueue[sourceItemJobOption, model.SourceItem]
-type SourceItemsJobQueue JobQueue[sourceItemsJobOption, []*model.SourceSummary]
-type SourceCollectionJobQueue JobQueue[sourceCollectionJobOption, model.SourceCollection]
+type NarrationJob = Job[string]
+type SourceItemJob = Job[model.SourceItem]
+type SourceItemsJob = Job[[]*model.SourceSummary]
+type SourceCollectionJob = Job[model.SourceCollection]
+type NarrationJobQueue = JobQueue[narrationJobOption, string]
+type SourceItemJobQueue = JobQueue[sourceItemJobOption, model.SourceItem]
+type SourceItemsJobQueue = JobQueue[sourceItemsJobOption, []*model.SourceSummary]
+type SourceCollectionJobQueue = JobQueue[sourceCollectionJobOption, model.SourceCollection]
 
 // helpers
 type JobOption[T any] = func(opt *T)

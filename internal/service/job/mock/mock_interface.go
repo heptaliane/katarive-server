@@ -19,31 +19,31 @@ import (
 )
 
 // MockJob is a mock of Job interface.
-type MockJob[S any, T any] struct {
+type MockJob[T any] struct {
 	ctrl     *gomock.Controller
-	recorder *MockJobMockRecorder[S, T]
+	recorder *MockJobMockRecorder[T]
 	isgomock struct{}
 }
 
 // MockJobMockRecorder is the mock recorder for MockJob.
-type MockJobMockRecorder[S any, T any] struct {
-	mock *MockJob[S, T]
+type MockJobMockRecorder[T any] struct {
+	mock *MockJob[T]
 }
 
 // NewMockJob creates a new mock instance.
-func NewMockJob[S any, T any](ctrl *gomock.Controller) *MockJob[S, T] {
-	mock := &MockJob[S, T]{ctrl: ctrl}
-	mock.recorder = &MockJobMockRecorder[S, T]{mock}
+func NewMockJob[T any](ctrl *gomock.Controller) *MockJob[T] {
+	mock := &MockJob[T]{ctrl: ctrl}
+	mock.recorder = &MockJobMockRecorder[T]{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockJob[S, T]) EXPECT() *MockJobMockRecorder[S, T] {
+func (m *MockJob[T]) EXPECT() *MockJobMockRecorder[T] {
 	return m.recorder
 }
 
 // Result mocks base method.
-func (m *MockJob[S, T]) Result() *T {
+func (m *MockJob[T]) Result() *T {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Result")
 	ret0, _ := ret[0].(*T)
@@ -51,29 +51,13 @@ func (m *MockJob[S, T]) Result() *T {
 }
 
 // Result indicates an expected call of Result.
-func (mr *MockJobMockRecorder[S, T]) Result() *gomock.Call {
+func (mr *MockJobMockRecorder[T]) Result() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Result", reflect.TypeOf((*MockJob[S, T])(nil).Result))
-}
-
-// Run mocks base method.
-func (m *MockJob[S, T]) Run(opts ...job.JobOption[S]) {
-	m.ctrl.T.Helper()
-	varargs := []any{}
-	for _, a := range opts {
-		varargs = append(varargs, a)
-	}
-	m.ctrl.Call(m, "Run", varargs...)
-}
-
-// Run indicates an expected call of Run.
-func (mr *MockJobMockRecorder[S, T]) Run(opts ...any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Run", reflect.TypeOf((*MockJob[S, T])(nil).Run), opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Result", reflect.TypeOf((*MockJob[T])(nil).Result))
 }
 
 // Status mocks base method.
-func (m *MockJob[S, T]) Status() apiv1.JobStatus {
+func (m *MockJob[T]) Status() apiv1.JobStatus {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Status")
 	ret0, _ := ret[0].(apiv1.JobStatus)
@@ -81,9 +65,9 @@ func (m *MockJob[S, T]) Status() apiv1.JobStatus {
 }
 
 // Status indicates an expected call of Status.
-func (mr *MockJobMockRecorder[S, T]) Status() *gomock.Call {
+func (mr *MockJobMockRecorder[T]) Status() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Status", reflect.TypeOf((*MockJob[S, T])(nil).Status))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Status", reflect.TypeOf((*MockJob[T])(nil).Status))
 }
 
 // MockJobQueue is a mock of JobQueue interface.
@@ -111,10 +95,10 @@ func (m *MockJobQueue[S, T]) EXPECT() *MockJobQueueMockRecorder[S, T] {
 }
 
 // Get mocks base method.
-func (m *MockJobQueue[S, T]) Get(id string) *job.Job[S, T] {
+func (m *MockJobQueue[S, T]) Get(id string) *job.Job[T] {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Get", id)
-	ret0, _ := ret[0].(*job.Job[S, T])
+	ret0, _ := ret[0].(*job.Job[T])
 	return ret0
 }
 

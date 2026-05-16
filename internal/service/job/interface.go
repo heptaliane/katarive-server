@@ -3,7 +3,8 @@ package job
 import (
 	"context"
 
-	pb "github.com/heptaliane/katarive-server/gen/pb/api/v1"
+	ppb "github.com/heptaliane/katarive-go-sdk/gen/pb/plugin/v1"
+	apb "github.com/heptaliane/katarive-server/gen/pb/api/v1"
 
 	"github.com/heptaliane/katarive-server/internal/model"
 )
@@ -12,7 +13,7 @@ import (
 type Job[T any] interface {
 	Result() *T
 	Error() error
-	Status() pb.JobStatus
+	Status() apb.JobStatus
 }
 
 //go:generate mockgen -source=$GOFILE -destination=mock/mock_$GOFILE -package=mock
@@ -37,6 +38,7 @@ type narrationJobOption struct {
 	url       string
 	narrator  string
 	speakerId int32
+	encoding  ppb.AudioEncoding
 }
 
 func WithNarrationUrl(url string) JobOption[narrationJobOption] {
@@ -47,6 +49,9 @@ func WithNarrationNarrator(narrator string) JobOption[narrationJobOption] {
 }
 func WithNarrationSpeakerId(speakerId int32) JobOption[narrationJobOption] {
 	return func(opt *narrationJobOption) { opt.speakerId = speakerId }
+}
+func WithNarrationEncoding(encoding ppb.AudioEncoding) JobOption[narrationJobOption] {
+	return func(opt *narrationJobOption) { opt.encoding = encoding }
 }
 
 type sourceItemJobOption struct {

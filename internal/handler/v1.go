@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"regexp"
 
-	pb "github.com/heptaliane/katarive-server/gen/pb/api/v1"
+	ppb "github.com/heptaliane/katarive-go-sdk/gen/pb/plugin/v1"
+	apb "github.com/heptaliane/katarive-server/gen/pb/api/v1"
 	"golang.org/x/sync/singleflight"
 
 	"github.com/heptaliane/katarive-server/internal/service/job"
@@ -14,7 +15,7 @@ import (
 )
 
 type KatariveHandlerV1 struct {
-	pb.UnimplementedKatariveServiceServer
+	apb.UnimplementedKatariveServiceServer
 
 	sr   source.SourceRegistry
 	nr   narrator.NarrateRegistry
@@ -28,21 +29,22 @@ type KatariveHandlerV1 struct {
 
 func (h *KatariveHandlerV1) QueueNarration(
 	ctx context.Context,
-	req *pb.QueueNarrationRequest,
-) (*pb.QueueNarrationResponse, error) {
+	req *apb.QueueNarrationRequest,
+) (*apb.QueueNarrationResponse, error) {
 	ctx = context.WithoutCancel(ctx)
 	jobId, err := h.nq.Queue(
 		ctx,
 		job.WithNarrationUrl(req.GetUrl()),
 		job.WithNarrationNarrator(req.GetNarrator()),
 		job.WithNarrationSpeakerId(req.GetSpeakerId()),
+		job.WithNarrationEncoding(ppb.AudioEncoding_AUDIO_ENCODING_MP3),
 	)
-	return &pb.QueueNarrationResponse{Id: jobId}, err
+	return &apb.QueueNarrationResponse{Id: jobId}, err
 }
 func (h *KatariveHandlerV1) GetNarration(
 	ctx context.Context,
-	req *pb.GetNarrationRequest,
-) (*pb.GetNarrationResponse, error) {
+	req *apb.GetNarrationRequest,
+) (*apb.GetNarrationResponse, error) {
 	job, err := h.nq.Get(req.GetId())
 	if err != nil {
 		return nil, err
@@ -55,27 +57,27 @@ func (h *KatariveHandlerV1) GetNarration(
 		path = &modified
 	}
 
-	return &pb.GetNarrationResponse{
+	return &apb.GetNarrationResponse{
 		Status: job.Status(),
 		Path:   path,
 	}, job.Error()
 }
 func (h *KatariveHandlerV1) GetNarrators(
 	ctx context.Context,
-	req *pb.GetNarratorsRequest,
-) (*pb.GetNarratorsResponse, error) {
+	req *apb.GetNarratorsRequest,
+) (*apb.GetNarratorsResponse, error) {
 	narrators := h.nr.Metadata()
 
-	var res pb.GetNarratorsResponse
+	var res apb.GetNarratorsResponse
 	for _, n := range narrators {
-		var speakers []*pb.Speaker
+		var speakers []*apb.Speaker
 		for _, s := range n.Speakers {
-			speakers = append(speakers, &pb.Speaker{
+			speakers = append(speakers, &apb.Speaker{
 				Id:    s.GetId(),
 				Label: s.GetName(),
 			})
 		}
-		res.Narrator = append(res.Narrator, &pb.Narrator{
+		res.Narrator = append(res.Narrator, &apb.Narrator{
 			Name:     n.Name,
 			Speakers: speakers,
 		})
@@ -85,26 +87,26 @@ func (h *KatariveHandlerV1) GetNarrators(
 }
 func (h *KatariveHandlerV1) QueueSourceItem(
 	ctx context.Context,
-	req *pb.QueueSourceItemRequest,
-) (*pb.QueueSourceItemResponse, error) {
+	req *apb.QueueSourceItemRequest,
+) (*apb.QueueSourceItemResponse, error) {
 	ctx = context.WithoutCancel(ctx)
 	jobId, err := h.siq.Queue(ctx, job.WithSourceItemUrl(req.GetUrl()))
-	return &pb.QueueSourceItemResponse{Id: jobId}, err
+	return &apb.QueueSourceItemResponse{Id: jobId}, err
 }
 func (h *KatariveHandlerV1) GetSourceItem(
 	ctx context.Context,
-	req *pb.GetSourceItemRequest,
-) (*pb.GetSourceItemResponse, error) {
+	req *apb.GetSourceItemRequest,
+) (*apb.GetSourceItemResponse, error) {
 	job, err := h.siq.Get(req.GetId())
 	if err != nil {
 		return nil, err
 	}
 
 	result := job.Result()
-	var metadata *pb.SourceSummary
+	var metadata *apb.SourceSummary
 	var contentPtr *string
 	if result != nil {
-		metadata = &pb.SourceSummary{
+		metadata = &apb.SourceSummary{
 			Id:    result.GetId(),
 			Url:   result.GetUrl(),
 			Title: result.GetTitle(),
@@ -113,7 +115,7 @@ func (h *KatariveHandlerV1) GetSourceItem(
 		contentPtr = &content
 	}
 
-	return &pb.GetSourceItemResponse{
+	return &apb.GetSourceItemResponse{
 		Status:   job.Status(),
 		Metadata: metadata,
 		Content:  contentPtr,
@@ -121,29 +123,29 @@ func (h *KatariveHandlerV1) GetSourceItem(
 }
 func (h *KatariveHandlerV1) QueueSourceCollection(
 	ctx context.Context,
-	req *pb.QueueSourceCollectionRequest,
-) (*pb.QueueSourceCollectionResponse, error) {
+	req *apb.QueueSourceCollectionRequest,
+) (*apb.QueueSourceCollectionResponse, error) {
 	ctx = context.WithoutCancel(ctx)
 	jobId, err := h.scq.Queue(
 		ctx,
 		job.WithSourceCollectionUrl(req.GetUrl()),
 	)
-	return &pb.QueueSourceCollectionResponse{Id: jobId}, err
+	return &apb.QueueSourceCollectionResponse{Id: jobId}, err
 }
 func (h *KatariveHandlerV1) GetSourceCollection(
 	ctx context.Context,
-	req *pb.GetSourceCollectionRequest,
-) (*pb.GetSourceCollectionResponse, error) {
+	req *apb.GetSourceCollectionRequest,
+) (*apb.GetSourceCollectionResponse, error) {
 	job, err := h.scq.Get(req.GetId())
 	if err != nil {
 		return nil, err
 	}
 
 	result := job.Result()
-	var collection *pb.SourceCollection
-	var sources []*pb.SourceSummary
+	var collection *apb.SourceCollection
+	var sources []*apb.SourceSummary
 	if result != nil {
-		collection = &pb.SourceCollection{
+		collection = &apb.SourceCollection{
 			Id:          result.GetId(),
 			Url:         result.GetUrl(),
 			Title:       result.GetTitle(),
@@ -155,7 +157,7 @@ func (h *KatariveHandlerV1) GetSourceCollection(
 
 	// TODO: Set Sources
 
-	return &pb.GetSourceCollectionResponse{
+	return &apb.GetSourceCollectionResponse{
 		Status:     job.Status(),
 		Collection: collection,
 		Sources:    sources,
@@ -163,7 +165,7 @@ func (h *KatariveHandlerV1) GetSourceCollection(
 }
 
 // Check KatariveServiceServer implementation
-var _ pb.KatariveServiceServer = new(KatariveHandlerV1)
+var _ apb.KatariveServiceServer = new(KatariveHandlerV1)
 
 // -----------------
 // helper components

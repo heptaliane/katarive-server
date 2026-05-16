@@ -55,6 +55,7 @@ func (q *PluginNarrationJobQueue) Queue(
 				ctx, src,
 				narrator.WithSpeaker(options.speakerId),
 				narrator.WithNarrator(options.narrator),
+				narrator.WithEncoding(options.encoding),
 			)
 		})
 

@@ -11,7 +11,7 @@ import (
 	"github.com/heptaliane/katarive-server/internal/service/job"
 )
 
-func TestPluginSourceCollectionJobQueue_Queue(t *testing.T) {
+func TestPluginSourceCollectionJobQueue(t *testing.T) {
 	t.Parallel()
 
 	cases := map[string]struct {

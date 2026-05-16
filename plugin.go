@@ -7,8 +7,12 @@ import (
 	"slices"
 	"strings"
 
+	"gorm.io/gorm"
+
 	"github.com/hashicorp/go-hclog"
 	"github.com/heptaliane/katarive-server/internal/service"
+	"github.com/heptaliane/katarive-server/internal/service/narrator"
+	"github.com/heptaliane/katarive-server/internal/service/source"
 )
 
 const DEFAULT_PLUGIN_PREFIX string = "default"
@@ -50,33 +54,33 @@ func LoadPlugins(pluginDir string, logLevel hclog.Level) (*service.PluginRegistr
 func NewNarrator(
 	destDir string,
 	plugins *service.PluginRegistry,
-) (service.NarratorRegistry, error) {
+) (narrator.NarrateRegistry, error) {
 	ctx := context.Background()
 
-	var narrators []service.NarratorManager
-	for _, rawNarrator := range plugins.GetNarrators() {
-		narrator, err := service.NewSemaphoreNarratorManager(ctx, destDir, rawNarrator)
+	var narrators []narrator.NarratorManager
+	for _, client := range plugins.GetNarrators() {
+		narrator, err := narrator.NewSemaphoreNarratorManager(ctx, client)
 		if err != nil {
 			return nil, err
 		}
 		narrators = append(narrators, narrator)
 	}
 
-	return service.NewFileNarratorRegistry(narrators), nil
+	return narrator.NewFileNarratorRegistry(ctx, destDir, narrators), nil
 }
 func NewSource(
-	destDir string,
 	interval int,
+	database *gorm.DB,
 	plugins *service.PluginRegistry,
-) (service.SourceRegistry, error) {
+) (source.SourceRegistry, error) {
 	ctx := context.Background()
 
-	var sources []service.SourceManager
+	var sources []source.SourceManager
 	for _, rawSource := range plugins.GetSources() {
-		source, err := service.NewSemaphoreSourceManager(
+		source, err := source.NewSemaphoreSourceManager(
 			ctx,
 			rawSource,
-			service.WithInterval(interval),
+			source.WithInterval(interval),
 		)
 		if err != nil {
 			return nil, err
@@ -84,5 +88,5 @@ func NewSource(
 		sources = append(sources, source)
 	}
 
-	return service.NewFileSourceRegistry(destDir, sources), nil
+	return source.NewDatabaseSourceRegistry(database, sources), nil
 }

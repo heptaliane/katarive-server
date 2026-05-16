@@ -101,7 +101,7 @@ func (q *PluginSourceItemsJobQueue) Get(id string) (SourceItemsJob, error) {
 var _ SourceItemsJobQueue = new(PluginSourceItemsJobQueue)
 
 // helpers
-func NewSoruceItemsJobQueue(
+func NewSourceItemsJobQueue(
 	sr source.SourceRegistry,
 	group *singleflight.Group,
 ) *PluginSourceItemsJobQueue {

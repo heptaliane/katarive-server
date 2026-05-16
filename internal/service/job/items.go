@@ -99,3 +99,17 @@ func (q *PluginSourceItemsJobQueue) Get(id string) (SourceItemsJob, error) {
 
 // Ensure PluginSourceItemsJobQueue implements SourceItemsJobQueue
 var _ SourceItemsJobQueue = new(PluginSourceItemsJobQueue)
+
+// helpers
+func NewSoruceItemsJobQueue(
+	sr source.SourceRegistry,
+	group *singleflight.Group,
+	logger *slog.Logger,
+) *PluginSourceItemsJobQueue {
+	return &PluginSourceItemsJobQueue{
+		sr:     sr,
+		jobs:   new(sync.Map),
+		group:  group,
+		logger: logger,
+	}
+}

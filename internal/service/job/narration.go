@@ -113,3 +113,19 @@ func (q *PluginNarrationJobQueue) Get(id string) (NarrationJob, error) {
 
 // Ensure PluginNarrationJobQueue implements NarrationJobQueue
 var _ NarrationJobQueue = new(PluginNarrationJobQueue)
+
+// helpers
+func NewNarrationJobQueue(
+	sr source.SourceRegistry,
+	nr narrator.NarrateRegistry,
+	group *singleflight.Group,
+	logger *slog.Logger,
+) *PluginNarrationJobQueue {
+	return &PluginNarrationJobQueue{
+		sr:     sr,
+		nr:     nr,
+		jobs:   new(sync.Map),
+		group:  group,
+		logger: logger,
+	}
+}

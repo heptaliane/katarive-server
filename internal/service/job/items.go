@@ -52,13 +52,13 @@ func (q *PluginSourceItemsJobQueue) Queue(
 
 		if err != nil {
 			job.err = err
-		} else if result, ok := v.(*[]*model.SourceSummary); ok {
+		} else if result, ok := v.([]*model.SourceSummary); ok {
 			q.logger.InfoContext(
 				ctx, "SourceItems job completed",
 				"id", jobId,
 				"url", options.url,
 			)
-			job.data = result
+			job.data = &result
 			return
 		} else {
 			job.err = &model.UnexpectedTypeError{Value: v, Expected: new([]*model.SourceSummary)}
@@ -104,12 +104,11 @@ var _ SourceItemsJobQueue = new(PluginSourceItemsJobQueue)
 func NewSoruceItemsJobQueue(
 	sr source.SourceRegistry,
 	group *singleflight.Group,
-	logger *slog.Logger,
 ) *PluginSourceItemsJobQueue {
 	return &PluginSourceItemsJobQueue{
 		sr:     sr,
 		jobs:   new(sync.Map),
 		group:  group,
-		logger: logger,
+		logger: slog.Default(),
 	}
 }

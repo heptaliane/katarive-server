@@ -15,6 +15,7 @@ import (
 
 var sc *model.SourceCollection
 var si *model.SourceItem
+var sis []*model.SourceSummary
 var sie error
 var interval time.Duration
 
@@ -22,6 +23,8 @@ const VALID_URL string = "http://valid.com"
 
 func TestMain(m *testing.M) {
 	setupSourceItem()
+	setupSourceCollection()
+	setupSourceItems()
 	setupError()
 	setupInterval()
 
@@ -42,6 +45,12 @@ func setupSourceCollection() {
 		Title: "collection-title",
 	}
 }
+func setupSourceItems() {
+	sis = []*model.SourceSummary{
+		{Id: "item-1", Title: "title-1"},
+		{Id: "item-2", Title: "title-2"},
+	}
+}
 func setupError() {
 	sie = errors.New("SourceRegistry.SourceItem failed")
 }
@@ -54,5 +63,7 @@ func setupSourceRegistry(t *testing.T) source.SourceRegistry {
 	sr.EXPECT().SourceItem(gomock.Any(), gomock.Not(VALID_URL)).Return(nil, sie).AnyTimes()
 	sr.EXPECT().SourceCollection(gomock.Any(), VALID_URL).Return(sc, nil).AnyTimes()
 	sr.EXPECT().SourceCollection(gomock.Any(), gomock.Not(VALID_URL)).Return(nil, sie).AnyTimes()
+	sr.EXPECT().SourceItems(gomock.Any(), VALID_URL).Return(sis, nil).AnyTimes()
+	sr.EXPECT().SourceItems(gomock.Any(), gomock.Not(VALID_URL)).Return(nil, sie).AnyTimes()
 	return sr
 }

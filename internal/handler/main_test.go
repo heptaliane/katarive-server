@@ -68,8 +68,8 @@ func setupSourceCollection() {
 }
 func setupSourceItems() {
 	sis = []*model.SourceSummary{
-		{Id: "item1", Url: "http://valid.com/1"},
-		{Id: "item2", Url: "http://valid.com/2"},
+		{Id: "item1", Title: "title1", Url: "http://valid.com/1"},
+		{Id: "item2", Title: "title2", Url: "http://valid.com/2"},
 	}
 }
 func setupNarrateManagerMetadata() {

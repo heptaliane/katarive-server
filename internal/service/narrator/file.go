@@ -50,6 +50,7 @@ func (r *FileNarratorRegistry) Do(
 		Text:      source.GetContent(),
 		Language:  source.GetLanguage(),
 		SpeakerId: options.speakerId,
+		Encoding:  options.encoding,
 	}
 
 	_, err := nm.Narrate(ctx, req)

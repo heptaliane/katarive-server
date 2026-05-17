@@ -37,3 +37,13 @@ func (e *JobNotFoundError) Error() string {
 }
 
 var _ error = new(JobNotFoundError)
+
+type NoAssosiatedCollection struct {
+	Url string
+}
+
+func (e *NoAssosiatedCollection) Error() string {
+	return fmt.Sprintf("No assosiated collection for %s", e.Url)
+}
+
+var _ error = new(NoAssosiatedCollection)

@@ -93,6 +93,14 @@ func (r *DatabaseSourceRegistry) getOrCreateSourceCollection(
 	ctx context.Context,
 	url string,
 ) (*SourceCollection, error) {
+	item, err := r.SourceItem(ctx, url)
+	if err != nil {
+		return nil, err
+	}
+	if item.CollectionId == nil {
+		return nil, &model.NoAssosiatedCollection{Url: url}
+	}
+
 	sm, err := r.find(url)
 	if err != nil {
 		return nil, err
@@ -104,7 +112,7 @@ func (r *DatabaseSourceRegistry) getOrCreateSourceCollection(
 		Preload("Items").
 		Preload("CollectionTags.Tag").
 		First(&collection, &SourceCollection{
-			Url:    url,
+			Id:     *item.CollectionId,
 			Plugin: plugin,
 		}).Error
 	if err == nil {

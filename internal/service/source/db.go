@@ -31,7 +31,7 @@ func (r *DatabaseSourceRegistry) SourceItem(
 		Url:    url,
 		Plugin: plugin,
 	}).Error
-	if err == nil {
+	if err == nil && item.Content != nil {
 		return item.IntoSourceItem(), nil
 	}
 	if !errors.Is(err, gorm.ErrRecordNotFound) {

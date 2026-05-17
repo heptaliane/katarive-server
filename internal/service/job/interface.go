@@ -25,11 +25,11 @@ type JobQueue[S, T any] interface {
 type NarrationJob = Job[string]
 type SourceItemJob = Job[model.SourceItem]
 type SourceItemsJob = Job[[]*model.SourceSummary]
-type SourceCollectionJob = Job[model.SourceCollection]
+type SourceCollectionJob = Job[model.SourceCollectionPackage]
 type NarrationJobQueue = JobQueue[narrationJobOption, string]
 type SourceItemJobQueue = JobQueue[sourceItemJobOption, model.SourceItem]
 type SourceItemsJobQueue = JobQueue[sourceItemsJobOption, []*model.SourceSummary]
-type SourceCollectionJobQueue = JobQueue[sourceCollectionJobOption, model.SourceCollection]
+type SourceCollectionJobQueue = JobQueue[sourceCollectionJobOption, model.SourceCollectionPackage]
 
 // helpers
 type JobOption[T any] = func(opt *T)

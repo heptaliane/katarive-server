@@ -214,11 +214,10 @@ func TestKatariveHandlerV1SourceCollection(t *testing.T) {
 					Author:      sc.GetAuthor(),
 					Tags:        sc.GetTags(),
 				},
-				// NOTE: Not supported yet
-				// Sources: []*pb.SourceSummary{
-				// 	{Id: "item1", Title: "title1", Url: "http://valid.com/1"},
-				// 	{Id: "item2", Title: "title2", Url: "http://valid.com/2"},
-				// },
+				Sources: []*pb.SourceSummary{
+					{Id: "item1", Title: "title1", Url: "http://valid.com/1"},
+					{Id: "item2", Title: "title2", Url: "http://valid.com/2"},
+				},
 			},
 		},
 		"invalid_url": {

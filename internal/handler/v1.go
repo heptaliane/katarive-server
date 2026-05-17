@@ -146,12 +146,19 @@ func (h *KatariveHandlerV1) GetSourceCollection(
 	var sources []*apb.SourceSummary
 	if result != nil {
 		collection = &apb.SourceCollection{
-			Id:          result.GetId(),
-			Url:         result.GetUrl(),
-			Title:       result.GetTitle(),
-			Description: result.GetDescription(),
-			Author:      result.GetAuthor(),
-			Tags:        result.GetTags(),
+			Id:          result.Collection.GetId(),
+			Url:         result.Collection.GetUrl(),
+			Title:       result.Collection.GetTitle(),
+			Description: result.Collection.GetDescription(),
+			Author:      result.Collection.GetAuthor(),
+			Tags:        result.Collection.GetTags(),
+		}
+		for _, s := range result.Sources {
+			sources = append(sources, &apb.SourceSummary{
+				Id:    s.GetId(),
+				Title: s.GetTitle(),
+				Url:   s.GetUrl(),
+			})
 		}
 	}
 
@@ -181,13 +188,14 @@ func NewKatariveHandlerV1(
 	sisgrp := scgrp
 
 	return &KatariveHandlerV1{
-		sr:   sr,
-		nr:   nr,
-		nq:   job.NewNarrationJobQueue(sr, nr, ngrp),
-		scq:  job.NewSourceCollectionJobQueue(sr, scgrp),
-		siq:  job.NewSourceItemJobQueue(sr, sigrp),
-		sisq: job.NewSourceItemsJobQueue(sr, sisgrp),
-		pm:   pm,
+		sr:     sr,
+		nr:     nr,
+		nq:     job.NewNarrationJobQueue(sr, nr, ngrp),
+		scq:    job.NewSourceCollectionJobQueue(sr, scgrp),
+		siq:    job.NewSourceItemJobQueue(sr, sigrp),
+		sisq:   job.NewSourceItemsJobQueue(sr, sisgrp),
+		pm:     pm,
+		logger: slog.Default(),
 	}
 }
 

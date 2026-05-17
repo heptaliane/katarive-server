@@ -37,14 +37,22 @@ func (q *PluginSourceCollectionJobQueue) Queue(
 	}
 
 	jobId := id.String()
-	job := NewPluginJob[model.SourceCollection]()
+	job := NewPluginJob[model.SourceCollectionPackage]()
 	q.jobs.Store(jobId, job)
 
 	go func() {
 		q.logger.InfoContext(ctx, "Start sourceCollection job", "id", jobId, "url", options.url)
 
 		v, err, _ := q.group.Do(options.url, func() (any, error) {
-			return q.sr.SourceCollection(ctx, options.url)
+			collection, err := q.sr.SourceCollection(ctx, options.url)
+			if err != nil {
+				return nil, err
+			}
+			sources, err := q.sr.SourceItems(ctx, options.url)
+			return &model.SourceCollectionPackage{
+				Collection: collection,
+				Sources:    sources,
+			}, err
 		})
 
 		job.mu.Lock()
@@ -52,7 +60,7 @@ func (q *PluginSourceCollectionJobQueue) Queue(
 
 		if err != nil {
 			job.err = err
-		} else if result, ok := v.(*model.SourceCollection); ok {
+		} else if result, ok := v.(*model.SourceCollectionPackage); ok {
 			q.logger.InfoContext(
 				ctx, "SourceCollection job completed",
 				"id", jobId,
@@ -80,7 +88,7 @@ func (q *PluginSourceCollectionJobQueue) Get(id string) (SourceCollectionJob, er
 	v, ok := q.jobs.Load(id)
 	if !ok {
 		q.logger.Warn("No such job", "id", id)
-		job := NewPluginJob[model.SourceCollection]()
+		job := NewPluginJob[model.SourceCollectionPackage]()
 		job.err = &model.JobNotFoundError{Id: id}
 		job.status = pb.JobStatus_JOB_STATUS_NOT_FOUND
 		return job, nil

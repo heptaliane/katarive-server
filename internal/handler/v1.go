@@ -17,12 +17,11 @@ import (
 type KatariveHandlerV1 struct {
 	apb.UnimplementedKatariveServiceServer
 
-	sr   source.SourceRegistry
-	nr   narrator.NarrateRegistry
-	nq   job.NarrationJobQueue
-	scq  job.SourceCollectionJobQueue
-	siq  job.SourceItemJobQueue
-	sisq job.SourceItemsJobQueue
+	sr  source.SourceRegistry
+	nr  narrator.NarrateRegistry
+	nq  job.NarrationJobQueue
+	scq job.SourceCollectionJobQueue
+	siq job.SourceItemJobQueue
 
 	pm PathModifier
 }
@@ -185,17 +184,14 @@ func NewKatariveHandlerV1(
 	ngrp := new(singleflight.Group)
 	scgrp := new(singleflight.Group)
 	sigrp := new(singleflight.Group)
-	sisgrp := scgrp
 
 	return &KatariveHandlerV1{
-		sr:     sr,
-		nr:     nr,
-		nq:     job.NewNarrationJobQueue(sr, nr, ngrp),
-		scq:    job.NewSourceCollectionJobQueue(sr, scgrp),
-		siq:    job.NewSourceItemJobQueue(sr, sigrp),
-		sisq:   job.NewSourceItemsJobQueue(sr, sisgrp),
-		pm:     pm,
-		logger: slog.Default(),
+		sr:  sr,
+		nr:  nr,
+		nq:  job.NewNarrationJobQueue(sr, nr, ngrp),
+		scq: job.NewSourceCollectionJobQueue(sr, scgrp),
+		siq: job.NewSourceItemJobQueue(sr, sigrp),
+		pm:  pm,
 	}
 }
 

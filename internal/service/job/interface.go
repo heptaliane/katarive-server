@@ -24,11 +24,9 @@ type JobQueue[S, T any] interface {
 
 type NarrationJob = Job[string]
 type SourceItemJob = Job[model.SourceItem]
-type SourceItemsJob = Job[[]*model.SourceSummary]
 type SourceCollectionJob = Job[model.SourceCollectionPackage]
 type NarrationJobQueue = JobQueue[narrationJobOption, string]
 type SourceItemJobQueue = JobQueue[sourceItemJobOption, model.SourceItem]
-type SourceItemsJobQueue = JobQueue[sourceItemsJobOption, []*model.SourceSummary]
 type SourceCollectionJobQueue = JobQueue[sourceCollectionJobOption, model.SourceCollectionPackage]
 
 // helpers
@@ -60,14 +58,6 @@ type sourceItemJobOption struct {
 
 func WithSourceItemUrl(url string) JobOption[sourceItemJobOption] {
 	return func(opt *sourceItemJobOption) { opt.url = url }
-}
-
-type sourceItemsJobOption struct {
-	url string
-}
-
-func WithSourceItemsUrl(url string) JobOption[sourceItemsJobOption] {
-	return func(opt *sourceItemsJobOption) { opt.url = url }
 }
 
 type sourceCollectionJobOption struct {

@@ -37,7 +37,6 @@ func (j *PluginJob[T]) Error() error {
 
 type PluginNarrationJob = PluginJob[string]
 type PluginSourceItemJob = PluginJob[model.SourceItem]
-type PluginSourceItemsJob = PluginJob[[]*model.SourceSummary]
 type PluginSourceCollectionJob = PluginJob[model.SourceCollectionPackage]
 
 // Ensure PluginNarrationJob implements NarrationJob
@@ -45,9 +44,6 @@ var _ NarrationJob = new(PluginNarrationJob)
 
 // Ensure PluginSourceItemJob implements SourceItemJob
 var _ SourceItemJob = new(PluginSourceItemJob)
-
-// Ensure PluginSourceItemsJob implements SourceItemsJob
-var _ SourceItemsJob = new(PluginSourceItemsJob)
 
 // Ensure PluginCollectionJob implements CollectionJob
 var _ SourceCollectionJob = new(PluginSourceCollectionJob)

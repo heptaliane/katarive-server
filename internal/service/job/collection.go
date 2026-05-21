@@ -51,7 +51,7 @@ func (q *PluginSourceCollectionJobQueue) Queue(
 			if err != nil {
 				return nil, err
 			}
-			sources, err := q.sr.SourceItems(ctx, options.url, opts...)
+			sources, err := q.sr.SourceItems(ctx, options.url) // Force use cache
 			return &model.SourceCollectionPackage{
 				Collection: collection,
 				Sources:    sources,

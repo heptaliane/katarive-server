@@ -70,12 +70,15 @@ func setupInterval() {
 }
 func setupSourceRegistry(t *testing.T) source.SourceRegistry {
 	sr := smock.NewMockSourceRegistry(gomock.NewController(t))
-	sr.EXPECT().SourceItem(gomock.Any(), VALID_URL).Return(si, nil).AnyTimes()
-	sr.EXPECT().SourceItem(gomock.Any(), gomock.Not(VALID_URL)).Return(nil, sie).AnyTimes()
-	sr.EXPECT().SourceCollection(gomock.Any(), VALID_URL).Return(sc, nil).AnyTimes()
-	sr.EXPECT().SourceCollection(gomock.Any(), gomock.Not(VALID_URL)).Return(nil, sce).AnyTimes()
-	sr.EXPECT().SourceItems(gomock.Any(), VALID_URL).Return(sis, nil).AnyTimes()
-	sr.EXPECT().SourceItems(gomock.Any(), gomock.Not(VALID_URL)).Return(nil, sise).AnyTimes()
+	sr.EXPECT().SourceItem(gomock.Any(), VALID_URL, gomock.Any()).Return(si, nil).AnyTimes()
+	sr.EXPECT().SourceItem(gomock.Any(), gomock.Not(VALID_URL), gomock.Any()).
+		Return(nil, sie).AnyTimes()
+	sr.EXPECT().SourceCollection(gomock.Any(), VALID_URL, gomock.Any()).Return(sc, nil).AnyTimes()
+	sr.EXPECT().SourceCollection(gomock.Any(), gomock.Not(VALID_URL), gomock.Any()).
+		Return(nil, sce).AnyTimes()
+	sr.EXPECT().SourceItems(gomock.Any(), VALID_URL, gomock.Any()).Return(sis, nil).AnyTimes()
+	sr.EXPECT().SourceItems(gomock.Any(), gomock.Not(VALID_URL), gomock.Any()).
+		Return(nil, sise).AnyTimes()
 	return sr
 }
 func setupNarrateRegistry(t *testing.T) narrator.NarrateRegistry {

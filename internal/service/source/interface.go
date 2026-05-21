@@ -24,7 +24,20 @@ type SourceManager interface {
 
 //go:generate mockgen -source=$GOFILE -destination=mock/mock_$GOFILE -package=mock
 type SourceRegistry interface {
-	SourceItem(ctx context.Context, url string) (*model.SourceItem, error)
-	SourceCollection(ctx context.Context, url string) (*model.SourceCollection, error)
-	SourceItems(ctx context.Context, url string) ([]*model.SourceSummary, error)
+	SourceItem(ctx context.Context, url string, opts ...SourceOption) (*model.SourceItem, error)
+	SourceItems(ctx context.Context, url string, opts ...SourceOption) ([]*model.SourceSummary, error)
+	SourceCollection(
+		ctx context.Context,
+		url string,
+		opts ...SourceOption,
+	) (*model.SourceCollection, error)
+}
+
+type sourceOptions struct {
+	disableCache bool
+}
+type SourceOption = func(opt *sourceOptions)
+
+func WithoutCache(disableCache bool) SourceOption {
+	return func(opt *sourceOptions) { opt.disableCache = disableCache }
 }

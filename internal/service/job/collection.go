@@ -44,11 +44,14 @@ func (q *PluginSourceCollectionJobQueue) Queue(
 		q.logger.InfoContext(ctx, "Start sourceCollection job", "id", jobId, "url", options.url)
 
 		v, err, _ := q.group.Do(options.url, func() (any, error) {
-			collection, err := q.sr.SourceCollection(ctx, options.url)
+			opts := []source.SourceOption{
+				source.WithoutCache(options.disableCache),
+			}
+			collection, err := q.sr.SourceCollection(ctx, options.url, opts...)
 			if err != nil {
 				return nil, err
 			}
-			sources, err := q.sr.SourceItems(ctx, options.url)
+			sources, err := q.sr.SourceItems(ctx, options.url, opts...)
 			return &model.SourceCollectionPackage{
 				Collection: collection,
 				Sources:    sources,

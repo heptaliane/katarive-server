@@ -19,7 +19,13 @@ type DatabaseSourceRegistry struct {
 func (r *DatabaseSourceRegistry) SourceItem(
 	ctx context.Context,
 	url string,
+	opts ...SourceOption,
 ) (*model.SourceItem, error) {
+	var options sourceOptions
+	for _, opt := range opts {
+		opt(&options)
+	}
+
 	sm, err := r.find(url)
 	if err != nil {
 		return nil, err
@@ -27,16 +33,19 @@ func (r *DatabaseSourceRegistry) SourceItem(
 	plugin := sm.Name()
 
 	var item SourceItem
-	err = r.db.First(&item, &SourceItem{
-		Url:    url,
-		Plugin: plugin,
-	}).Error
-	if err == nil {
-		if item.Content != nil {
-			return item.IntoSourceItem(), nil
+	// Try use cache
+	if !options.disableCache {
+		err = r.db.First(&item, &SourceItem{
+			Url:    url,
+			Plugin: plugin,
+		}).Error
+		if err == nil {
+			if item.Content != nil {
+				return item.IntoSourceItem(), nil
+			}
+		} else if !errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, err
 		}
-	} else if !errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, err
 	}
 
 	req := pb.GetSourceItemRequest{Url: url}
@@ -57,8 +66,14 @@ func (r *DatabaseSourceRegistry) SourceItem(
 func (r *DatabaseSourceRegistry) SourceCollection(
 	ctx context.Context,
 	url string,
+	opts ...SourceOption,
 ) (*model.SourceCollection, error) {
-	collection, err := r.getOrCreateSourceCollection(ctx, url)
+	var options sourceOptions
+	for _, opt := range opts {
+		opt(&options)
+	}
+
+	collection, err := r.getOrCreateSourceCollection(ctx, url, &options)
 	if err != nil {
 		return nil, err
 	}
@@ -68,8 +83,14 @@ func (r *DatabaseSourceRegistry) SourceCollection(
 func (r *DatabaseSourceRegistry) SourceItems(
 	ctx context.Context,
 	url string,
+	opts ...SourceOption,
 ) ([]*model.SourceSummary, error) {
-	collection, err := r.getOrCreateSourceCollection(ctx, url)
+	var options sourceOptions
+	for _, opt := range opts {
+		opt(&options)
+	}
+
+	collection, err := r.getOrCreateSourceCollection(ctx, url, &options)
 	if err != nil {
 		return nil, err
 	}
@@ -92,6 +113,7 @@ func (r *DatabaseSourceRegistry) find(url string) (SourceManager, error) {
 func (r *DatabaseSourceRegistry) getOrCreateSourceCollection(
 	ctx context.Context,
 	url string,
+	options *sourceOptions,
 ) (*SourceCollection, error) {
 	item, err := r.SourceItem(ctx, url)
 	if err != nil {
@@ -108,18 +130,21 @@ func (r *DatabaseSourceRegistry) getOrCreateSourceCollection(
 	plugin := sm.Name()
 
 	var collection SourceCollection
-	err = r.db.
-		Preload("Items").
-		Preload("CollectionTags.Tag").
-		First(&collection, &SourceCollection{
-			Id:     *item.CollectionId,
-			Plugin: plugin,
-		}).Error
-	if err == nil {
-		return &collection, nil
-	}
-	if !errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, err
+	// Try use cache
+	if !options.disableCache {
+		err = r.db.
+			Preload("Items").
+			Preload("CollectionTags.Tag").
+			First(&collection, &SourceCollection{
+				Id:     *item.CollectionId,
+				Plugin: plugin,
+			}).Error
+		if err == nil {
+			return &collection, nil
+		}
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, err
+		}
 	}
 
 	req := pb.GetSourceCollectionRequest{Url: url}

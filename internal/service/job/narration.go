@@ -46,7 +46,10 @@ func (q *PluginNarrationJobQueue) Queue(
 		q.logger.InfoContext(ctx, "Start narration job", "id", jobId, "url", options.url)
 
 		v, err, _ := q.group.Do(options.url, func() (any, error) {
-			src, err := q.sr.SourceItem(ctx, options.url)
+			opts := []source.SourceOption{
+				source.WithoutCache(options.disableCache),
+			}
+			src, err := q.sr.SourceItem(ctx, options.url, opts...)
 			if err != nil {
 				return nil, err
 			}

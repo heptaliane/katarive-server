@@ -37,6 +37,7 @@ func (h *KatariveHandlerV1) QueueNarration(
 		job.WithNarrationNarrator(req.GetNarrator()),
 		job.WithNarrationSpeakerId(req.GetSpeakerId()),
 		job.WithNarrationEncoding(ppb.AudioEncoding_AUDIO_ENCODING_MP3),
+		// TODO: Allow disabling cache
 	)
 	return &apb.QueueNarrationResponse{Id: jobId}, err
 }
@@ -89,7 +90,12 @@ func (h *KatariveHandlerV1) QueueSourceItem(
 	req *apb.QueueSourceItemRequest,
 ) (*apb.QueueSourceItemResponse, error) {
 	ctx = context.WithoutCancel(ctx)
-	jobId, err := h.siq.Queue(ctx, job.WithSourceItemUrl(req.GetUrl()))
+
+	jobId, err := h.siq.Queue(
+		ctx,
+		job.WithSourceItemUrl(req.GetUrl()),
+		job.WithoutSourceItemCache(req.GetDisableCache()),
+	)
 	return &apb.QueueSourceItemResponse{Id: jobId}, err
 }
 func (h *KatariveHandlerV1) GetSourceItem(
@@ -128,6 +134,7 @@ func (h *KatariveHandlerV1) QueueSourceCollection(
 	jobId, err := h.scq.Queue(
 		ctx,
 		job.WithSourceCollectionUrl(req.GetUrl()),
+		job.WithoutSourceCollectionCache(req.GetDisableCache()),
 	)
 	return &apb.QueueSourceCollectionResponse{Id: jobId}, err
 }

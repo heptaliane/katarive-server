@@ -44,7 +44,11 @@ func (q *PluginSourceItemJobQueue) Queue(
 		q.logger.InfoContext(ctx, "Start sourceItem job", "id", jobId, "url", options.url)
 
 		v, err, _ := q.group.Do(options.url, func() (any, error) {
-			return q.sr.SourceItem(ctx, options.url)
+			opts := []source.SourceOption{
+				source.WithoutCache(options.disableCache),
+			}
+
+			return q.sr.SourceItem(ctx, options.url, opts...)
 		})
 
 		job.mu.Lock()

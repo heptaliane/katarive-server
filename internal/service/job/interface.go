@@ -39,20 +39,21 @@ type narrationJobOption struct {
 	encoding     ppb.AudioEncoding
 	disableCache bool
 }
+type NarrationJobOption = JobOption[narrationJobOption]
 
-func WithNarrationUrl(url string) JobOption[narrationJobOption] {
+func WithNarrationUrl(url string) NarrationJobOption {
 	return func(opt *narrationJobOption) { opt.url = url }
 }
-func WithNarrationNarrator(narrator string) JobOption[narrationJobOption] {
+func WithNarrationNarrator(narrator string) NarrationJobOption {
 	return func(opt *narrationJobOption) { opt.narrator = narrator }
 }
-func WithNarrationSpeakerId(speakerId int32) JobOption[narrationJobOption] {
+func WithNarrationSpeakerId(speakerId int32) NarrationJobOption {
 	return func(opt *narrationJobOption) { opt.speakerId = speakerId }
 }
-func WithNarrationEncoding(encoding ppb.AudioEncoding) JobOption[narrationJobOption] {
+func WithNarrationEncoding(encoding ppb.AudioEncoding) NarrationJobOption {
 	return func(opt *narrationJobOption) { opt.encoding = encoding }
 }
-func WithoutNarrationCache(disableCache bool) JobOption[narrationJobOption] {
+func WithoutNarrationCache(disableCache bool) NarrationJobOption {
 	return func(opt *narrationJobOption) { opt.disableCache = disableCache }
 }
 
@@ -60,11 +61,12 @@ type sourceItemJobOption struct {
 	url          string
 	disableCache bool
 }
+type SourceItemJobOption = JobOption[sourceItemJobOption]
 
-func WithSourceItemUrl(url string) JobOption[sourceItemJobOption] {
+func WithSourceItemUrl(url string) SourceItemJobOption {
 	return func(opt *sourceItemJobOption) { opt.url = url }
 }
-func WithoutSourceItemCache(disableCache bool) JobOption[sourceItemJobOption] {
+func WithoutSourceItemCache(disableCache bool) SourceItemJobOption {
 	return func(opt *sourceItemJobOption) { opt.disableCache = disableCache }
 }
 
@@ -72,10 +74,11 @@ type sourceCollectionJobOption struct {
 	url          string
 	disableCache bool
 }
+type SourceCollectionJobOption = JobOption[sourceCollectionJobOption]
 
-func WithSourceCollectionUrl(url string) JobOption[sourceCollectionJobOption] {
+func WithSourceCollectionUrl(url string) SourceCollectionJobOption {
 	return func(opt *sourceCollectionJobOption) { opt.url = url }
 }
-func WithoutSourceCollectionCache(disableCache bool) JobOption[sourceCollectionJobOption] {
+func WithoutSourceCollectionCache(disableCache bool) SourceCollectionJobOption {
 	return func(opt *sourceCollectionJobOption) { opt.disableCache = disableCache }
 }

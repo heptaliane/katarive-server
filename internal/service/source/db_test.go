@@ -27,30 +27,59 @@ func TestDatabaseSourceRegistry(t *testing.T) {
 
 	cases := map[string]struct {
 		urls               []string
+		nCalls1            int
+		nCalls2            int
+		disableCache       bool
 		expectedItem       []*model.SourceItem
 		expectedCollection []*model.SourceCollection
 		expectedItems      [][]*model.SourceSummary
 	}{
 		"[1]": {
 			urls:               []string{SM1_URL},
+			nCalls1:            1,
+			nCalls2:            0,
 			expectedItem:       []*model.SourceItem{si1},
 			expectedCollection: []*model.SourceCollection{sc1},
 			expectedItems:      [][]*model.SourceSummary{sis1},
 		},
 		"[1, 2]": {
 			urls:               []string{SM1_URL, SM2_URL},
+			nCalls1:            1,
+			nCalls2:            1,
 			expectedItem:       []*model.SourceItem{si1, si2},
 			expectedCollection: []*model.SourceCollection{sc1, sc2},
 			expectedItems:      [][]*model.SourceSummary{sis1, sis2},
 		},
 		"[1, 1]": {
 			urls:               []string{SM1_URL, SM1_URL},
+			nCalls1:            1,
+			nCalls2:            0,
 			expectedItem:       []*model.SourceItem{si1, si1},
 			expectedCollection: []*model.SourceCollection{sc1, sc1},
 			expectedItems:      [][]*model.SourceSummary{sis1, sis1},
 		},
 		"[1, 2, 1]": {
 			urls:               []string{SM1_URL, SM2_URL, SM1_URL},
+			nCalls1:            1,
+			nCalls2:            1,
+			expectedItem:       []*model.SourceItem{si1, si2, si1},
+			expectedCollection: []*model.SourceCollection{sc1, sc2, sc1},
+			expectedItems:      [][]*model.SourceSummary{sis1, sis2, sis1},
+		},
+		"[1, 1]; nocache": {
+			urls:               []string{SM1_URL, SM1_URL},
+			nCalls1:            2,
+			nCalls2:            0,
+			disableCache:       true,
+			expectedItem:       []*model.SourceItem{si1, si1},
+			expectedCollection: []*model.SourceCollection{sc1, sc1},
+			expectedItems:      [][]*model.SourceSummary{sis1, sis1},
+		},
+		"[1, 2, 1]; nocache": {
+			urls:               []string{SM1_URL, SM2_URL, SM1_URL},
+			nCalls1:            2,
+			nCalls2:            1,
+			disableCache:       true,
 			expectedItem:       []*model.SourceItem{si1, si2, si1},
 			expectedCollection: []*model.SourceCollection{sc1, sc2, sc1},
 			expectedItems:      [][]*model.SourceSummary{sis1, sis2, sis1},
@@ -61,11 +90,11 @@ func TestDatabaseSourceRegistry(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			sr := setupDatabaseSourceRegistry(t)
+			sr := setupDatabaseSourceRegistry(t, tc.nCalls1, tc.nCalls2)
 
 			ctx := context.Background()
 			for i, url := range tc.urls {
-				si, err := sr.SourceItem(ctx, url)
+				si, err := sr.SourceItem(ctx, url, source.WithoutCache(tc.disableCache))
 				if err != nil {
 					t.Errorf("GetItem failed: %v", err)
 					return
@@ -75,7 +104,7 @@ func TestDatabaseSourceRegistry(t *testing.T) {
 					t.Errorf("SourceItem mismatch (%d) (-want +got):\n%s", i, diff)
 					return
 				}
-				sc, err := sr.SourceCollection(ctx, url)
+				sc, err := sr.SourceCollection(ctx, url, source.WithoutCache(tc.disableCache))
 				if err != nil {
 					t.Errorf("GetCollection failed: %v", err)
 					return
@@ -101,7 +130,7 @@ func TestDatabaseSourceRegistry(t *testing.T) {
 }
 
 // Helper functions
-func setupSourceManagers(t *testing.T) []source.SourceManager {
+func setupSourceManagers(t *testing.T, nCalls1, nCalls2 int) []source.SourceManager {
 	sm1 := mock.NewMockSourceManager(gomock.NewController(t))
 	sm2 := mock.NewMockSourceManager(gomock.NewController(t))
 	sm1.EXPECT().Name().Return(SM1_NAME).AnyTimes()
@@ -110,15 +139,18 @@ func setupSourceManagers(t *testing.T) []source.SourceManager {
 	sm2.EXPECT().IsSupported(SM2_URL).Return(true).AnyTimes()
 	sm1.EXPECT().IsSupported(gomock.Not(SM1_URL)).Return(false).AnyTimes()
 	sm2.EXPECT().IsSupported(gomock.Not(SM2_URL)).Return(false).AnyTimes()
-	sm1.EXPECT().GetSourceItem(gomock.Any(), gomock.Any()).Return(&gsir1, nil).AnyTimes()
-	sm2.EXPECT().GetSourceItem(gomock.Any(), gomock.Any()).Return(&gsir2, nil).AnyTimes()
+	sm1.EXPECT().GetSourceItem(gomock.Any(), gomock.Any()).Return(&gsir1, nil).Times(nCalls1)
+	sm2.EXPECT().GetSourceItem(gomock.Any(), gomock.Any()).Return(&gsir2, nil).Times(nCalls2)
 	sm1.EXPECT().GetSourceCollection(gomock.Any(), gomock.Any()).
-		Return(&gscr1, nil).AnyTimes()
+		Return(&gscr1, nil).Times(nCalls1)
 	sm2.EXPECT().GetSourceCollection(gomock.Any(), gomock.Any()).
-		Return(&gscr2, nil).AnyTimes()
+		Return(&gscr2, nil).Times(nCalls2)
 	return []source.SourceManager{sm1, sm2}
 }
-func setupDatabaseSourceRegistry(t *testing.T) *source.DatabaseSourceRegistry {
+func setupDatabaseSourceRegistry(
+	t *testing.T,
+	nCalls1, nCalls2 int,
+) *source.DatabaseSourceRegistry {
 	t.Helper()
 
 	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
@@ -126,5 +158,5 @@ func setupDatabaseSourceRegistry(t *testing.T) *source.DatabaseSourceRegistry {
 		t.Fatalf("Failed to connect database: %v", err)
 	}
 
-	return source.NewDatabaseSourceRegistry(db, setupSourceManagers(t))
+	return source.NewDatabaseSourceRegistry(db, setupSourceManagers(t, nCalls1, nCalls2))
 }

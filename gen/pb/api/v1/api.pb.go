@@ -228,6 +228,7 @@ type GetNarrationResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Status        JobStatus              `protobuf:"varint,1,opt,name=status,proto3,enum=api.v1.JobStatus" json:"status,omitempty"`
 	Path          *string                `protobuf:"bytes,2,opt,name=path,proto3,oneof" json:"path,omitempty"`
+	Source        *SourceSummary         `protobuf:"bytes,3,opt,name=source,proto3,oneof" json:"source,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -274,6 +275,13 @@ func (x *GetNarrationResponse) GetPath() string {
 		return *x.Path
 	}
 	return ""
+}
+
+func (x *GetNarrationResponse) GetSource() *SourceSummary {
+	if x != nil {
+		return x.Source
+	}
+	return nil
 }
 
 type GetNarratorsRequest struct {
@@ -1017,11 +1025,13 @@ const file_api_v1_api_proto_rawDesc = "" +
 	"\x16QueueNarrationResponse\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\"%\n" +
 	"\x13GetNarrationRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\"c\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\"\xa2\x01\n" +
 	"\x14GetNarrationResponse\x12)\n" +
 	"\x06status\x18\x01 \x01(\x0e2\x11.api.v1.JobStatusR\x06status\x12\x17\n" +
-	"\x04path\x18\x02 \x01(\tH\x00R\x04path\x88\x01\x01B\a\n" +
-	"\x05_path\"\x15\n" +
+	"\x04path\x18\x02 \x01(\tH\x00R\x04path\x88\x01\x01\x122\n" +
+	"\x06source\x18\x03 \x01(\v2\x15.api.v1.SourceSummaryH\x01R\x06source\x88\x01\x01B\a\n" +
+	"\x05_pathB\t\n" +
+	"\a_source\"\x15\n" +
 	"\x13GetNarratorsRequest\"D\n" +
 	"\x14GetNarratorsResponse\x12,\n" +
 	"\bnarrator\x18\x01 \x03(\v2\x10.api.v1.NarratorR\bnarrator\"K\n" +
@@ -1124,32 +1134,33 @@ var file_api_v1_api_proto_goTypes = []any{
 }
 var file_api_v1_api_proto_depIdxs = []int32{
 	0,  // 0: api.v1.GetNarrationResponse.status:type_name -> api.v1.JobStatus
-	7,  // 1: api.v1.GetNarratorsResponse.narrator:type_name -> api.v1.Narrator
-	8,  // 2: api.v1.Narrator.speakers:type_name -> api.v1.Speaker
-	0,  // 3: api.v1.GetSourceItemResponse.status:type_name -> api.v1.JobStatus
-	17, // 4: api.v1.GetSourceItemResponse.metadata:type_name -> api.v1.SourceSummary
-	0,  // 5: api.v1.GetSourceCollectionResponse.status:type_name -> api.v1.JobStatus
-	18, // 6: api.v1.GetSourceCollectionResponse.collection:type_name -> api.v1.SourceCollection
-	17, // 7: api.v1.GetSourceCollectionResponse.sources:type_name -> api.v1.SourceSummary
-	1,  // 8: api.v1.KatariveService.QueueNarration:input_type -> api.v1.QueueNarrationRequest
-	3,  // 9: api.v1.KatariveService.GetNarration:input_type -> api.v1.GetNarrationRequest
-	5,  // 10: api.v1.KatariveService.GetNarrators:input_type -> api.v1.GetNarratorsRequest
-	9,  // 11: api.v1.KatariveService.QueueSourceItem:input_type -> api.v1.QueueSourceItemRequest
-	11, // 12: api.v1.KatariveService.GetSourceItem:input_type -> api.v1.GetSourceItemRequest
-	13, // 13: api.v1.KatariveService.QueueSourceCollection:input_type -> api.v1.QueueSourceCollectionRequest
-	15, // 14: api.v1.KatariveService.GetSourceCollection:input_type -> api.v1.GetSourceCollectionRequest
-	2,  // 15: api.v1.KatariveService.QueueNarration:output_type -> api.v1.QueueNarrationResponse
-	4,  // 16: api.v1.KatariveService.GetNarration:output_type -> api.v1.GetNarrationResponse
-	6,  // 17: api.v1.KatariveService.GetNarrators:output_type -> api.v1.GetNarratorsResponse
-	10, // 18: api.v1.KatariveService.QueueSourceItem:output_type -> api.v1.QueueSourceItemResponse
-	12, // 19: api.v1.KatariveService.GetSourceItem:output_type -> api.v1.GetSourceItemResponse
-	14, // 20: api.v1.KatariveService.QueueSourceCollection:output_type -> api.v1.QueueSourceCollectionResponse
-	16, // 21: api.v1.KatariveService.GetSourceCollection:output_type -> api.v1.GetSourceCollectionResponse
-	15, // [15:22] is the sub-list for method output_type
-	8,  // [8:15] is the sub-list for method input_type
-	8,  // [8:8] is the sub-list for extension type_name
-	8,  // [8:8] is the sub-list for extension extendee
-	0,  // [0:8] is the sub-list for field type_name
+	17, // 1: api.v1.GetNarrationResponse.source:type_name -> api.v1.SourceSummary
+	7,  // 2: api.v1.GetNarratorsResponse.narrator:type_name -> api.v1.Narrator
+	8,  // 3: api.v1.Narrator.speakers:type_name -> api.v1.Speaker
+	0,  // 4: api.v1.GetSourceItemResponse.status:type_name -> api.v1.JobStatus
+	17, // 5: api.v1.GetSourceItemResponse.metadata:type_name -> api.v1.SourceSummary
+	0,  // 6: api.v1.GetSourceCollectionResponse.status:type_name -> api.v1.JobStatus
+	18, // 7: api.v1.GetSourceCollectionResponse.collection:type_name -> api.v1.SourceCollection
+	17, // 8: api.v1.GetSourceCollectionResponse.sources:type_name -> api.v1.SourceSummary
+	1,  // 9: api.v1.KatariveService.QueueNarration:input_type -> api.v1.QueueNarrationRequest
+	3,  // 10: api.v1.KatariveService.GetNarration:input_type -> api.v1.GetNarrationRequest
+	5,  // 11: api.v1.KatariveService.GetNarrators:input_type -> api.v1.GetNarratorsRequest
+	9,  // 12: api.v1.KatariveService.QueueSourceItem:input_type -> api.v1.QueueSourceItemRequest
+	11, // 13: api.v1.KatariveService.GetSourceItem:input_type -> api.v1.GetSourceItemRequest
+	13, // 14: api.v1.KatariveService.QueueSourceCollection:input_type -> api.v1.QueueSourceCollectionRequest
+	15, // 15: api.v1.KatariveService.GetSourceCollection:input_type -> api.v1.GetSourceCollectionRequest
+	2,  // 16: api.v1.KatariveService.QueueNarration:output_type -> api.v1.QueueNarrationResponse
+	4,  // 17: api.v1.KatariveService.GetNarration:output_type -> api.v1.GetNarrationResponse
+	6,  // 18: api.v1.KatariveService.GetNarrators:output_type -> api.v1.GetNarratorsResponse
+	10, // 19: api.v1.KatariveService.QueueSourceItem:output_type -> api.v1.QueueSourceItemResponse
+	12, // 20: api.v1.KatariveService.GetSourceItem:output_type -> api.v1.GetSourceItemResponse
+	14, // 21: api.v1.KatariveService.QueueSourceCollection:output_type -> api.v1.QueueSourceCollectionResponse
+	16, // 22: api.v1.KatariveService.GetSourceCollection:output_type -> api.v1.GetSourceCollectionResponse
+	16, // [16:23] is the sub-list for method output_type
+	9,  // [9:16] is the sub-list for method input_type
+	9,  // [9:9] is the sub-list for extension type_name
+	9,  // [9:9] is the sub-list for extension extendee
+	0,  // [0:9] is the sub-list for field type_name
 }
 
 func init() { file_api_v1_api_proto_init() }

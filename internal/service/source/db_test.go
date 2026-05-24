@@ -26,63 +26,70 @@ func TestDatabaseSourceRegistry(t *testing.T) {
 	sis2 := gscr2.GetSources()
 
 	cases := map[string]struct {
-		urls               []string
-		nCalls1            int
-		nCalls2            int
-		disableCache       bool
-		expectedItem       []*model.SourceItem
-		expectedCollection []*model.SourceCollection
-		expectedItems      [][]*model.SourceSummary
+		urls                []string
+		nCalls1             int
+		nCalls2             int
+		disableCache        bool
+		expectedItem        []*model.SourceItem
+		expectedCollection  []*model.SourceCollection
+		expectedItems       [][]*model.SourceSummary
+		expectedCollections []*model.SourceCollection
 	}{
 		"[1]": {
-			urls:               []string{SM1_URL},
-			nCalls1:            1,
-			nCalls2:            0,
-			expectedItem:       []*model.SourceItem{si1},
-			expectedCollection: []*model.SourceCollection{sc1},
-			expectedItems:      [][]*model.SourceSummary{sis1},
+			urls:                []string{SM1_URL},
+			nCalls1:             1,
+			nCalls2:             0,
+			expectedItem:        []*model.SourceItem{si1},
+			expectedCollection:  []*model.SourceCollection{sc1},
+			expectedItems:       [][]*model.SourceSummary{sis1},
+			expectedCollections: []*model.SourceCollection{sc1},
 		},
 		"[1, 2]": {
-			urls:               []string{SM1_URL, SM2_URL},
-			nCalls1:            1,
-			nCalls2:            1,
-			expectedItem:       []*model.SourceItem{si1, si2},
-			expectedCollection: []*model.SourceCollection{sc1, sc2},
-			expectedItems:      [][]*model.SourceSummary{sis1, sis2},
+			urls:                []string{SM1_URL, SM2_URL},
+			nCalls1:             1,
+			nCalls2:             1,
+			expectedItem:        []*model.SourceItem{si1, si2},
+			expectedCollection:  []*model.SourceCollection{sc1, sc2},
+			expectedItems:       [][]*model.SourceSummary{sis1, sis2},
+			expectedCollections: []*model.SourceCollection{sc1, sc2},
 		},
 		"[1, 1]": {
-			urls:               []string{SM1_URL, SM1_URL},
-			nCalls1:            1,
-			nCalls2:            0,
-			expectedItem:       []*model.SourceItem{si1, si1},
-			expectedCollection: []*model.SourceCollection{sc1, sc1},
-			expectedItems:      [][]*model.SourceSummary{sis1, sis1},
+			urls:                []string{SM1_URL, SM1_URL},
+			nCalls1:             1,
+			nCalls2:             0,
+			expectedItem:        []*model.SourceItem{si1, si1},
+			expectedCollection:  []*model.SourceCollection{sc1, sc1},
+			expectedItems:       [][]*model.SourceSummary{sis1, sis1},
+			expectedCollections: []*model.SourceCollection{sc1},
 		},
 		"[1, 2, 1]": {
-			urls:               []string{SM1_URL, SM2_URL, SM1_URL},
-			nCalls1:            1,
-			nCalls2:            1,
-			expectedItem:       []*model.SourceItem{si1, si2, si1},
-			expectedCollection: []*model.SourceCollection{sc1, sc2, sc1},
-			expectedItems:      [][]*model.SourceSummary{sis1, sis2, sis1},
+			urls:                []string{SM1_URL, SM2_URL, SM1_URL},
+			nCalls1:             1,
+			nCalls2:             1,
+			expectedItem:        []*model.SourceItem{si1, si2, si1},
+			expectedCollection:  []*model.SourceCollection{sc1, sc2, sc1},
+			expectedItems:       [][]*model.SourceSummary{sis1, sis2, sis1},
+			expectedCollections: []*model.SourceCollection{sc1, sc2},
 		},
 		"[1, 1]; nocache": {
-			urls:               []string{SM1_URL, SM1_URL},
-			nCalls1:            2,
-			nCalls2:            0,
-			disableCache:       true,
-			expectedItem:       []*model.SourceItem{si1, si1},
-			expectedCollection: []*model.SourceCollection{sc1, sc1},
-			expectedItems:      [][]*model.SourceSummary{sis1, sis1},
+			urls:                []string{SM1_URL, SM1_URL},
+			nCalls1:             2,
+			nCalls2:             0,
+			disableCache:        true,
+			expectedItem:        []*model.SourceItem{si1, si1},
+			expectedCollection:  []*model.SourceCollection{sc1, sc1},
+			expectedItems:       [][]*model.SourceSummary{sis1, sis1},
+			expectedCollections: []*model.SourceCollection{sc1},
 		},
 		"[1, 2, 1]; nocache": {
-			urls:               []string{SM1_URL, SM2_URL, SM1_URL},
-			nCalls1:            2,
-			nCalls2:            1,
-			disableCache:       true,
-			expectedItem:       []*model.SourceItem{si1, si2, si1},
-			expectedCollection: []*model.SourceCollection{sc1, sc2, sc1},
-			expectedItems:      [][]*model.SourceSummary{sis1, sis2, sis1},
+			urls:                []string{SM1_URL, SM2_URL, SM1_URL},
+			nCalls1:             2,
+			nCalls2:             1,
+			disableCache:        true,
+			expectedItem:        []*model.SourceItem{si1, si2, si1},
+			expectedCollection:  []*model.SourceCollection{sc1, sc2, sc1},
+			expectedItems:       [][]*model.SourceSummary{sis1, sis2, sis1},
+			expectedCollections: []*model.SourceCollection{sc1, sc2},
 		},
 	}
 
@@ -124,6 +131,17 @@ func TestDatabaseSourceRegistry(t *testing.T) {
 					t.Errorf("SourceItems mismatch (%d) (-want +got):\n%s", i, diff)
 					return
 				}
+			}
+
+			scs, err := sr.SourceCollections()
+			if err != nil {
+				t.Errorf("GetSourceCollection failed: %v", err)
+				return
+			}
+			diff := cmp.Diff(tc.expectedCollections, scs, protocmp.Transform())
+			if diff != "" {
+				t.Errorf("SourceCollections mismatch (-want +got):\n%s", diff)
+				return
 			}
 		})
 	}

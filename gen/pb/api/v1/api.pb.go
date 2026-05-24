@@ -868,6 +868,86 @@ func (x *GetSourceCollectionResponse) GetSources() []*SourceSummary {
 	return nil
 }
 
+type GetSourceCollectionsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetSourceCollectionsRequest) Reset() {
+	*x = GetSourceCollectionsRequest{}
+	mi := &file_api_v1_api_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetSourceCollectionsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetSourceCollectionsRequest) ProtoMessage() {}
+
+func (x *GetSourceCollectionsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_v1_api_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetSourceCollectionsRequest.ProtoReflect.Descriptor instead.
+func (*GetSourceCollectionsRequest) Descriptor() ([]byte, []int) {
+	return file_api_v1_api_proto_rawDescGZIP(), []int{16}
+}
+
+type GetSourceCollectionsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Collection    []*SourceCollection    `protobuf:"bytes,1,rep,name=collection,proto3" json:"collection,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetSourceCollectionsResponse) Reset() {
+	*x = GetSourceCollectionsResponse{}
+	mi := &file_api_v1_api_proto_msgTypes[17]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetSourceCollectionsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetSourceCollectionsResponse) ProtoMessage() {}
+
+func (x *GetSourceCollectionsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_api_v1_api_proto_msgTypes[17]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetSourceCollectionsResponse.ProtoReflect.Descriptor instead.
+func (*GetSourceCollectionsResponse) Descriptor() ([]byte, []int) {
+	return file_api_v1_api_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *GetSourceCollectionsResponse) GetCollection() []*SourceCollection {
+	if x != nil {
+		return x.Collection
+	}
+	return nil
+}
+
 type SourceSummary struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -879,7 +959,7 @@ type SourceSummary struct {
 
 func (x *SourceSummary) Reset() {
 	*x = SourceSummary{}
-	mi := &file_api_v1_api_proto_msgTypes[16]
+	mi := &file_api_v1_api_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -891,7 +971,7 @@ func (x *SourceSummary) String() string {
 func (*SourceSummary) ProtoMessage() {}
 
 func (x *SourceSummary) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_api_proto_msgTypes[16]
+	mi := &file_api_v1_api_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -904,7 +984,7 @@ func (x *SourceSummary) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SourceSummary.ProtoReflect.Descriptor instead.
 func (*SourceSummary) Descriptor() ([]byte, []int) {
-	return file_api_v1_api_proto_rawDescGZIP(), []int{16}
+	return file_api_v1_api_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *SourceSummary) GetId() string {
@@ -942,7 +1022,7 @@ type SourceCollection struct {
 
 func (x *SourceCollection) Reset() {
 	*x = SourceCollection{}
-	mi := &file_api_v1_api_proto_msgTypes[17]
+	mi := &file_api_v1_api_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -954,7 +1034,7 @@ func (x *SourceCollection) String() string {
 func (*SourceCollection) ProtoMessage() {}
 
 func (x *SourceCollection) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_api_proto_msgTypes[17]
+	mi := &file_api_v1_api_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -967,7 +1047,7 @@ func (x *SourceCollection) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SourceCollection.ProtoReflect.Descriptor instead.
 func (*SourceCollection) Descriptor() ([]byte, []int) {
-	return file_api_v1_api_proto_rawDescGZIP(), []int{17}
+	return file_api_v1_api_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *SourceCollection) GetId() string {
@@ -1068,7 +1148,12 @@ const file_api_v1_api_proto_rawDesc = "" +
 	"collection\x18\x02 \x01(\v2\x18.api.v1.SourceCollectionH\x00R\n" +
 	"collection\x88\x01\x01\x12/\n" +
 	"\asources\x18\x03 \x03(\v2\x15.api.v1.SourceSummaryR\asourcesB\r\n" +
-	"\v_collection\"G\n" +
+	"\v_collection\"\x1d\n" +
+	"\x1bGetSourceCollectionsRequest\"X\n" +
+	"\x1cGetSourceCollectionsResponse\x128\n" +
+	"\n" +
+	"collection\x18\x01 \x03(\v2\x18.api.v1.SourceCollectionR\n" +
+	"collection\"G\n" +
 	"\rSourceSummary\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x10\n" +
 	"\x03url\x18\x02 \x01(\tR\x03url\x12\x14\n" +
@@ -1085,7 +1170,7 @@ const file_api_v1_api_proto_rawDesc = "" +
 	"\x16JOB_STATUS_PROGRESSING\x10\x01\x12\x18\n" +
 	"\x14JOB_STATUS_COMPLETED\x10\x02\x12\x15\n" +
 	"\x11JOB_STATUS_FAILED\x10\x03\x12\x18\n" +
-	"\x14JOB_STATUS_NOT_FOUND\x10\x042\xe0\x04\n" +
+	"\x14JOB_STATUS_NOT_FOUND\x10\x042\xc3\x05\n" +
 	"\x0fKatariveService\x12O\n" +
 	"\x0eQueueNarration\x12\x1d.api.v1.QueueNarrationRequest\x1a\x1e.api.v1.QueueNarrationResponse\x12I\n" +
 	"\fGetNarration\x12\x1b.api.v1.GetNarrationRequest\x1a\x1c.api.v1.GetNarrationResponse\x12I\n" +
@@ -1093,7 +1178,8 @@ const file_api_v1_api_proto_rawDesc = "" +
 	"\x0fQueueSourceItem\x12\x1e.api.v1.QueueSourceItemRequest\x1a\x1f.api.v1.QueueSourceItemResponse\x12L\n" +
 	"\rGetSourceItem\x12\x1c.api.v1.GetSourceItemRequest\x1a\x1d.api.v1.GetSourceItemResponse\x12d\n" +
 	"\x15QueueSourceCollection\x12$.api.v1.QueueSourceCollectionRequest\x1a%.api.v1.QueueSourceCollectionResponse\x12^\n" +
-	"\x13GetSourceCollection\x12\".api.v1.GetSourceCollectionRequest\x1a#.api.v1.GetSourceCollectionResponseB\x8a\x01\n" +
+	"\x13GetSourceCollection\x12\".api.v1.GetSourceCollectionRequest\x1a#.api.v1.GetSourceCollectionResponse\x12a\n" +
+	"\x14GetSourceCollections\x12#.api.v1.GetSourceCollectionsRequest\x1a$.api.v1.GetSourceCollectionsResponseB\x8a\x01\n" +
 	"\n" +
 	"com.api.v1B\bApiProtoP\x01Z9github.com/heptaliane/katarive-server/gen/pb/api/v1;apiv1\xa2\x02\x03AXX\xaa\x02\x06Api.V1\xca\x02\x06Api\\V1\xe2\x02\x12Api\\V1\\GPBMetadata\xea\x02\aApi::V1b\x06proto3"
 
@@ -1110,7 +1196,7 @@ func file_api_v1_api_proto_rawDescGZIP() []byte {
 }
 
 var file_api_v1_api_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_api_v1_api_proto_msgTypes = make([]protoimpl.MessageInfo, 18)
+var file_api_v1_api_proto_msgTypes = make([]protoimpl.MessageInfo, 20)
 var file_api_v1_api_proto_goTypes = []any{
 	(JobStatus)(0),                        // 0: api.v1.JobStatus
 	(*QueueNarrationRequest)(nil),         // 1: api.v1.QueueNarrationRequest
@@ -1129,38 +1215,43 @@ var file_api_v1_api_proto_goTypes = []any{
 	(*QueueSourceCollectionResponse)(nil), // 14: api.v1.QueueSourceCollectionResponse
 	(*GetSourceCollectionRequest)(nil),    // 15: api.v1.GetSourceCollectionRequest
 	(*GetSourceCollectionResponse)(nil),   // 16: api.v1.GetSourceCollectionResponse
-	(*SourceSummary)(nil),                 // 17: api.v1.SourceSummary
-	(*SourceCollection)(nil),              // 18: api.v1.SourceCollection
+	(*GetSourceCollectionsRequest)(nil),   // 17: api.v1.GetSourceCollectionsRequest
+	(*GetSourceCollectionsResponse)(nil),  // 18: api.v1.GetSourceCollectionsResponse
+	(*SourceSummary)(nil),                 // 19: api.v1.SourceSummary
+	(*SourceCollection)(nil),              // 20: api.v1.SourceCollection
 }
 var file_api_v1_api_proto_depIdxs = []int32{
 	0,  // 0: api.v1.GetNarrationResponse.status:type_name -> api.v1.JobStatus
-	17, // 1: api.v1.GetNarrationResponse.source:type_name -> api.v1.SourceSummary
+	19, // 1: api.v1.GetNarrationResponse.source:type_name -> api.v1.SourceSummary
 	7,  // 2: api.v1.GetNarratorsResponse.narrator:type_name -> api.v1.Narrator
 	8,  // 3: api.v1.Narrator.speakers:type_name -> api.v1.Speaker
 	0,  // 4: api.v1.GetSourceItemResponse.status:type_name -> api.v1.JobStatus
-	17, // 5: api.v1.GetSourceItemResponse.metadata:type_name -> api.v1.SourceSummary
+	19, // 5: api.v1.GetSourceItemResponse.metadata:type_name -> api.v1.SourceSummary
 	0,  // 6: api.v1.GetSourceCollectionResponse.status:type_name -> api.v1.JobStatus
-	18, // 7: api.v1.GetSourceCollectionResponse.collection:type_name -> api.v1.SourceCollection
-	17, // 8: api.v1.GetSourceCollectionResponse.sources:type_name -> api.v1.SourceSummary
-	1,  // 9: api.v1.KatariveService.QueueNarration:input_type -> api.v1.QueueNarrationRequest
-	3,  // 10: api.v1.KatariveService.GetNarration:input_type -> api.v1.GetNarrationRequest
-	5,  // 11: api.v1.KatariveService.GetNarrators:input_type -> api.v1.GetNarratorsRequest
-	9,  // 12: api.v1.KatariveService.QueueSourceItem:input_type -> api.v1.QueueSourceItemRequest
-	11, // 13: api.v1.KatariveService.GetSourceItem:input_type -> api.v1.GetSourceItemRequest
-	13, // 14: api.v1.KatariveService.QueueSourceCollection:input_type -> api.v1.QueueSourceCollectionRequest
-	15, // 15: api.v1.KatariveService.GetSourceCollection:input_type -> api.v1.GetSourceCollectionRequest
-	2,  // 16: api.v1.KatariveService.QueueNarration:output_type -> api.v1.QueueNarrationResponse
-	4,  // 17: api.v1.KatariveService.GetNarration:output_type -> api.v1.GetNarrationResponse
-	6,  // 18: api.v1.KatariveService.GetNarrators:output_type -> api.v1.GetNarratorsResponse
-	10, // 19: api.v1.KatariveService.QueueSourceItem:output_type -> api.v1.QueueSourceItemResponse
-	12, // 20: api.v1.KatariveService.GetSourceItem:output_type -> api.v1.GetSourceItemResponse
-	14, // 21: api.v1.KatariveService.QueueSourceCollection:output_type -> api.v1.QueueSourceCollectionResponse
-	16, // 22: api.v1.KatariveService.GetSourceCollection:output_type -> api.v1.GetSourceCollectionResponse
-	16, // [16:23] is the sub-list for method output_type
-	9,  // [9:16] is the sub-list for method input_type
-	9,  // [9:9] is the sub-list for extension type_name
-	9,  // [9:9] is the sub-list for extension extendee
-	0,  // [0:9] is the sub-list for field type_name
+	20, // 7: api.v1.GetSourceCollectionResponse.collection:type_name -> api.v1.SourceCollection
+	19, // 8: api.v1.GetSourceCollectionResponse.sources:type_name -> api.v1.SourceSummary
+	20, // 9: api.v1.GetSourceCollectionsResponse.collection:type_name -> api.v1.SourceCollection
+	1,  // 10: api.v1.KatariveService.QueueNarration:input_type -> api.v1.QueueNarrationRequest
+	3,  // 11: api.v1.KatariveService.GetNarration:input_type -> api.v1.GetNarrationRequest
+	5,  // 12: api.v1.KatariveService.GetNarrators:input_type -> api.v1.GetNarratorsRequest
+	9,  // 13: api.v1.KatariveService.QueueSourceItem:input_type -> api.v1.QueueSourceItemRequest
+	11, // 14: api.v1.KatariveService.GetSourceItem:input_type -> api.v1.GetSourceItemRequest
+	13, // 15: api.v1.KatariveService.QueueSourceCollection:input_type -> api.v1.QueueSourceCollectionRequest
+	15, // 16: api.v1.KatariveService.GetSourceCollection:input_type -> api.v1.GetSourceCollectionRequest
+	17, // 17: api.v1.KatariveService.GetSourceCollections:input_type -> api.v1.GetSourceCollectionsRequest
+	2,  // 18: api.v1.KatariveService.QueueNarration:output_type -> api.v1.QueueNarrationResponse
+	4,  // 19: api.v1.KatariveService.GetNarration:output_type -> api.v1.GetNarrationResponse
+	6,  // 20: api.v1.KatariveService.GetNarrators:output_type -> api.v1.GetNarratorsResponse
+	10, // 21: api.v1.KatariveService.QueueSourceItem:output_type -> api.v1.QueueSourceItemResponse
+	12, // 22: api.v1.KatariveService.GetSourceItem:output_type -> api.v1.GetSourceItemResponse
+	14, // 23: api.v1.KatariveService.QueueSourceCollection:output_type -> api.v1.QueueSourceCollectionResponse
+	16, // 24: api.v1.KatariveService.GetSourceCollection:output_type -> api.v1.GetSourceCollectionResponse
+	18, // 25: api.v1.KatariveService.GetSourceCollections:output_type -> api.v1.GetSourceCollectionsResponse
+	18, // [18:26] is the sub-list for method output_type
+	10, // [10:18] is the sub-list for method input_type
+	10, // [10:10] is the sub-list for extension type_name
+	10, // [10:10] is the sub-list for extension extendee
+	0,  // [0:10] is the sub-list for field type_name
 }
 
 func init() { file_api_v1_api_proto_init() }
@@ -1177,7 +1268,7 @@ func file_api_v1_api_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_v1_api_proto_rawDesc), len(file_api_v1_api_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   18,
+			NumMessages:   20,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

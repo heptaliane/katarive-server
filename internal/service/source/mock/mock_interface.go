@@ -145,6 +145,21 @@ func (mr *MockSourceRegistryMockRecorder) SourceCollection(ctx, url any, opts ..
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SourceCollection", reflect.TypeOf((*MockSourceRegistry)(nil).SourceCollection), varargs...)
 }
 
+// SourceCollections mocks base method.
+func (m *MockSourceRegistry) SourceCollections() ([]*model.SourceCollection, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SourceCollections")
+	ret0, _ := ret[0].([]*model.SourceCollection)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SourceCollections indicates an expected call of SourceCollections.
+func (mr *MockSourceRegistryMockRecorder) SourceCollections() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SourceCollections", reflect.TypeOf((*MockSourceRegistry)(nil).SourceCollections))
+}
+
 // SourceItem mocks base method.
 func (m *MockSourceRegistry) SourceItem(ctx context.Context, url string, opts ...source.SourceOption) (*model.SourceItem, error) {
 	m.ctrl.T.Helper()

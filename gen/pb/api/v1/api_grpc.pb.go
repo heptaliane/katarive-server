@@ -26,6 +26,7 @@ const (
 	KatariveService_GetSourceItem_FullMethodName         = "/api.v1.KatariveService/GetSourceItem"
 	KatariveService_QueueSourceCollection_FullMethodName = "/api.v1.KatariveService/QueueSourceCollection"
 	KatariveService_GetSourceCollection_FullMethodName   = "/api.v1.KatariveService/GetSourceCollection"
+	KatariveService_GetSourceCollections_FullMethodName  = "/api.v1.KatariveService/GetSourceCollections"
 )
 
 // KatariveServiceClient is the client API for KatariveService service.
@@ -39,6 +40,7 @@ type KatariveServiceClient interface {
 	GetSourceItem(ctx context.Context, in *GetSourceItemRequest, opts ...grpc.CallOption) (*GetSourceItemResponse, error)
 	QueueSourceCollection(ctx context.Context, in *QueueSourceCollectionRequest, opts ...grpc.CallOption) (*QueueSourceCollectionResponse, error)
 	GetSourceCollection(ctx context.Context, in *GetSourceCollectionRequest, opts ...grpc.CallOption) (*GetSourceCollectionResponse, error)
+	GetSourceCollections(ctx context.Context, in *GetSourceCollectionsRequest, opts ...grpc.CallOption) (*GetSourceCollectionsResponse, error)
 }
 
 type katariveServiceClient struct {
@@ -119,6 +121,16 @@ func (c *katariveServiceClient) GetSourceCollection(ctx context.Context, in *Get
 	return out, nil
 }
 
+func (c *katariveServiceClient) GetSourceCollections(ctx context.Context, in *GetSourceCollectionsRequest, opts ...grpc.CallOption) (*GetSourceCollectionsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetSourceCollectionsResponse)
+	err := c.cc.Invoke(ctx, KatariveService_GetSourceCollections_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // KatariveServiceServer is the server API for KatariveService service.
 // All implementations must embed UnimplementedKatariveServiceServer
 // for forward compatibility.
@@ -130,6 +142,7 @@ type KatariveServiceServer interface {
 	GetSourceItem(context.Context, *GetSourceItemRequest) (*GetSourceItemResponse, error)
 	QueueSourceCollection(context.Context, *QueueSourceCollectionRequest) (*QueueSourceCollectionResponse, error)
 	GetSourceCollection(context.Context, *GetSourceCollectionRequest) (*GetSourceCollectionResponse, error)
+	GetSourceCollections(context.Context, *GetSourceCollectionsRequest) (*GetSourceCollectionsResponse, error)
 	mustEmbedUnimplementedKatariveServiceServer()
 }
 
@@ -160,6 +173,9 @@ func (UnimplementedKatariveServiceServer) QueueSourceCollection(context.Context,
 }
 func (UnimplementedKatariveServiceServer) GetSourceCollection(context.Context, *GetSourceCollectionRequest) (*GetSourceCollectionResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetSourceCollection not implemented")
+}
+func (UnimplementedKatariveServiceServer) GetSourceCollections(context.Context, *GetSourceCollectionsRequest) (*GetSourceCollectionsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetSourceCollections not implemented")
 }
 func (UnimplementedKatariveServiceServer) mustEmbedUnimplementedKatariveServiceServer() {}
 func (UnimplementedKatariveServiceServer) testEmbeddedByValue()                         {}
@@ -308,6 +324,24 @@ func _KatariveService_GetSourceCollection_Handler(srv interface{}, ctx context.C
 	return interceptor(ctx, in, info, handler)
 }
 
+func _KatariveService_GetSourceCollections_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetSourceCollectionsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KatariveServiceServer).GetSourceCollections(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: KatariveService_GetSourceCollections_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KatariveServiceServer).GetSourceCollections(ctx, req.(*GetSourceCollectionsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // KatariveService_ServiceDesc is the grpc.ServiceDesc for KatariveService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -342,6 +376,10 @@ var KatariveService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetSourceCollection",
 			Handler:    _KatariveService_GetSourceCollection_Handler,
+		},
+		{
+			MethodName: "GetSourceCollections",
+			Handler:    _KatariveService_GetSourceCollections_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -31,6 +31,7 @@ type SourceRegistry interface {
 		url string,
 		opts ...SourceOption,
 	) (*model.SourceCollection, error)
+	SourceCollections() ([]*model.SourceCollection, error)
 }
 
 type sourceOptions struct {

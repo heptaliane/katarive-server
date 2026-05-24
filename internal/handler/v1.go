@@ -184,6 +184,29 @@ func (h *KatariveHandlerV1) GetSourceCollection(
 		Sources:    sources,
 	}, job.Error()
 }
+func (h *KatariveHandlerV1) GetSourceCollections(
+	ctx context.Context,
+	req *apb.GetSourceCollectionsRequest,
+) (*apb.GetSourceCollectionsResponse, error) {
+	cs, err := h.sr.SourceCollections()
+	if err != nil {
+		return nil, err
+	}
+
+	var collections []*apb.SourceCollection
+	for _, c := range cs {
+		collections = append(collections, &apb.SourceCollection{
+			Id:          c.GetId(),
+			Url:         c.GetUrl(),
+			Title:       c.GetTitle(),
+			Description: c.GetDescription(),
+			Author:      c.GetAuthor(),
+			Tags:        c.GetTags(),
+		})
+	}
+
+	return &apb.GetSourceCollectionsResponse{Collection: collections}, nil
+}
 
 // Check KatariveServiceServer implementation
 var _ apb.KatariveServiceServer = new(KatariveHandlerV1)

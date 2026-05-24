@@ -97,6 +97,20 @@ func (r *DatabaseSourceRegistry) SourceItems(
 
 	return collection.IntoSourceItems(), nil
 }
+func (r *DatabaseSourceRegistry) SourceCollections() ([]*model.SourceCollection, error) {
+	var collections []*SourceCollection
+	err := r.db.Preload("CollectionTags.Tag").Order("id").Find(&collections).Error
+	if err != nil {
+		return nil, err
+	}
+
+	var cs []*model.SourceCollection
+	for _, collection := range collections {
+		cs = append(cs, collection.IntoSourceCollection())
+	}
+
+	return cs, nil
+}
 
 // Ensure SourceRegistry implementation
 var _ SourceRegistry = new(DatabaseSourceRegistry)

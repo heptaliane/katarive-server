@@ -54,6 +54,9 @@ const (
 	// KatariveServiceGetSourceCollectionProcedure is the fully-qualified name of the KatariveService's
 	// GetSourceCollection RPC.
 	KatariveServiceGetSourceCollectionProcedure = "/api.v1.KatariveService/GetSourceCollection"
+	// KatariveServiceGetSourceCollectionsProcedure is the fully-qualified name of the KatariveService's
+	// GetSourceCollections RPC.
+	KatariveServiceGetSourceCollectionsProcedure = "/api.v1.KatariveService/GetSourceCollections"
 )
 
 // KatariveServiceClient is a client for the api.v1.KatariveService service.
@@ -65,6 +68,7 @@ type KatariveServiceClient interface {
 	GetSourceItem(context.Context, *connect.Request[v1.GetSourceItemRequest]) (*connect.Response[v1.GetSourceItemResponse], error)
 	QueueSourceCollection(context.Context, *connect.Request[v1.QueueSourceCollectionRequest]) (*connect.Response[v1.QueueSourceCollectionResponse], error)
 	GetSourceCollection(context.Context, *connect.Request[v1.GetSourceCollectionRequest]) (*connect.Response[v1.GetSourceCollectionResponse], error)
+	GetSourceCollections(context.Context, *connect.Request[v1.GetSourceCollectionsRequest]) (*connect.Response[v1.GetSourceCollectionsResponse], error)
 }
 
 // NewKatariveServiceClient constructs a client for the api.v1.KatariveService service. By default,
@@ -120,6 +124,12 @@ func NewKatariveServiceClient(httpClient connect.HTTPClient, baseURL string, opt
 			connect.WithSchema(katariveServiceMethods.ByName("GetSourceCollection")),
 			connect.WithClientOptions(opts...),
 		),
+		getSourceCollections: connect.NewClient[v1.GetSourceCollectionsRequest, v1.GetSourceCollectionsResponse](
+			httpClient,
+			baseURL+KatariveServiceGetSourceCollectionsProcedure,
+			connect.WithSchema(katariveServiceMethods.ByName("GetSourceCollections")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -132,6 +142,7 @@ type katariveServiceClient struct {
 	getSourceItem         *connect.Client[v1.GetSourceItemRequest, v1.GetSourceItemResponse]
 	queueSourceCollection *connect.Client[v1.QueueSourceCollectionRequest, v1.QueueSourceCollectionResponse]
 	getSourceCollection   *connect.Client[v1.GetSourceCollectionRequest, v1.GetSourceCollectionResponse]
+	getSourceCollections  *connect.Client[v1.GetSourceCollectionsRequest, v1.GetSourceCollectionsResponse]
 }
 
 // QueueNarration calls api.v1.KatariveService.QueueNarration.
@@ -169,6 +180,11 @@ func (c *katariveServiceClient) GetSourceCollection(ctx context.Context, req *co
 	return c.getSourceCollection.CallUnary(ctx, req)
 }
 
+// GetSourceCollections calls api.v1.KatariveService.GetSourceCollections.
+func (c *katariveServiceClient) GetSourceCollections(ctx context.Context, req *connect.Request[v1.GetSourceCollectionsRequest]) (*connect.Response[v1.GetSourceCollectionsResponse], error) {
+	return c.getSourceCollections.CallUnary(ctx, req)
+}
+
 // KatariveServiceHandler is an implementation of the api.v1.KatariveService service.
 type KatariveServiceHandler interface {
 	QueueNarration(context.Context, *connect.Request[v1.QueueNarrationRequest]) (*connect.Response[v1.QueueNarrationResponse], error)
@@ -178,6 +194,7 @@ type KatariveServiceHandler interface {
 	GetSourceItem(context.Context, *connect.Request[v1.GetSourceItemRequest]) (*connect.Response[v1.GetSourceItemResponse], error)
 	QueueSourceCollection(context.Context, *connect.Request[v1.QueueSourceCollectionRequest]) (*connect.Response[v1.QueueSourceCollectionResponse], error)
 	GetSourceCollection(context.Context, *connect.Request[v1.GetSourceCollectionRequest]) (*connect.Response[v1.GetSourceCollectionResponse], error)
+	GetSourceCollections(context.Context, *connect.Request[v1.GetSourceCollectionsRequest]) (*connect.Response[v1.GetSourceCollectionsResponse], error)
 }
 
 // NewKatariveServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -229,6 +246,12 @@ func NewKatariveServiceHandler(svc KatariveServiceHandler, opts ...connect.Handl
 		connect.WithSchema(katariveServiceMethods.ByName("GetSourceCollection")),
 		connect.WithHandlerOptions(opts...),
 	)
+	katariveServiceGetSourceCollectionsHandler := connect.NewUnaryHandler(
+		KatariveServiceGetSourceCollectionsProcedure,
+		svc.GetSourceCollections,
+		connect.WithSchema(katariveServiceMethods.ByName("GetSourceCollections")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/api.v1.KatariveService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case KatariveServiceQueueNarrationProcedure:
@@ -245,6 +268,8 @@ func NewKatariveServiceHandler(svc KatariveServiceHandler, opts ...connect.Handl
 			katariveServiceQueueSourceCollectionHandler.ServeHTTP(w, r)
 		case KatariveServiceGetSourceCollectionProcedure:
 			katariveServiceGetSourceCollectionHandler.ServeHTTP(w, r)
+		case KatariveServiceGetSourceCollectionsProcedure:
+			katariveServiceGetSourceCollectionsHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -280,4 +305,8 @@ func (UnimplementedKatariveServiceHandler) QueueSourceCollection(context.Context
 
 func (UnimplementedKatariveServiceHandler) GetSourceCollection(context.Context, *connect.Request[v1.GetSourceCollectionRequest]) (*connect.Response[v1.GetSourceCollectionResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("api.v1.KatariveService.GetSourceCollection is not implemented"))
+}
+
+func (UnimplementedKatariveServiceHandler) GetSourceCollections(context.Context, *connect.Request[v1.GetSourceCollectionsRequest]) (*connect.Response[v1.GetSourceCollectionsResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("api.v1.KatariveService.GetSourceCollections is not implemented"))
 }

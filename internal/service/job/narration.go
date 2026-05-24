@@ -76,7 +76,7 @@ func (q *PluginNarrationJobQueue) Queue(
 				ctx, "Narration job completed",
 				"id", jobId,
 				"url", options.url,
-				"result", result,
+				"path", result.Path,
 			)
 			job.data = &result
 			job.status = pb.JobStatus_JOB_STATUS_COMPLETED

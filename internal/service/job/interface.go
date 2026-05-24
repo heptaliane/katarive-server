@@ -22,10 +22,10 @@ type JobQueue[S, T any] interface {
 	Get(id string) (Job[T], error)
 }
 
-type NarrationJob = Job[string]
+type NarrationJob = Job[model.NarrationPackage]
 type SourceItemJob = Job[model.SourceItem]
 type SourceCollectionJob = Job[model.SourceCollectionPackage]
-type NarrationJobQueue = JobQueue[narrationJobOption, string]
+type NarrationJobQueue = JobQueue[narrationJobOption, model.NarrationPackage]
 type SourceItemJobQueue = JobQueue[sourceItemJobOption, model.SourceItem]
 type SourceCollectionJobQueue = JobQueue[sourceCollectionJobOption, model.SourceCollectionPackage]
 

@@ -28,6 +28,11 @@ func TestKatariveHandlerV1Narration(t *testing.T) {
 			expectedResponse: &pb.GetNarrationResponse{
 				Status: pb.JobStatus_JOB_STATUS_COMPLETED,
 				Path:   &p,
+				Source: &pb.SourceSummary{
+					Id:    "item-id",
+					Url:   VALID_URL,
+					Title: "item-title",
+				},
 			},
 		},
 		"invalid_url": {

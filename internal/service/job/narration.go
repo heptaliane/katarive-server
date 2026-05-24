@@ -39,7 +39,7 @@ func (q *PluginNarrationJobQueue) Queue(
 	}
 
 	jobId := id.String()
-	job := NewPluginJob[string]()
+	job := NewPluginJob[model.NarrationPackage]()
 	q.jobs.Store(jobId, job)
 
 	go func() {
@@ -54,12 +54,16 @@ func (q *PluginNarrationJobQueue) Queue(
 				return nil, err
 			}
 
-			return q.nr.Do(
+			path, err := q.nr.Do(
 				ctx, src,
 				narrator.WithSpeaker(options.speakerId),
 				narrator.WithNarrator(options.narrator),
 				narrator.WithEncoding(options.encoding),
 			)
+			return model.NarrationPackage{
+				Path:   path,
+				Source: src,
+			}, err
 		})
 
 		job.mu.Lock()
@@ -67,7 +71,7 @@ func (q *PluginNarrationJobQueue) Queue(
 
 		if err != nil {
 			job.err = err
-		} else if result, ok := v.(string); ok {
+		} else if result, ok := v.(model.NarrationPackage); ok {
 			q.logger.InfoContext(
 				ctx, "Narration job completed",
 				"id", jobId,
@@ -96,7 +100,7 @@ func (q *PluginNarrationJobQueue) Get(id string) (NarrationJob, error) {
 	v, ok := q.jobs.Load(id)
 	if !ok {
 		q.logger.Warn("No such job", "id", id)
-		job := NewPluginJob[string]()
+		job := NewPluginJob[model.NarrationPackage]()
 		job.err = &model.JobNotFoundError{Id: id}
 		job.status = pb.JobStatus_JOB_STATUS_NOT_FOUND
 		return job, nil

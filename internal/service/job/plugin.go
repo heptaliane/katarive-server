@@ -35,7 +35,7 @@ func (j *PluginJob[T]) Error() error {
 	return j.err
 }
 
-type PluginNarrationJob = PluginJob[string]
+type PluginNarrationJob = PluginJob[model.NarrationPackage]
 type PluginSourceItemJob = PluginJob[model.SourceItem]
 type PluginSourceCollectionJob = PluginJob[model.SourceCollectionPackage]
 

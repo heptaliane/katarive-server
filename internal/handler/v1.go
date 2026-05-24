@@ -51,15 +51,23 @@ func (h *KatariveHandlerV1) GetNarration(
 	}
 
 	result := job.Result()
+
 	var path *string
+	var source *apb.SourceSummary
 	if result != nil {
-		modified := h.pm.Do(*result)
-		path = &modified
+		p := h.pm.Do(result.Path)
+		path = &p
+		source = &apb.SourceSummary{
+			Id:    result.Source.GetId(),
+			Url:   result.Source.GetUrl(),
+			Title: result.Source.GetTitle(),
+		}
 	}
 
 	return &apb.GetNarrationResponse{
 		Status: job.Status(),
 		Path:   path,
+		Source: source,
 	}, job.Error()
 }
 func (h *KatariveHandlerV1) GetNarrators(

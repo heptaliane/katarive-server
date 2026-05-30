@@ -3,6 +3,8 @@ package source
 import (
 	"context"
 	"errors"
+	"fmt"
+	"strings"
 
 	pb "github.com/heptaliane/katarive-go-sdk/gen/pb/plugin/v1"
 	"gorm.io/gorm"
@@ -16,91 +18,196 @@ type DatabaseSourceRegistry struct {
 	sms []SourceManager
 }
 
-func (r *DatabaseSourceRegistry) SourceItem(
+func (r *DatabaseSourceRegistry) AddItem(
 	ctx context.Context,
-	url string,
-	opts ...SourceOption,
-) (*model.SourceItem, error) {
-	var options sourceOptions
-	for _, opt := range opts {
-		opt(&options)
-	}
-
-	sm, err := r.findItem(url)
+	itemUrl string,
+) error {
+	sm, err := r.findItem(itemUrl)
 	if err != nil {
-		return nil, err
-	}
-	plugin := sm.Name()
-
-	var item SourceItem
-	// Try use cache
-	if !options.disableCache {
-		err = r.db.First(&item, &SourceItem{
-			Url:    url,
-			Plugin: plugin,
-		}).Error
-		if err == nil {
-			if item.Content != nil {
-				return item.IntoSourceItem(), nil
-			}
-		} else if !errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, err
-		}
+		return err
 	}
 
-	req := pb.GetSourceItemRequest{Url: url}
+	// Fetch source
+	req := pb.GetSourceItemRequest{Url: itemUrl}
 	res, err := sm.GetSourceItem(ctx, &req)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
+	// Add registry
+	var item SourceItem
 	item.FromSourceItem(res.GetItem())
-	item.Plugin = plugin
-	err = r.db.Clauses(clause.OnConflict{
+	item.Plugin = sm.Name()
+	return r.db.Clauses(clause.OnConflict{
 		Columns:   []clause.Column{{Name: "Id"}, {Name: "Plugin"}},
 		DoUpdates: item.Assignments(),
 	}).Create(&item).Error
-
-	return item.IntoSourceItem(), err
 }
-func (r *DatabaseSourceRegistry) SourceCollection(
+func (r *DatabaseSourceRegistry) AddCollection(
 	ctx context.Context,
-	url string,
-	opts ...SourceOption,
-) (*model.SourceCollection, error) {
-	var options sourceOptions
-	for _, opt := range opts {
-		opt(&options)
+	collectionUrl string,
+) error {
+	sm, err := r.findCollection(collectionUrl)
+	if err != nil {
+		return err
 	}
 
-	collection, err := r.getOrCreateSourceCollection(ctx, url, &options)
+	// Fetch source
+	req := pb.GetSourceCollectionRequest{Url: collectionUrl}
+	res, err := sm.GetSourceCollection(ctx, &req)
+	if err != nil {
+		return err
+	}
+
+	// Add registry
+	sc := res.GetCollection()
+	plugin := sm.Name()
+
+	var collection SourceCollection
+	collection.FromSourceCollection(sc)
+	collection.Plugin = plugin
+	err = r.db.Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: "Id"}, {Name: "Plugin"}},
+		UpdateAll: true,
+	}).Create(&collection).Error
+	if err != nil {
+		return err
+	}
+
+	for _, t := range sc.GetTags() {
+		var tag Tag
+		err := r.db.Where(Tag{Name: t}).FirstOrCreate(&tag).Error
+		if err != nil {
+			return err
+		}
+
+		var ctag CollectionTag
+		err = r.db.Where(CollectionTag{
+			CollectionId: sc.GetId(),
+			Plugin:       plugin,
+			TagId:        tag.Id,
+		}).FirstOrCreate(&ctag).Error
+		if err != nil {
+			return err
+		}
+		ctag.Tag = tag
+	}
+
+	for _, ss := range res.GetSources() {
+		var item SourceItem
+		item.FromSourceSummary(ss)
+		item.Plugin = plugin
+		item.CollectionId = &collection.Id
+		err = r.db.Clauses(clause.OnConflict{
+			Columns:   []clause.Column{{Name: "Id"}, {Name: "Plugin"}},
+			DoUpdates: item.Assignments(),
+		}).Create(&item).Error
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+func (r *DatabaseSourceRegistry) GetItem(itemUrl string) (*model.SourceItem, error) {
+	sm, err := r.findItem(itemUrl)
 	if err != nil {
 		return nil, err
 	}
 
+	var item SourceItem
+	err = r.db.First(&item, &SourceItem{
+		Url:    itemUrl,
+		Plugin: sm.Name(),
+	}).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	if item.Content == nil {
+		return nil, nil
+	}
+	return item.IntoSourceItem(), nil
+}
+func (r *DatabaseSourceRegistry) GetItems(
+	opts ...GetSourceOption,
+) ([]*model.SourceSummary, error) {
+	var options getSourceOptions
+	for _, opt := range opts {
+		opt(&options)
+	}
+
+	var items []*SourceItem
+	err := r.db.
+		Joins("Collection").
+		Scopes(
+			filterByCollection("Collection", &options),
+			filterByItem("source_items", &options),
+		).
+		Find(&items).Debug().Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return []*model.SourceSummary{}, nil
+		}
+		return nil, err
+	}
+
+	var mitems []*model.SourceSummary
+	for _, item := range items {
+		mitems = append(mitems, item.IntoSourceSummary())
+	}
+	return mitems, nil
+}
+func (r *DatabaseSourceRegistry) GetCollection(
+	collectionUrl string,
+) (*model.SourceCollection, error) {
+	sm, err := r.findCollection(collectionUrl)
+	if err != nil {
+		return nil, err
+	}
+
+	var collection SourceCollection
+	err = r.db.Preload("CollectionTags.Tag").
+		First(&collection, &SourceCollection{
+			Url:    collectionUrl,
+			Plugin: sm.Name(),
+		}).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
 	return collection.IntoSourceCollection(), nil
 }
-func (r *DatabaseSourceRegistry) SourceItems(
-	ctx context.Context,
-	url string,
-	opts ...SourceOption,
-) ([]*model.SourceSummary, error) {
-	var options sourceOptions
+func (r *DatabaseSourceRegistry) GetCollections(
+	opts ...GetSourceOption,
+) ([]*model.SourceCollection, error) {
+	var options getSourceOptions
 	for _, opt := range opts {
 		opt(&options)
 	}
 
-	collection, err := r.getOrCreateSourceCollection(ctx, url, &options)
-	if err != nil {
-		return nil, err
-	}
-
-	return collection.IntoSourceItems(), nil
-}
-func (r *DatabaseSourceRegistry) SourceCollections() ([]*model.SourceCollection, error) {
 	var collections []*SourceCollection
-	err := r.db.Preload("CollectionTags.Tag").Order("id").Find(&collections).Error
+	err := r.db.
+		Preload("CollectionTags.Tag").
+		Joins(joinStatement(
+			"INNER JOIN",
+			"source_collections", "source_items",
+			[]string{"id", "plugin"}, []string{"collection_id", "plugin"},
+		)).
+		Scopes(
+			filterByCollection("source_collections", &options),
+			filterByItem("source_items", &options),
+		).
+		Distinct("source_collections.*").
+		Find(&collections).Error
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return []*model.SourceCollection{}, nil
+		}
 		return nil, err
 	}
 
@@ -108,7 +215,6 @@ func (r *DatabaseSourceRegistry) SourceCollections() ([]*model.SourceCollection,
 	for _, collection := range collections {
 		cs = append(cs, collection.IntoSourceCollection())
 	}
-
 	return cs, nil
 }
 
@@ -131,93 +237,6 @@ func (r *DatabaseSourceRegistry) findCollection(url string) (SourceManager, erro
 		}
 	}
 	return nil, &model.UnsupportedSourceURLError{Url: url}
-}
-func (r *DatabaseSourceRegistry) getOrCreateSourceCollection(
-	ctx context.Context,
-	url string,
-	options *sourceOptions,
-) (*SourceCollection, error) {
-	sm, err := r.findCollection(url)
-	if err != nil {
-		return nil, err
-	}
-	plugin := sm.Name()
-
-	var collection SourceCollection
-	// Try use cache
-	if !options.disableCache {
-		err = r.db.
-			Preload("Items").
-			Preload("CollectionTags.Tag").
-			First(&collection, &SourceCollection{
-				Url:    url,
-				Plugin: plugin,
-			}).Error
-		if err == nil {
-			return &collection, nil
-		}
-		if !errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, err
-		}
-	}
-
-	req := pb.GetSourceCollectionRequest{Url: url}
-	res, err := sm.GetSourceCollection(ctx, &req)
-	if err != nil {
-		return nil, err
-	}
-
-	sc := res.GetCollection()
-	collection.FromSourceCollection(sc)
-	collection.Plugin = plugin
-	err = r.db.Clauses(clause.OnConflict{
-		Columns:   []clause.Column{{Name: "Id"}, {Name: "Plugin"}},
-		UpdateAll: true,
-	}).Create(&collection).Error
-
-	var ctags []CollectionTag
-	for _, t := range sc.GetTags() {
-		var tag Tag
-		err := r.db.Where(Tag{Name: t}).FirstOrCreate(&tag).Error
-		if err != nil {
-			return nil, err
-		}
-
-		var ctag CollectionTag
-		err = r.db.Where(CollectionTag{
-			CollectionId: sc.GetId(),
-			Plugin:       plugin,
-			TagId:        tag.Id,
-		}).FirstOrCreate(&ctag).Error
-		if err != nil {
-			return nil, err
-		}
-		ctag.Tag = tag
-
-		ctags = append(ctags, ctag)
-	}
-
-	var items []SourceItem
-	for _, ss := range res.GetSources() {
-		var item SourceItem
-		item.FromSourceSummary(ss)
-		item.Plugin = plugin
-		item.CollectionId = &collection.Id
-		err = r.db.Clauses(clause.OnConflict{
-			Columns:   []clause.Column{{Name: "Id"}, {Name: "Plugin"}},
-			DoUpdates: item.Assignments(),
-		}).Create(&item).Error
-		if err != nil {
-			return nil, err
-		}
-
-		items = append(items, item)
-	}
-
-	collection.CollectionTags = ctags
-	collection.Items = items
-
-	return &collection, nil
 }
 func NewDatabaseSourceRegistry(
 	db *gorm.DB,
@@ -256,6 +275,8 @@ type SourceItem struct {
 	Title        string
 	Content      *string
 	Language     int32
+
+	Collection *SourceCollection `gorm:"foreignKey:CollectionId,Plugin;references:Id,Plugin"`
 }
 type Tag struct {
 	Id   uint   `gorm:"primaryKey;autoIncrement"`
@@ -353,4 +374,32 @@ func (i *SourceItem) IntoSourceSummary() *model.SourceSummary {
 		Url:   i.Url,
 		Title: i.Title,
 	}
+}
+
+// getSourceOptions helpers
+func filterByCollection(table string, options *getSourceOptions) func(tx *gorm.DB) *gorm.DB {
+	return func(tx *gorm.DB) *gorm.DB {
+		if options.collectionUrl != "" {
+			tx = tx.Where(fmt.Sprintf("`%s`.url = ?", table), options.collectionUrl)
+		}
+		return tx
+	}
+}
+func filterByItem(table string, options *getSourceOptions) func(tx *gorm.DB) *gorm.DB {
+	return func(tx *gorm.DB) *gorm.DB {
+		if options.itemUrl != "" {
+			tx = tx.Where(fmt.Sprintf("`%s`.url = ?", table), options.itemUrl)
+		}
+		return tx
+	}
+}
+func joinStatement(joinType, t1, t2 string, fs1, fs2 []string) string {
+	var conds []string
+	for i := range fs1 {
+		conds = append(
+			conds,
+			fmt.Sprintf("%s.%s = %s.%s", t1, fs1[i], t2, fs2[i]),
+		)
+	}
+	return fmt.Sprintf("%s %s ON %s", joinType, t2, strings.Join(conds, " AND "))
 }

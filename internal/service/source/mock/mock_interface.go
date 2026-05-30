@@ -139,77 +139,98 @@ func (m *MockSourceRegistry) EXPECT() *MockSourceRegistryMockRecorder {
 	return m.recorder
 }
 
-// SourceCollection mocks base method.
-func (m *MockSourceRegistry) SourceCollection(ctx context.Context, url string, opts ...source.SourceOption) (*model.SourceCollection, error) {
+// AddCollection mocks base method.
+func (m *MockSourceRegistry) AddCollection(ctx context.Context, collectionUrl string) error {
 	m.ctrl.T.Helper()
-	varargs := []any{ctx, url}
-	for _, a := range opts {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "SourceCollection", varargs...)
+	ret := m.ctrl.Call(m, "AddCollection", ctx, collectionUrl)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddCollection indicates an expected call of AddCollection.
+func (mr *MockSourceRegistryMockRecorder) AddCollection(ctx, collectionUrl any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddCollection", reflect.TypeOf((*MockSourceRegistry)(nil).AddCollection), ctx, collectionUrl)
+}
+
+// AddItem mocks base method.
+func (m *MockSourceRegistry) AddItem(ctx context.Context, itemUrl string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddItem", ctx, itemUrl)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddItem indicates an expected call of AddItem.
+func (mr *MockSourceRegistryMockRecorder) AddItem(ctx, itemUrl any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddItem", reflect.TypeOf((*MockSourceRegistry)(nil).AddItem), ctx, itemUrl)
+}
+
+// GetCollection mocks base method.
+func (m *MockSourceRegistry) GetCollection(collectionUrl string) (*model.SourceCollection, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetCollection", collectionUrl)
 	ret0, _ := ret[0].(*model.SourceCollection)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// SourceCollection indicates an expected call of SourceCollection.
-func (mr *MockSourceRegistryMockRecorder) SourceCollection(ctx, url any, opts ...any) *gomock.Call {
+// GetCollection indicates an expected call of GetCollection.
+func (mr *MockSourceRegistryMockRecorder) GetCollection(collectionUrl any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]any{ctx, url}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SourceCollection", reflect.TypeOf((*MockSourceRegistry)(nil).SourceCollection), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCollection", reflect.TypeOf((*MockSourceRegistry)(nil).GetCollection), collectionUrl)
 }
 
-// SourceCollections mocks base method.
-func (m *MockSourceRegistry) SourceCollections() ([]*model.SourceCollection, error) {
+// GetCollections mocks base method.
+func (m *MockSourceRegistry) GetCollections(opts ...source.GetSourceOption) ([]*model.SourceCollection, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SourceCollections")
+	varargs := []any{}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "GetCollections", varargs...)
 	ret0, _ := ret[0].([]*model.SourceCollection)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// SourceCollections indicates an expected call of SourceCollections.
-func (mr *MockSourceRegistryMockRecorder) SourceCollections() *gomock.Call {
+// GetCollections indicates an expected call of GetCollections.
+func (mr *MockSourceRegistryMockRecorder) GetCollections(opts ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SourceCollections", reflect.TypeOf((*MockSourceRegistry)(nil).SourceCollections))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCollections", reflect.TypeOf((*MockSourceRegistry)(nil).GetCollections), opts...)
 }
 
-// SourceItem mocks base method.
-func (m *MockSourceRegistry) SourceItem(ctx context.Context, url string, opts ...source.SourceOption) (*model.SourceItem, error) {
+// GetItem mocks base method.
+func (m *MockSourceRegistry) GetItem(itemUrl string) (*model.SourceItem, error) {
 	m.ctrl.T.Helper()
-	varargs := []any{ctx, url}
-	for _, a := range opts {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "SourceItem", varargs...)
+	ret := m.ctrl.Call(m, "GetItem", itemUrl)
 	ret0, _ := ret[0].(*model.SourceItem)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// SourceItem indicates an expected call of SourceItem.
-func (mr *MockSourceRegistryMockRecorder) SourceItem(ctx, url any, opts ...any) *gomock.Call {
+// GetItem indicates an expected call of GetItem.
+func (mr *MockSourceRegistryMockRecorder) GetItem(itemUrl any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]any{ctx, url}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SourceItem", reflect.TypeOf((*MockSourceRegistry)(nil).SourceItem), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetItem", reflect.TypeOf((*MockSourceRegistry)(nil).GetItem), itemUrl)
 }
 
-// SourceItems mocks base method.
-func (m *MockSourceRegistry) SourceItems(ctx context.Context, url string, opts ...source.SourceOption) ([]*model.SourceSummary, error) {
+// GetItems mocks base method.
+func (m *MockSourceRegistry) GetItems(opts ...source.GetSourceOption) ([]*model.SourceSummary, error) {
 	m.ctrl.T.Helper()
-	varargs := []any{ctx, url}
+	varargs := []any{}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "SourceItems", varargs...)
+	ret := m.ctrl.Call(m, "GetItems", varargs...)
 	ret0, _ := ret[0].([]*model.SourceSummary)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// SourceItems indicates an expected call of SourceItems.
-func (mr *MockSourceRegistryMockRecorder) SourceItems(ctx, url any, opts ...any) *gomock.Call {
+// GetItems indicates an expected call of GetItems.
+func (mr *MockSourceRegistryMockRecorder) GetItems(opts ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]any{ctx, url}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SourceItems", reflect.TypeOf((*MockSourceRegistry)(nil).SourceItems), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetItems", reflect.TypeOf((*MockSourceRegistry)(nil).GetItems), opts...)
 }

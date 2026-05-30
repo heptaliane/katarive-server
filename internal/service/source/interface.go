@@ -25,21 +25,24 @@ type SourceManager interface {
 
 //go:generate mockgen -source=$GOFILE -destination=mock/mock_$GOFILE -package=mock
 type SourceRegistry interface {
-	SourceItem(ctx context.Context, url string, opts ...SourceOption) (*model.SourceItem, error)
-	SourceItems(ctx context.Context, url string, opts ...SourceOption) ([]*model.SourceSummary, error)
-	SourceCollection(
-		ctx context.Context,
-		url string,
-		opts ...SourceOption,
-	) (*model.SourceCollection, error)
-	SourceCollections() ([]*model.SourceCollection, error)
+	AddItem(ctx context.Context, itemUrl string) error
+	AddCollection(ctx context.Context, collectionUrl string) error
+
+	GetItem(itemUrl string) (*model.SourceItem, error)
+	GetItems(opts ...GetSourceOption) ([]*model.SourceSummary, error)
+	GetCollection(collectionUrl string) (*model.SourceCollection, error)
+	GetCollections(opts ...GetSourceOption) ([]*model.SourceCollection, error)
 }
 
-type sourceOptions struct {
-	disableCache bool
+type getSourceOptions struct {
+	itemUrl       string
+	collectionUrl string
 }
-type SourceOption = func(opt *sourceOptions)
+type GetSourceOption = func(opt *getSourceOptions)
 
-func WithoutCache(disableCache bool) SourceOption {
-	return func(opt *sourceOptions) { opt.disableCache = disableCache }
+func WithItemUrl(itemUrl string) GetSourceOption {
+	return func(opt *getSourceOptions) { opt.itemUrl = itemUrl }
+}
+func WithCollectionUrl(collectionUrl string) GetSourceOption {
+	return func(opt *getSourceOptions) { opt.collectionUrl = collectionUrl }
 }

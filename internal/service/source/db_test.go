@@ -2,6 +2,8 @@ package source_test
 
 import (
 	"context"
+	"log"
+	"os"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -9,6 +11,7 @@ import (
 	"google.golang.org/protobuf/testing/protocmp"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 
 	"github.com/heptaliane/katarive-server/internal/model"
 	"github.com/heptaliane/katarive-server/internal/service/source"
@@ -24,87 +27,70 @@ func TestDatabaseSourceRegistry(t *testing.T) {
 	sc2 := gscr2.GetCollection()
 	sis1 := gscr1.GetSources()
 	sis2 := gscr2.GetSources()
+	ifs1 := []source.GetSourceOption{source.WithItemUrl(SM1_ITEM_URL)}
+	ifs2 := []source.GetSourceOption{source.WithItemUrl(SM2_ITEM_URL)}
+	cfs1 := []source.GetSourceOption{source.WithCollectionUrl(SM1_COLLECTION_URL)}
+	cfs2 := []source.GetSourceOption{source.WithCollectionUrl(SM2_COLLECTION_URL)}
 
 	cases := map[string]struct {
-		itemUrls            []string
-		collectionUrls      []string
-		nCalls1             int
-		nCalls2             int
-		disableCache        bool
-		expectedItem        []*model.SourceItem
-		expectedCollection  []*model.SourceCollection
-		expectedItems       [][]*model.SourceSummary
-		expectedCollections []*model.SourceCollection
+		addItemUrls           []string
+		addCollectionUrls     []string
+		getItemUrls           []string
+		getCollectionUrls     []string
+		getItemsFilters       [][]source.GetSourceOption
+		getCollectionsFilters [][]source.GetSourceOption
+		expectedItem          []*model.SourceItem
+		expectedCollection    []*model.SourceCollection
+		expectedItems         [][]*model.SourceSummary
+		expectedCollections   [][]*model.SourceCollection
 	}{
-		"[1]": {
-			itemUrls:            []string{SM1_ITEM_URL},
-			collectionUrls:      []string{SM1_COLLECTION_URL},
-			nCalls1:             1,
-			nCalls2:             0,
-			expectedItem:        []*model.SourceItem{si1},
-			expectedCollection:  []*model.SourceCollection{sc1},
-			expectedItems:       [][]*model.SourceSummary{sis1},
-			expectedCollections: []*model.SourceCollection{sc1},
+		"Add: [1], Get: [1]": {
+			addItemUrls:           []string{SM1_ITEM_URL},
+			addCollectionUrls:     []string{SM1_COLLECTION_URL},
+			getItemUrls:           []string{SM1_ITEM_URL},
+			getCollectionUrls:     []string{SM1_COLLECTION_URL},
+			getItemsFilters:       [][]source.GetSourceOption{cfs1},
+			getCollectionsFilters: [][]source.GetSourceOption{{}, ifs1, ifs2},
+			expectedItem:          []*model.SourceItem{si1},
+			expectedCollection:    []*model.SourceCollection{sc1},
+			expectedItems:         [][]*model.SourceSummary{sis1},
+			expectedCollections:   [][]*model.SourceCollection{{sc1}, {sc1}, nil},
 		},
-		"[1, 2]": {
-			itemUrls:            []string{SM1_ITEM_URL, SM2_ITEM_URL},
-			collectionUrls:      []string{SM1_COLLECTION_URL, SM2_COLLECTION_URL},
-			nCalls1:             1,
-			nCalls2:             1,
-			expectedItem:        []*model.SourceItem{si1, si2},
-			expectedCollection:  []*model.SourceCollection{sc1, sc2},
-			expectedItems:       [][]*model.SourceSummary{sis1, sis2},
-			expectedCollections: []*model.SourceCollection{sc1, sc2},
+		"Add: [1, 2], Get: [1, 2]": {
+			addItemUrls:           []string{SM1_ITEM_URL, SM2_ITEM_URL},
+			addCollectionUrls:     []string{SM1_COLLECTION_URL, SM2_COLLECTION_URL},
+			getItemUrls:           []string{SM1_ITEM_URL, SM2_ITEM_URL},
+			getCollectionUrls:     []string{SM1_COLLECTION_URL, SM2_COLLECTION_URL},
+			getItemsFilters:       [][]source.GetSourceOption{cfs1, cfs2},
+			getCollectionsFilters: [][]source.GetSourceOption{{}, ifs1, ifs2},
+			expectedItem:          []*model.SourceItem{si1, si2},
+			expectedCollection:    []*model.SourceCollection{sc1, sc2},
+			expectedItems:         [][]*model.SourceSummary{sis1, sis2},
+			expectedCollections:   [][]*model.SourceCollection{{sc1, sc2}, {sc1}, {sc2}},
 		},
-		"[1, 1]": {
-			itemUrls:            []string{SM1_ITEM_URL, SM1_ITEM_URL},
-			collectionUrls:      []string{SM1_COLLECTION_URL, SM1_COLLECTION_URL},
-			nCalls1:             1,
-			nCalls2:             0,
-			expectedItem:        []*model.SourceItem{si1, si1},
-			expectedCollection:  []*model.SourceCollection{sc1, sc1},
-			expectedItems:       [][]*model.SourceSummary{sis1, sis1},
-			expectedCollections: []*model.SourceCollection{sc1},
+		"Add: [1], Get: [1, 2]": {
+			addItemUrls:           []string{SM1_ITEM_URL},
+			addCollectionUrls:     []string{SM1_COLLECTION_URL},
+			getItemUrls:           []string{SM1_ITEM_URL, SM2_ITEM_URL},
+			getCollectionUrls:     []string{SM1_COLLECTION_URL, SM2_COLLECTION_URL},
+			getItemsFilters:       [][]source.GetSourceOption{cfs1, cfs2},
+			getCollectionsFilters: [][]source.GetSourceOption{{}},
+			expectedItem:          []*model.SourceItem{si1, nil},
+			expectedCollection:    []*model.SourceCollection{sc1, nil},
+			expectedItems:         [][]*model.SourceSummary{sis1, nil},
+			expectedCollections:   [][]*model.SourceCollection{{sc1}},
 		},
-		"[1, 2, 1]": {
-			itemUrls: []string{SM1_ITEM_URL, SM2_ITEM_URL, SM1_ITEM_URL},
-			collectionUrls: []string{
-				SM1_COLLECTION_URL,
-				SM2_COLLECTION_URL,
-				SM1_COLLECTION_URL,
-			},
-			nCalls1:             1,
-			nCalls2:             1,
-			expectedItem:        []*model.SourceItem{si1, si2, si1},
-			expectedCollection:  []*model.SourceCollection{sc1, sc2, sc1},
-			expectedItems:       [][]*model.SourceSummary{sis1, sis2, sis1},
-			expectedCollections: []*model.SourceCollection{sc1, sc2},
-		},
-		"[1, 1]; nocache": {
-			itemUrls:            []string{SM1_ITEM_URL, SM1_ITEM_URL},
-			collectionUrls:      []string{SM1_COLLECTION_URL, SM1_COLLECTION_URL},
-			nCalls1:             2,
-			nCalls2:             0,
-			disableCache:        true,
-			expectedItem:        []*model.SourceItem{si1, si1},
-			expectedCollection:  []*model.SourceCollection{sc1, sc1},
-			expectedItems:       [][]*model.SourceSummary{sis1, sis1},
-			expectedCollections: []*model.SourceCollection{sc1},
-		},
-		"[1, 2, 1]; nocache": {
-			itemUrls: []string{SM1_ITEM_URL, SM2_ITEM_URL, SM1_ITEM_URL},
-			collectionUrls: []string{
-				SM1_COLLECTION_URL,
-				SM2_COLLECTION_URL,
-				SM1_COLLECTION_URL,
-			},
-			nCalls1:             2,
-			nCalls2:             1,
-			disableCache:        true,
-			expectedItem:        []*model.SourceItem{si1, si2, si1},
-			expectedCollection:  []*model.SourceCollection{sc1, sc2, sc1},
-			expectedItems:       [][]*model.SourceSummary{sis1, sis2, sis1},
-			expectedCollections: []*model.SourceCollection{sc1, sc2},
+		"Add: [1, 2, 1], Get: [1, 2]": {
+			addItemUrls:           []string{SM1_ITEM_URL, SM2_ITEM_URL, SM1_ITEM_URL},
+			addCollectionUrls:     []string{SM1_COLLECTION_URL, SM2_COLLECTION_URL, SM1_COLLECTION_URL},
+			getItemUrls:           []string{SM1_ITEM_URL, SM2_ITEM_URL},
+			getCollectionUrls:     []string{SM1_COLLECTION_URL, SM2_COLLECTION_URL},
+			getItemsFilters:       [][]source.GetSourceOption{cfs1, cfs2},
+			getCollectionsFilters: [][]source.GetSourceOption{{}},
+			expectedItem:          []*model.SourceItem{si1, si2},
+			expectedCollection:    []*model.SourceCollection{sc1, sc2},
+			expectedItems:         [][]*model.SourceSummary{sis1, sis2},
+			expectedCollections:   [][]*model.SourceCollection{{sc1, sc2}},
 		},
 	}
 
@@ -112,62 +98,78 @@ func TestDatabaseSourceRegistry(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			sr := setupDatabaseSourceRegistry(t, tc.nCalls1, tc.nCalls2)
+			sr := setupDatabaseSourceRegistry(t)
 
 			ctx := context.Background()
-			for i := range tc.itemUrls {
-				si, err := sr.SourceItem(
-					ctx, tc.itemUrls[i], source.WithoutCache(tc.disableCache),
-				)
+			for _, url := range tc.addItemUrls {
+				err := sr.AddItem(ctx, url)
 				if err != nil {
-					t.Errorf("GetItem failed: %v", err)
+					t.Errorf("AddItem failed: %v", err)
 					return
 				}
-				diff := cmp.Diff(tc.expectedItem[i], si, protocmp.Transform())
-				if diff != "" {
-					t.Errorf("SourceItem mismatch (%d) (-want +got):\n%s", i, diff)
-					return
-				}
-				sc, err := sr.SourceCollection(
-					ctx, tc.collectionUrls[i], source.WithoutCache(tc.disableCache),
-				)
+			}
+			for _, url := range tc.addCollectionUrls {
+				err := sr.AddCollection(ctx, url)
 				if err != nil {
-					t.Errorf("GetCollection failed: %v", err)
-					return
+					t.Errorf("AddCollection failed: %v", err)
 				}
-				diff = cmp.Diff(tc.expectedCollection[i], sc, protocmp.Transform())
-				if diff != "" {
-					t.Errorf("SourceCollection mismatch (%d) (-want +got):\n%s", i, diff)
-					return
-				}
-				sis, err := sr.SourceItems(ctx, tc.collectionUrls[i])
+			}
+
+			for i, url := range tc.getItemUrls {
+				item, err := sr.GetItem(url)
 				if err != nil {
-					t.Errorf("GetItems failed: %v", err)
+					t.Errorf("GetItem failed (%d): %v", i, err)
 					return
 				}
-				diff = cmp.Diff(tc.expectedItems[i], sis, protocmp.Transform())
+				diff := cmp.Diff(tc.expectedItem[i], item, protocmp.Transform())
 				if diff != "" {
-					t.Errorf("SourceItems mismatch (%d) (-want +got):\n%s", i, diff)
+					t.Errorf("GetItem mismatch (%d) (-want +got):\n%s", i, diff)
+					return
+				}
+			}
+			for i, url := range tc.getCollectionUrls {
+				collection, err := sr.GetCollection(url)
+				if err != nil {
+					t.Errorf("GetCollection failed (%d): %v", i, err)
+					return
+				}
+				diff := cmp.Diff(tc.expectedCollection[i], collection, protocmp.Transform())
+				if diff != "" {
+					t.Errorf("GetCollection mismatch (%d) (-want +got):\n%s", i, diff)
 					return
 				}
 			}
 
-			scs, err := sr.SourceCollections()
-			if err != nil {
-				t.Errorf("GetSourceCollection failed: %v", err)
-				return
+			for i, filters := range tc.getItemsFilters {
+				items, err := sr.GetItems(filters...)
+				if err != nil {
+					t.Errorf("GetItems failed (%d): %v", i, err)
+					return
+				}
+				diff := cmp.Diff(tc.expectedItems[i], items, protocmp.Transform())
+				if diff != "" {
+					t.Errorf("GetItems mismatch (%d) (-want +got):\n%s", i, diff)
+					return
+				}
 			}
-			diff := cmp.Diff(tc.expectedCollections, scs, protocmp.Transform())
-			if diff != "" {
-				t.Errorf("SourceCollections mismatch (-want +got):\n%s", diff)
-				return
+			for i, filters := range tc.getCollectionsFilters {
+				collections, err := sr.GetCollections(filters...)
+				if err != nil {
+					t.Errorf("GetCollections failed (%d): %v", i, err)
+					return
+				}
+				diff := cmp.Diff(tc.expectedCollections[i], collections, protocmp.Transform())
+				if diff != "" {
+					t.Errorf("GetCollections mismatch (%d) (-want +got):\n%s", i, diff)
+					return
+				}
 			}
 		})
 	}
 }
 
 // Helper functions
-func setupSourceManagers(t *testing.T, nCalls1, nCalls2 int) []source.SourceManager {
+func setupSourceManagers(t *testing.T) []source.SourceManager {
 	sm1 := mock.NewMockSourceManager(gomock.NewController(t))
 	sm2 := mock.NewMockSourceManager(gomock.NewController(t))
 	sm1.EXPECT().Name().Return(SM1_NAME).AnyTimes()
@@ -180,24 +182,31 @@ func setupSourceManagers(t *testing.T, nCalls1, nCalls2 int) []source.SourceMana
 	sm2.EXPECT().IsSupportedCollection(SM2_COLLECTION_URL).Return(true).AnyTimes()
 	sm1.EXPECT().IsSupportedCollection(gomock.Not(SM1_COLLECTION_URL)).Return(false).AnyTimes()
 	sm2.EXPECT().IsSupportedCollection(gomock.Not(SM2_COLLECTION_URL)).Return(false).AnyTimes()
-	sm1.EXPECT().GetSourceItem(gomock.Any(), gomock.Any()).Return(&gsir1, nil).Times(nCalls1)
-	sm2.EXPECT().GetSourceItem(gomock.Any(), gomock.Any()).Return(&gsir2, nil).Times(nCalls2)
+	sm1.EXPECT().GetSourceItem(gomock.Any(), gomock.Any()).Return(&gsir1, nil).AnyTimes()
+	sm2.EXPECT().GetSourceItem(gomock.Any(), gomock.Any()).Return(&gsir2, nil).AnyTimes()
 	sm1.EXPECT().GetSourceCollection(gomock.Any(), gomock.Any()).
-		Return(&gscr1, nil).Times(nCalls1)
+		Return(&gscr1, nil).AnyTimes()
 	sm2.EXPECT().GetSourceCollection(gomock.Any(), gomock.Any()).
-		Return(&gscr2, nil).Times(nCalls2)
+		Return(&gscr2, nil).AnyTimes()
 	return []source.SourceManager{sm1, sm2}
 }
 func setupDatabaseSourceRegistry(
 	t *testing.T,
-	nCalls1, nCalls2 int,
 ) *source.DatabaseSourceRegistry {
 	t.Helper()
 
-	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{
+		Logger: logger.New(
+			log.New(os.Stdout, "", log.LstdFlags),
+			logger.Config{
+				LogLevel: logger.Info,
+				Colorful: true,
+			},
+		),
+	})
 	if err != nil {
 		t.Fatalf("Failed to connect database: %v", err)
 	}
 
-	return source.NewDatabaseSourceRegistry(db, setupSourceManagers(t, nCalls1, nCalls2))
+	return source.NewDatabaseSourceRegistry(db, setupSourceManagers(t))
 }

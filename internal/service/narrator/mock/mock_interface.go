@@ -116,6 +116,25 @@ func (mr *MockNarrateRegistryMockRecorder) Do(ctx, source any, opts ...any) *gom
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Do", reflect.TypeOf((*MockNarrateRegistry)(nil).Do), varargs...)
 }
 
+// Has mocks base method.
+func (m *MockNarrateRegistry) Has(source *model.SourceItem, opts ...narrator.NarrateOption) bool {
+	m.ctrl.T.Helper()
+	varargs := []any{source}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "Has", varargs...)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// Has indicates an expected call of Has.
+func (mr *MockNarrateRegistryMockRecorder) Has(source any, opts ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{source}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Has", reflect.TypeOf((*MockNarrateRegistry)(nil).Has), varargs...)
+}
+
 // Metadata mocks base method.
 func (m *MockNarrateRegistry) Metadata() []*model.NarratorManagerMetadata {
 	m.ctrl.T.Helper()

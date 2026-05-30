@@ -32,16 +32,8 @@ func (r *FileNarratorRegistry) Do(
 		opt(&options)
 	}
 
-	basedir := filepath.Join(r.basedir, options.narrator, fmt.Sprintf("%03d", options.speakerId))
-	extension := getAudioExtension(options.encoding)
-	path := filepath.Join(
-		basedir,
-		fmt.Sprintf("%s_%s.%s", source.GetId(), source.GetTitle(), extension),
-	)
-	if Exists(path) {
-		return path, nil
-	}
-
+	path := r.path(source, &options)
+	basedir := filepath.Dir(path)
 	os.MkdirAll(basedir, 0755)
 
 	nm := r.narrators[options.narrator]
@@ -57,11 +49,33 @@ func (r *FileNarratorRegistry) Do(
 
 	return path, err
 }
+func (r *FileNarratorRegistry) Has(
+	source *model.SourceItem,
+	opts ...NarrateOption,
+) bool {
+	var options narrateOption
+	for _, opt := range opts {
+		opt(&options)
+	}
+
+	return Exists(r.path(source, &options))
+}
 
 // Ensure FileNarratorRegistry implements NarrateRegistry
 var _ NarrateRegistry = new(FileNarratorRegistry)
 
 // helpers
+func (r *FileNarratorRegistry) path(
+	source *model.SourceItem,
+	options *narrateOption,
+) string {
+	basedir := filepath.Join(r.basedir, options.narrator, fmt.Sprintf("%03d", options.speakerId))
+	extension := getAudioExtension(options.encoding)
+	return filepath.Join(
+		basedir,
+		fmt.Sprintf("%s_%s.%s", source.GetId(), source.GetTitle(), extension),
+	)
+}
 func NewFileNarratorRegistry(
 	ctx context.Context,
 	basedir string,

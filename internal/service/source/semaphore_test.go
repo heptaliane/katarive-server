@@ -33,7 +33,7 @@ func TestSemaphoreSourceManagerName(t *testing.T) {
 		return
 	}
 }
-func TestSemaphoreSourceManagerIsSupported(t *testing.T) {
+func TestSemaphoreSourceManagerIsSupportedItem(t *testing.T) {
 	t.Parallel()
 
 	ctx := context.Background()
@@ -48,11 +48,11 @@ func TestSemaphoreSourceManagerIsSupported(t *testing.T) {
 		expected bool
 	}{
 		"supported": {
-			url:      "http://example.com/001",
+			url:      "http://example.com/item/001",
 			expected: true,
 		},
 		"unsupported": {
-			url:      "http://unsupported.com/",
+			url:      "http://unsupported.com/item/001",
 			expected: false,
 		},
 	}
@@ -62,7 +62,43 @@ func TestSemaphoreSourceManagerIsSupported(t *testing.T) {
 			t.Parallel()
 		})
 
-		actual := sm.IsSupported(tc.url)
+		actual := sm.IsSupportedItem(tc.url)
+		if actual != tc.expected {
+			t.Errorf("Unmatched IsSupported: expected %t but got %t", tc.expected, actual)
+			return
+		}
+	}
+}
+func TestSemaphoreSourceManagerIsSupportedCollection(t *testing.T) {
+	t.Parallel()
+
+	ctx := context.Background()
+	ssc := setupSourceServiceClient(t)
+	sm, err := source.NewSemaphoreSourceManager(ctx, ssc)
+	if err != nil {
+		t.Fatalf("Failed to create SemaphoreSourceManager: %v", err)
+	}
+
+	cases := map[string]struct {
+		url      string
+		expected bool
+	}{
+		"supported": {
+			url:      "http://example.com/collection/001",
+			expected: true,
+		},
+		"unsupported": {
+			url:      "http://unsupported.com/collection/001",
+			expected: false,
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+		})
+
+		actual := sm.IsSupportedCollection(tc.url)
 		if actual != tc.expected {
 			t.Errorf("Unmatched IsSupported: expected %t but got %t", tc.expected, actual)
 			return
@@ -85,12 +121,12 @@ func TestSemaphoreSourceManagerGetSourceItem(t *testing.T) {
 		expectedError    error
 	}{
 		"supported": {
-			url:              "http://example.com/001",
+			url:              "http://example.com/item/001",
 			expectedResponse: &gsir,
 		},
 		"unsupported": {
-			url:           "http://unsupported.com/",
-			expectedError: &model.UnsupportedSourceURLError{Url: "http://unsupported.com/"},
+			url:           "http://unsupported.com/item/001",
+			expectedError: &model.UnsupportedSourceURLError{Url: "http://unsupported.com/item/001"},
 		},
 	}
 
@@ -137,12 +173,12 @@ func TestSemaphoreSourceManagerGetSourceCollection(t *testing.T) {
 		expectedError    error
 	}{
 		"supported": {
-			url:              "http://example.com/001",
+			url:              "http://example.com/collection/001",
 			expectedResponse: &gscr,
 		},
 		"unsupported": {
-			url:           "http://unsupported.com/",
-			expectedError: &model.UnsupportedSourceURLError{Url: "http://unsupported.com/"},
+			url:           "http://unsupported.com/collection/001",
+			expectedError: &model.UnsupportedSourceURLError{Url: "http://unsupported.com/collection/001"},
 		},
 	}
 

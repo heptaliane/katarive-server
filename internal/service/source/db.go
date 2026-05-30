@@ -26,7 +26,7 @@ func (r *DatabaseSourceRegistry) SourceItem(
 		opt(&options)
 	}
 
-	sm, err := r.find(url)
+	sm, err := r.findItem(url)
 	if err != nil {
 		return nil, err
 	}
@@ -116,9 +116,17 @@ func (r *DatabaseSourceRegistry) SourceCollections() ([]*model.SourceCollection,
 var _ SourceRegistry = new(DatabaseSourceRegistry)
 
 // helpers
-func (r *DatabaseSourceRegistry) find(url string) (SourceManager, error) {
+func (r *DatabaseSourceRegistry) findItem(url string) (SourceManager, error) {
 	for _, sm := range r.sms {
-		if sm.IsSupported(url) {
+		if sm.IsSupportedItem(url) {
+			return sm, nil
+		}
+	}
+	return nil, &model.UnsupportedSourceURLError{Url: url}
+}
+func (r *DatabaseSourceRegistry) findCollection(url string) (SourceManager, error) {
+	for _, sm := range r.sms {
+		if sm.IsSupportedCollection(url) {
 			return sm, nil
 		}
 	}
@@ -129,15 +137,7 @@ func (r *DatabaseSourceRegistry) getOrCreateSourceCollection(
 	url string,
 	options *sourceOptions,
 ) (*SourceCollection, error) {
-	item, err := r.SourceItem(ctx, url)
-	if err != nil {
-		return nil, err
-	}
-	if item.CollectionId == nil {
-		return nil, &model.NoAssosiatedCollection{Url: url}
-	}
-
-	sm, err := r.find(url)
+	sm, err := r.findCollection(url)
 	if err != nil {
 		return nil, err
 	}
@@ -150,7 +150,7 @@ func (r *DatabaseSourceRegistry) getOrCreateSourceCollection(
 			Preload("Items").
 			Preload("CollectionTags.Tag").
 			First(&collection, &SourceCollection{
-				Id:     *item.CollectionId,
+				Url:    url,
 				Plugin: plugin,
 			}).Error
 		if err == nil {

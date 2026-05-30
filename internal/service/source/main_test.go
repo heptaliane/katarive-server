@@ -19,8 +19,10 @@ var gscr2 pb.GetSourceCollectionResponse
 
 const SM1_NAME string = "sm1"
 const SM2_NAME string = "sm2"
-const SM1_URL string = "http://example.com/1"
-const SM2_URL string = "http://example.com/2"
+const SM1_ITEM_URL string = "http://example.com/item/1"
+const SM2_ITEM_URL string = "http://example.com/item/2"
+const SM1_COLLECTION_URL string = "http://example.com/collection/1"
+const SM2_COLLECTION_URL string = "http://example.com/collection/2"
 
 func TestMain(m *testing.M) {
 	setupGetSourceServiceMetadataResponse()
@@ -36,14 +38,15 @@ func TestMain(m *testing.M) {
 func setupGetSourceServiceMetadataResponse() {
 	gssmr.Name = "example-name"
 	gssmr.Version = "v1"
-	gssmr.SupportedPattern = `^http://example\.com/.*$`
+	gssmr.SupportedItemPattern = `^http://example\.com/item/.*$`
+	gssmr.SupportedCollectionPattern = `^http://example\.com/collection/.*$`
 }
 func setupGetSourceItemResponse() {
 	collectionId := "collection-id"
 	gsir.Item = &pb.SourceItem{
 		Id:           "item-id",
 		CollectionId: &collectionId,
-		Url:          "http://example.com/001",
+		Url:          "http://example.com/item/001",
 		Title:        "title",
 		Content:      "content",
 		Language:     pb.Language_LANGUAGE_ENGLISH,
@@ -53,7 +56,7 @@ func setupGetSourceItemResponse() {
 	gsir1.Item = &pb.SourceItem{
 		Id:           "item1",
 		CollectionId: &collection1,
-		Url:          SM1_URL,
+		Url:          SM1_ITEM_URL,
 		Title:        "title1",
 		Content:      "content1",
 		Language:     pb.Language_LANGUAGE_ENGLISH,
@@ -61,7 +64,7 @@ func setupGetSourceItemResponse() {
 	gsir2.Item = &pb.SourceItem{
 		Id:           "item2",
 		CollectionId: &collection2,
-		Url:          SM2_URL,
+		Url:          SM2_ITEM_URL,
 		Title:        "title2",
 		Content:      "content2",
 		Language:     pb.Language_LANGUAGE_ENGLISH,
@@ -70,7 +73,7 @@ func setupGetSourceItemResponse() {
 func setupGetSourceCollectionResponse() {
 	gscr.Collection = &pb.SourceCollection{
 		Id:          "collection-id",
-		Url:         "http://example.com",
+		Url:         "http://example.com/collection/1",
 		Title:       "collection-title",
 		Description: "collection-description",
 		Author:      "collction-author",
@@ -80,17 +83,17 @@ func setupGetSourceCollectionResponse() {
 		{
 			Id:    "item-id-1",
 			Title: "item-title-1",
-			Url:   "http://example.com/1",
+			Url:   "http://example.com/item/1",
 		},
 		{
 			Id:    "item-id-2",
 			Title: "item-title-2",
-			Url:   "http://example.com/2",
+			Url:   "http://example.com/item/2",
 		},
 	}
 	gscr1.Collection = &pb.SourceCollection{
 		Id:          "collection1",
-		Url:         "http://example.com/1",
+		Url:         "http://example.com/collection/1",
 		Title:       "collection-title1",
 		Description: "collection-description1",
 		Author:      "collction-author1",
@@ -100,12 +103,12 @@ func setupGetSourceCollectionResponse() {
 		{
 			Id:    "item1",
 			Title: "title1",
-			Url:   "http://example.com/1",
+			Url:   "http://example.com/item/1",
 		},
 	}
 	gscr2.Collection = &pb.SourceCollection{
 		Id:          "collection2",
-		Url:         "http://example.com/2",
+		Url:         "http://example.com/collection/2",
 		Title:       "collection-title2",
 		Description: "collection-description2",
 		Author:      "collction-author2",
@@ -115,12 +118,12 @@ func setupGetSourceCollectionResponse() {
 		{
 			Id:    "item2",
 			Title: "title2",
-			Url:   "http://example.com/2",
+			Url:   "http://example.com/item/2",
 		},
 		{
 			Id:    "item3",
 			Title: "title3",
-			Url:   "http://example.com/3",
+			Url:   "http://example.com/item/3",
 		},
 	}
 }

@@ -26,7 +26,8 @@ func TestDatabaseSourceRegistry(t *testing.T) {
 	sis2 := gscr2.GetSources()
 
 	cases := map[string]struct {
-		urls                []string
+		itemUrls            []string
+		collectionUrls      []string
 		nCalls1             int
 		nCalls2             int
 		disableCache        bool
@@ -36,7 +37,8 @@ func TestDatabaseSourceRegistry(t *testing.T) {
 		expectedCollections []*model.SourceCollection
 	}{
 		"[1]": {
-			urls:                []string{SM1_URL},
+			itemUrls:            []string{SM1_ITEM_URL},
+			collectionUrls:      []string{SM1_COLLECTION_URL},
 			nCalls1:             1,
 			nCalls2:             0,
 			expectedItem:        []*model.SourceItem{si1},
@@ -45,7 +47,8 @@ func TestDatabaseSourceRegistry(t *testing.T) {
 			expectedCollections: []*model.SourceCollection{sc1},
 		},
 		"[1, 2]": {
-			urls:                []string{SM1_URL, SM2_URL},
+			itemUrls:            []string{SM1_ITEM_URL, SM2_ITEM_URL},
+			collectionUrls:      []string{SM1_COLLECTION_URL, SM2_COLLECTION_URL},
 			nCalls1:             1,
 			nCalls2:             1,
 			expectedItem:        []*model.SourceItem{si1, si2},
@@ -54,7 +57,8 @@ func TestDatabaseSourceRegistry(t *testing.T) {
 			expectedCollections: []*model.SourceCollection{sc1, sc2},
 		},
 		"[1, 1]": {
-			urls:                []string{SM1_URL, SM1_URL},
+			itemUrls:            []string{SM1_ITEM_URL, SM1_ITEM_URL},
+			collectionUrls:      []string{SM1_COLLECTION_URL, SM1_COLLECTION_URL},
 			nCalls1:             1,
 			nCalls2:             0,
 			expectedItem:        []*model.SourceItem{si1, si1},
@@ -63,7 +67,12 @@ func TestDatabaseSourceRegistry(t *testing.T) {
 			expectedCollections: []*model.SourceCollection{sc1},
 		},
 		"[1, 2, 1]": {
-			urls:                []string{SM1_URL, SM2_URL, SM1_URL},
+			itemUrls: []string{SM1_ITEM_URL, SM2_ITEM_URL, SM1_ITEM_URL},
+			collectionUrls: []string{
+				SM1_COLLECTION_URL,
+				SM2_COLLECTION_URL,
+				SM1_COLLECTION_URL,
+			},
 			nCalls1:             1,
 			nCalls2:             1,
 			expectedItem:        []*model.SourceItem{si1, si2, si1},
@@ -72,7 +81,8 @@ func TestDatabaseSourceRegistry(t *testing.T) {
 			expectedCollections: []*model.SourceCollection{sc1, sc2},
 		},
 		"[1, 1]; nocache": {
-			urls:                []string{SM1_URL, SM1_URL},
+			itemUrls:            []string{SM1_ITEM_URL, SM1_ITEM_URL},
+			collectionUrls:      []string{SM1_COLLECTION_URL, SM1_COLLECTION_URL},
 			nCalls1:             2,
 			nCalls2:             0,
 			disableCache:        true,
@@ -82,7 +92,12 @@ func TestDatabaseSourceRegistry(t *testing.T) {
 			expectedCollections: []*model.SourceCollection{sc1},
 		},
 		"[1, 2, 1]; nocache": {
-			urls:                []string{SM1_URL, SM2_URL, SM1_URL},
+			itemUrls: []string{SM1_ITEM_URL, SM2_ITEM_URL, SM1_ITEM_URL},
+			collectionUrls: []string{
+				SM1_COLLECTION_URL,
+				SM2_COLLECTION_URL,
+				SM1_COLLECTION_URL,
+			},
 			nCalls1:             2,
 			nCalls2:             1,
 			disableCache:        true,
@@ -100,8 +115,10 @@ func TestDatabaseSourceRegistry(t *testing.T) {
 			sr := setupDatabaseSourceRegistry(t, tc.nCalls1, tc.nCalls2)
 
 			ctx := context.Background()
-			for i, url := range tc.urls {
-				si, err := sr.SourceItem(ctx, url, source.WithoutCache(tc.disableCache))
+			for i := range tc.itemUrls {
+				si, err := sr.SourceItem(
+					ctx, tc.itemUrls[i], source.WithoutCache(tc.disableCache),
+				)
 				if err != nil {
 					t.Errorf("GetItem failed: %v", err)
 					return
@@ -111,7 +128,9 @@ func TestDatabaseSourceRegistry(t *testing.T) {
 					t.Errorf("SourceItem mismatch (%d) (-want +got):\n%s", i, diff)
 					return
 				}
-				sc, err := sr.SourceCollection(ctx, url, source.WithoutCache(tc.disableCache))
+				sc, err := sr.SourceCollection(
+					ctx, tc.collectionUrls[i], source.WithoutCache(tc.disableCache),
+				)
 				if err != nil {
 					t.Errorf("GetCollection failed: %v", err)
 					return
@@ -121,7 +140,7 @@ func TestDatabaseSourceRegistry(t *testing.T) {
 					t.Errorf("SourceCollection mismatch (%d) (-want +got):\n%s", i, diff)
 					return
 				}
-				sis, err := sr.SourceItems(ctx, url)
+				sis, err := sr.SourceItems(ctx, tc.collectionUrls[i])
 				if err != nil {
 					t.Errorf("GetItems failed: %v", err)
 					return
@@ -153,10 +172,14 @@ func setupSourceManagers(t *testing.T, nCalls1, nCalls2 int) []source.SourceMana
 	sm2 := mock.NewMockSourceManager(gomock.NewController(t))
 	sm1.EXPECT().Name().Return(SM1_NAME).AnyTimes()
 	sm2.EXPECT().Name().Return(SM2_NAME).AnyTimes()
-	sm1.EXPECT().IsSupported(SM1_URL).Return(true).AnyTimes()
-	sm2.EXPECT().IsSupported(SM2_URL).Return(true).AnyTimes()
-	sm1.EXPECT().IsSupported(gomock.Not(SM1_URL)).Return(false).AnyTimes()
-	sm2.EXPECT().IsSupported(gomock.Not(SM2_URL)).Return(false).AnyTimes()
+	sm1.EXPECT().IsSupportedItem(SM1_ITEM_URL).Return(true).AnyTimes()
+	sm2.EXPECT().IsSupportedItem(SM2_ITEM_URL).Return(true).AnyTimes()
+	sm1.EXPECT().IsSupportedItem(gomock.Not(SM1_ITEM_URL)).Return(false).AnyTimes()
+	sm2.EXPECT().IsSupportedItem(gomock.Not(SM2_ITEM_URL)).Return(false).AnyTimes()
+	sm1.EXPECT().IsSupportedCollection(SM1_COLLECTION_URL).Return(true).AnyTimes()
+	sm2.EXPECT().IsSupportedCollection(SM2_COLLECTION_URL).Return(true).AnyTimes()
+	sm1.EXPECT().IsSupportedCollection(gomock.Not(SM1_COLLECTION_URL)).Return(false).AnyTimes()
+	sm2.EXPECT().IsSupportedCollection(gomock.Not(SM2_COLLECTION_URL)).Return(false).AnyTimes()
 	sm1.EXPECT().GetSourceItem(gomock.Any(), gomock.Any()).Return(&gsir1, nil).Times(nCalls1)
 	sm2.EXPECT().GetSourceItem(gomock.Any(), gomock.Any()).Return(&gsir2, nil).Times(nCalls2)
 	sm1.EXPECT().GetSourceCollection(gomock.Any(), gomock.Any()).

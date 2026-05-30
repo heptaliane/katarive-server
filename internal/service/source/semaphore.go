@@ -14,10 +14,11 @@ import (
 type SemaphoreSourceManager struct {
 	client pb.SourceServiceClient
 
-	pattern  *regexp.Regexp
-	name     string
-	version  string
-	interval time.Duration
+	itemPattern       *regexp.Regexp
+	collectionPattern *regexp.Regexp
+	name              string
+	version           string
+	interval          time.Duration
 
 	mu *sync.RWMutex
 }
@@ -25,8 +26,11 @@ type SemaphoreSourceManager struct {
 func (s *SemaphoreSourceManager) Name() string {
 	return fmt.Sprintf("%s.%s", s.name, s.version)
 }
-func (s *SemaphoreSourceManager) IsSupported(url string) bool {
-	return s.pattern.MatchString(url)
+func (s *SemaphoreSourceManager) IsSupportedItem(url string) bool {
+	return s.itemPattern.MatchString(url)
+}
+func (s *SemaphoreSourceManager) IsSupportedCollection(url string) bool {
+	return s.collectionPattern.MatchString(url)
 }
 func (s *SemaphoreSourceManager) GetSourceItem(
 	ctx context.Context,
@@ -39,7 +43,7 @@ func (s *SemaphoreSourceManager) GetSourceItem(
 	}()
 
 	url := req.GetUrl()
-	if !s.IsSupported(url) {
+	if !s.IsSupportedItem(url) {
 		return nil, &model.UnsupportedSourceURLError{Url: url}
 	}
 
@@ -57,7 +61,7 @@ func (s *SemaphoreSourceManager) GetSourceCollection(
 	}()
 
 	url := req.GetUrl()
-	if !s.IsSupported(url) {
+	if !s.IsSupportedCollection(url) {
 		return nil, &model.UnsupportedSourceURLError{Url: url}
 	}
 
@@ -103,11 +107,12 @@ func NewSemaphoreSourceManager(
 	}
 
 	return &SemaphoreSourceManager{
-		client:   client,
-		pattern:  regexp.MustCompile(res.GetSupportedPattern()),
-		name:     res.GetName(),
-		version:  res.GetVersion(),
-		interval: options.interval,
-		mu:       new(sync.RWMutex),
+		client:            client,
+		itemPattern:       regexp.MustCompile(res.GetSupportedItemPattern()),
+		collectionPattern: regexp.MustCompile(res.GetSupportedCollectionPattern()),
+		name:              res.GetName(),
+		version:           res.GetVersion(),
+		interval:          options.interval,
+		mu:                new(sync.RWMutex),
 	}, nil
 }

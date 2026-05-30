@@ -10,7 +10,8 @@ import (
 //go:generate mockgen -source=$GOFILE -destination=mock/mock_$GOFILE -package=mock
 type SourceManager interface {
 	Name() string
-	IsSupported(url string) bool
+	IsSupportedItem(url string) bool
+	IsSupportedCollection(url string) bool
 
 	GetSourceItem(
 		ctx context.Context,

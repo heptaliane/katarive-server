@@ -73,18 +73,32 @@ func (mr *MockSourceManagerMockRecorder) GetSourceItem(ctx, req any) *gomock.Cal
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSourceItem", reflect.TypeOf((*MockSourceManager)(nil).GetSourceItem), ctx, req)
 }
 
-// IsSupported mocks base method.
-func (m *MockSourceManager) IsSupported(url string) bool {
+// IsSupportedCollection mocks base method.
+func (m *MockSourceManager) IsSupportedCollection(url string) bool {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "IsSupported", url)
+	ret := m.ctrl.Call(m, "IsSupportedCollection", url)
 	ret0, _ := ret[0].(bool)
 	return ret0
 }
 
-// IsSupported indicates an expected call of IsSupported.
-func (mr *MockSourceManagerMockRecorder) IsSupported(url any) *gomock.Call {
+// IsSupportedCollection indicates an expected call of IsSupportedCollection.
+func (mr *MockSourceManagerMockRecorder) IsSupportedCollection(url any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsSupported", reflect.TypeOf((*MockSourceManager)(nil).IsSupported), url)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsSupportedCollection", reflect.TypeOf((*MockSourceManager)(nil).IsSupportedCollection), url)
+}
+
+// IsSupportedItem mocks base method.
+func (m *MockSourceManager) IsSupportedItem(url string) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "IsSupportedItem", url)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// IsSupportedItem indicates an expected call of IsSupportedItem.
+func (mr *MockSourceManagerMockRecorder) IsSupportedItem(url any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsSupportedItem", reflect.TypeOf((*MockSourceManager)(nil).IsSupportedItem), url)
 }
 
 // Name mocks base method.

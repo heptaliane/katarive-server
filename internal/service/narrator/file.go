@@ -49,16 +49,20 @@ func (r *FileNarratorRegistry) Do(
 
 	return path, err
 }
-func (r *FileNarratorRegistry) Has(
+func (r *FileNarratorRegistry) Get(
 	source *model.SourceItem,
 	opts ...NarrateOption,
-) bool {
+) *model.NarrateResult {
 	var options narrateOption
 	for _, opt := range opts {
 		opt(&options)
 	}
 
-	return Exists(r.path(source, &options))
+	path := r.path(source, &options)
+	if !Exists(path) {
+		return nil
+	}
+	return &model.NarrateResult{Path: path}
 }
 
 // Ensure FileNarratorRegistry implements NarrateRegistry

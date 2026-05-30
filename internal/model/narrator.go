@@ -13,3 +13,6 @@ type NarrationPackage struct {
 	Path   string
 	Source *SourceItem
 }
+type NarrateResult struct {
+	Path string
+}

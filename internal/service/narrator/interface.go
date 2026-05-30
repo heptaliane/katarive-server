@@ -20,7 +20,7 @@ type NarrateRegistry interface {
 	Metadata() []*model.NarratorManagerMetadata
 
 	Do(ctx context.Context, source *model.SourceItem, opts ...NarrateOption) (string, error)
-	Has(source *model.SourceItem, opts ...NarrateOption) bool
+	Get(source *model.SourceItem, opts ...NarrateOption) *model.NarrateResult
 }
 
 // -----------------

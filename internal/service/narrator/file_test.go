@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	pb "github.com/heptaliane/katarive-go-sdk/gen/pb/plugin/v1"
 
 	"github.com/heptaliane/katarive-server/internal/model"
@@ -59,7 +60,7 @@ func TestFileNarratorRegistryDo(t *testing.T) {
 		})
 	}
 }
-func TestFileNarratorRegistryHas(t *testing.T) {
+func TestFileNarratorRegistryGet(t *testing.T) {
 	t.Parallel()
 
 	basedir := os.TempDir()
@@ -80,7 +81,7 @@ func TestFileNarratorRegistryHas(t *testing.T) {
 	cases := map[string]struct {
 		source   *model.SourceItem
 		options  []narrator.NarrateOption
-		expected bool
+		expected *model.NarrateResult
 	}{
 		"cache hit": {
 			source: source,
@@ -89,7 +90,9 @@ func TestFileNarratorRegistryHas(t *testing.T) {
 				narrator.WithNarrator(narratorName),
 				narrator.WithSpeaker(speakerId),
 			},
-			expected: true,
+			expected: &model.NarrateResult{
+				Path: filename,
+			},
 		},
 		"new source": {
 			source: &model.SourceItem{
@@ -101,7 +104,7 @@ func TestFileNarratorRegistryHas(t *testing.T) {
 				narrator.WithNarrator(narratorName),
 				narrator.WithSpeaker(speakerId),
 			},
-			expected: false,
+			expected: nil,
 		},
 		"new options": {
 			source: source,
@@ -110,7 +113,7 @@ func TestFileNarratorRegistryHas(t *testing.T) {
 				narrator.WithNarrator(narratorName),
 				narrator.WithSpeaker(speakerId),
 			},
-			expected: false,
+			expected: nil,
 		},
 	}
 
@@ -122,9 +125,9 @@ func TestFileNarratorRegistryHas(t *testing.T) {
 			nms := []narrator.NarratorManager{setupNarratorManager(t)}
 			nr := narrator.NewFileNarratorRegistry(ctx, basedir, nms)
 
-			actual := nr.Has(tc.source, tc.options...)
-			if actual != tc.expected {
-				t.Errorf("Has unmatch: expected %t but got %t", tc.expected, actual)
+			actual := nr.Get(tc.source, tc.options...)
+			if diff := cmp.Diff(tc.expected, actual); diff != "" {
+				t.Errorf("Get mismatch (-want +got):\n%s", diff)
 				return
 			}
 		})

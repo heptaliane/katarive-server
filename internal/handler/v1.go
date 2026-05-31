@@ -44,7 +44,7 @@ func (h *KatariveHandlerV1) GetNarration(
 	if item != nil {
 		result := h.nr.Get(item, opts...)
 		if result != nil {
-			path = &result.Path
+			path = h.pm.Do(result.Path)
 		}
 	}
 
@@ -248,18 +248,19 @@ func NewKatariveHandlerV1(
 }
 
 type PathModifier interface {
-	Do(path string) string
+	Do(path string) *string
 }
 type BasePathModifier struct {
 	rules []basePathModificationRule
 }
 
-func (m *BasePathModifier) Do(path string) string {
+func (m *BasePathModifier) Do(path string) *string {
 	p := []byte(path)
 	for _, rule := range m.rules {
 		p = rule.source.ReplaceAll(p, rule.dest)
 	}
-	return string(p)
+	path = string(p)
+	return &path
 }
 
 // Ensure PathModifier implementation

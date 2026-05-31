@@ -188,6 +188,7 @@ func (h *KatariveHandlerV1) GetSourceCollection(
 
 	status := apb.JobStatus_JOB_STATUS_COMPLETED
 	if collection == nil {
+		ctx = context.WithoutCancel(ctx)
 		job, err := h.scq.Queue(ctx, job.WithSourceCollectionUrl(req.GetUrl()))
 		if err != nil {
 			return nil, err

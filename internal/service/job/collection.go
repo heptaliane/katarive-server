@@ -6,122 +6,84 @@ import (
 	"log/slog"
 	"sync"
 
-	"github.com/google/uuid"
 	pb "github.com/heptaliane/katarive-server/gen/pb/api/v1"
-	"golang.org/x/sync/singleflight"
 
 	"github.com/heptaliane/katarive-server/internal/model"
 	"github.com/heptaliane/katarive-server/internal/service/source"
 )
 
-type PluginSourceCollectionJobQueue struct {
+type MutexSourceCollectionJobQueue struct {
 	sr source.SourceRegistry
 
 	jobs   *sync.Map
-	group  *singleflight.Group
 	logger *slog.Logger
 }
 
-func (q *PluginSourceCollectionJobQueue) Queue(
+func (q *MutexSourceCollectionJobQueue) Queue(
 	ctx context.Context,
 	opts ...JobOption[sourceCollectionJobOption],
-) (string, error) {
+) (Job, error) {
 	var options sourceCollectionJobOption
 	for _, opt := range opts {
 		opt(&options)
 	}
 
-	id, err := uuid.NewV7()
-	if err != nil {
-		return "", err
+	job, err := q.get(options.url)
+	if job != nil || err != nil {
+		return job, err
 	}
 
-	jobId := id.String()
-	job := NewPluginJob[model.SourceCollectionPackage]()
-	q.jobs.Store(jobId, job)
+	job = NewMutexJob()
+	q.jobs.Store(options.url, job)
 
 	go func() {
-		q.logger.InfoContext(ctx, "Start sourceCollection job", "id", jobId, "url", options.url)
+		q.logger.InfoContext(ctx, "SourceCollection job start", "url", options.url)
 
-		v, err, _ := q.group.Do(options.url, func() (any, error) {
-			opts := []source.SourceOption{
-				source.WithoutCache(options.disableCache),
-			}
-			collection, err := q.sr.SourceCollection(ctx, options.url, opts...)
-			if err != nil {
-				return nil, err
-			}
-			sources, err := q.sr.SourceItems(ctx, options.url) // Force use cache
-			return &model.SourceCollectionPackage{
-				Collection: collection,
-				Sources:    sources,
-			}, err
-		})
-
-		job.mu.Lock()
-		defer job.mu.Unlock()
-
-		if err != nil {
-			job.err = err
-		} else if result, ok := v.(*model.SourceCollectionPackage); ok {
-			q.logger.InfoContext(
-				ctx, "SourceCollection job completed",
-				"id", jobId,
-				"url", options.url,
-			)
-			job.data = result
-			job.status = pb.JobStatus_JOB_STATUS_COMPLETED
+		err := q.sr.AddCollection(ctx, options.url)
+		if err == nil {
+			q.logger.InfoContext(ctx, "SourceCollection job completed", "url", options.url)
+			job.set(pb.JobStatus_JOB_STATUS_COMPLETED, nil)
+			q.jobs.Delete(options.url)
 			return
-		} else {
-			job.err = &model.UnexpectedTypeError{Value: v, Expected: new(model.SourceCollection)}
 		}
 
 		q.logger.ErrorContext(
 			ctx, "SourceCollection job failed",
-			"id", jobId,
 			"url", options.url,
-			"error", job.err,
+			"error", err,
 		)
-		job.status = pb.JobStatus_JOB_STATUS_FAILED
+		job.set(pb.JobStatus_JOB_STATUS_FAILED, err)
 	}()
-
-	return jobId, nil
-}
-func (q *PluginSourceCollectionJobQueue) Get(id string) (SourceCollectionJob, error) {
-	v, ok := q.jobs.Load(id)
-	if !ok {
-		q.logger.Warn("No such job", "id", id)
-		job := NewPluginJob[model.SourceCollectionPackage]()
-		job.err = &model.JobNotFoundError{Id: id}
-		job.status = pb.JobStatus_JOB_STATUS_NOT_FOUND
-		return job, nil
-	}
-
-	job, ok := v.(SourceCollectionJob)
-	if !ok {
-		q.logger.Error(
-			"Unsupported job type",
-			"id", id,
-			"type", fmt.Sprintf("%T", v),
-		)
-		return nil, &model.UnexpectedTypeError{Value: v, Expected: new(SourceCollectionJob)}
-	}
 
 	return job, nil
 }
 
-// Ensure PluginSourceCollectionJobQueue implements SourceCollectionJobQueue
-var _ SourceCollectionJobQueue = new(PluginSourceCollectionJobQueue)
+// Ensure MutexSourceCollectionJobQueue implements SourceCollectionJobQueue
+var _ SourceCollectionJobQueue = new(MutexSourceCollectionJobQueue)
 
 // helpers
-func NewSourceCollectionJobQueue(
-	sr source.SourceRegistry,
-	group *singleflight.Group,
-) *PluginSourceCollectionJobQueue {
-	return &PluginSourceCollectionJobQueue{
+func (q *MutexSourceCollectionJobQueue) get(url string) (Job, error) {
+	v, ok := q.jobs.Load(url)
+	if !ok {
+		return nil, nil
+	}
+
+	job, ok := v.(Job)
+	if !ok {
+		q.logger.Error(
+			"Unsupported job type",
+			"url", url,
+			"type", fmt.Sprintf("%T", v),
+		)
+		return nil, &model.UnexpectedTypeError{Value: v, Expected: new(Job)}
+	}
+
+	return job, nil
+}
+func NewMutexSourceCollectionJobQueue(sr source.SourceRegistry) *MutexSourceCollectionJobQueue {
+	return &MutexSourceCollectionJobQueue{
 		sr:     sr,
 		jobs:   new(sync.Map),
-		group:  group,
 		logger: slog.Default(),
 	}
 }

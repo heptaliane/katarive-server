@@ -19,31 +19,31 @@ import (
 )
 
 // MockJob is a mock of Job interface.
-type MockJob[T any] struct {
+type MockJob struct {
 	ctrl     *gomock.Controller
-	recorder *MockJobMockRecorder[T]
+	recorder *MockJobMockRecorder
 	isgomock struct{}
 }
 
 // MockJobMockRecorder is the mock recorder for MockJob.
-type MockJobMockRecorder[T any] struct {
-	mock *MockJob[T]
+type MockJobMockRecorder struct {
+	mock *MockJob
 }
 
 // NewMockJob creates a new mock instance.
-func NewMockJob[T any](ctrl *gomock.Controller) *MockJob[T] {
-	mock := &MockJob[T]{ctrl: ctrl}
-	mock.recorder = &MockJobMockRecorder[T]{mock}
+func NewMockJob(ctrl *gomock.Controller) *MockJob {
+	mock := &MockJob{ctrl: ctrl}
+	mock.recorder = &MockJobMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockJob[T]) EXPECT() *MockJobMockRecorder[T] {
+func (m *MockJob) EXPECT() *MockJobMockRecorder {
 	return m.recorder
 }
 
 // Error mocks base method.
-func (m *MockJob[T]) Error() error {
+func (m *MockJob) Error() error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Error")
 	ret0, _ := ret[0].(error)
@@ -51,27 +51,13 @@ func (m *MockJob[T]) Error() error {
 }
 
 // Error indicates an expected call of Error.
-func (mr *MockJobMockRecorder[T]) Error() *gomock.Call {
+func (mr *MockJobMockRecorder) Error() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Error", reflect.TypeOf((*MockJob[T])(nil).Error))
-}
-
-// Result mocks base method.
-func (m *MockJob[T]) Result() *T {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Result")
-	ret0, _ := ret[0].(*T)
-	return ret0
-}
-
-// Result indicates an expected call of Result.
-func (mr *MockJobMockRecorder[T]) Result() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Result", reflect.TypeOf((*MockJob[T])(nil).Result))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Error", reflect.TypeOf((*MockJob)(nil).Error))
 }
 
 // Status mocks base method.
-func (m *MockJob[T]) Status() apiv1.JobStatus {
+func (m *MockJob) Status() apiv1.JobStatus {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Status")
 	ret0, _ := ret[0].(apiv1.JobStatus)
@@ -79,66 +65,63 @@ func (m *MockJob[T]) Status() apiv1.JobStatus {
 }
 
 // Status indicates an expected call of Status.
-func (mr *MockJobMockRecorder[T]) Status() *gomock.Call {
+func (mr *MockJobMockRecorder) Status() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Status", reflect.TypeOf((*MockJob[T])(nil).Status))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Status", reflect.TypeOf((*MockJob)(nil).Status))
+}
+
+// set mocks base method.
+func (m *MockJob) set(status apiv1.JobStatus, err error) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "set", status, err)
+}
+
+// set indicates an expected call of set.
+func (mr *MockJobMockRecorder) set(status, err any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "set", reflect.TypeOf((*MockJob)(nil).set), status, err)
 }
 
 // MockJobQueue is a mock of JobQueue interface.
-type MockJobQueue[S any, T any] struct {
+type MockJobQueue[T any] struct {
 	ctrl     *gomock.Controller
-	recorder *MockJobQueueMockRecorder[S, T]
+	recorder *MockJobQueueMockRecorder[T]
 	isgomock struct{}
 }
 
 // MockJobQueueMockRecorder is the mock recorder for MockJobQueue.
-type MockJobQueueMockRecorder[S any, T any] struct {
-	mock *MockJobQueue[S, T]
+type MockJobQueueMockRecorder[T any] struct {
+	mock *MockJobQueue[T]
 }
 
 // NewMockJobQueue creates a new mock instance.
-func NewMockJobQueue[S any, T any](ctrl *gomock.Controller) *MockJobQueue[S, T] {
-	mock := &MockJobQueue[S, T]{ctrl: ctrl}
-	mock.recorder = &MockJobQueueMockRecorder[S, T]{mock}
+func NewMockJobQueue[T any](ctrl *gomock.Controller) *MockJobQueue[T] {
+	mock := &MockJobQueue[T]{ctrl: ctrl}
+	mock.recorder = &MockJobQueueMockRecorder[T]{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockJobQueue[S, T]) EXPECT() *MockJobQueueMockRecorder[S, T] {
+func (m *MockJobQueue[T]) EXPECT() *MockJobQueueMockRecorder[T] {
 	return m.recorder
 }
 
-// Get mocks base method.
-func (m *MockJobQueue[S, T]) Get(id string) (job.Job[T], error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Get", id)
-	ret0, _ := ret[0].(job.Job[T])
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// Get indicates an expected call of Get.
-func (mr *MockJobQueueMockRecorder[S, T]) Get(id any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockJobQueue[S, T])(nil).Get), id)
-}
-
 // Queue mocks base method.
-func (m *MockJobQueue[S, T]) Queue(ctx context.Context, opts ...job.JobOption[S]) (string, error) {
+func (m *MockJobQueue[T]) Queue(ctx context.Context, opts ...job.JobOption[T]) (job.Job, error) {
 	m.ctrl.T.Helper()
 	varargs := []any{ctx}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "Queue", varargs...)
-	ret0, _ := ret[0].(string)
+	ret0, _ := ret[0].(job.Job)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Queue indicates an expected call of Queue.
-func (mr *MockJobQueueMockRecorder[S, T]) Queue(ctx any, opts ...any) *gomock.Call {
+func (mr *MockJobQueueMockRecorder[T]) Queue(ctx any, opts ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]any{ctx}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Queue", reflect.TypeOf((*MockJobQueue[S, T])(nil).Queue), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Queue", reflect.TypeOf((*MockJobQueue[T])(nil).Queue), varargs...)
 }

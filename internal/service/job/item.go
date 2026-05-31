@@ -6,115 +6,86 @@ import (
 	"log/slog"
 	"sync"
 
-	"github.com/google/uuid"
 	pb "github.com/heptaliane/katarive-server/gen/pb/api/v1"
-	"golang.org/x/sync/singleflight"
 
 	"github.com/heptaliane/katarive-server/internal/model"
 	"github.com/heptaliane/katarive-server/internal/service/source"
 )
 
-type PluginSourceItemJobQueue struct {
+type MutexSourceItemJobQueue struct {
 	sr source.SourceRegistry
 
 	jobs   *sync.Map
-	group  *singleflight.Group
 	logger *slog.Logger
 }
 
-func (q *PluginSourceItemJobQueue) Queue(
+func (q *MutexSourceItemJobQueue) Queue(
 	ctx context.Context,
 	opts ...JobOption[sourceItemJobOption],
-) (string, error) {
+) (Job, error) {
 	var options sourceItemJobOption
 	for _, opt := range opts {
 		opt(&options)
 	}
 
-	id, err := uuid.NewV7()
-	if err != nil {
-		return "", err
+	job, err := q.get(options.url)
+	if job != nil || err != nil {
+		return job, err
 	}
 
-	jobId := id.String()
-	job := NewPluginJob[model.SourceItem]()
-	q.jobs.Store(jobId, job)
+	job = NewMutexJob()
+	q.jobs.Store(options.url, job)
 
 	go func() {
-		q.logger.InfoContext(ctx, "Start sourceItem job", "id", jobId, "url", options.url)
+		q.logger.InfoContext(ctx, "SourceItem job start", "url", options.url)
 
-		v, err, _ := q.group.Do(options.url, func() (any, error) {
-			opts := []source.SourceOption{
-				source.WithoutCache(options.disableCache),
-			}
-
-			return q.sr.SourceItem(ctx, options.url, opts...)
-		})
-
-		job.mu.Lock()
-		defer job.mu.Unlock()
-
-		if err != nil {
-			job.err = err
-		} else if result, ok := v.(*model.SourceItem); ok {
-			q.logger.InfoContext(
-				ctx, "SourceItem job completed",
-				"id", jobId,
-				"url", options.url,
-			)
-			job.data = result
-			job.status = pb.JobStatus_JOB_STATUS_COMPLETED
+		err := q.sr.AddItem(ctx, options.url)
+		if err == nil {
+			q.logger.InfoContext(ctx, "SourceItem job completed", "url", options.url)
+			job.set(pb.JobStatus_JOB_STATUS_COMPLETED, nil)
+			q.jobs.Delete(options.url)
 			return
-		} else {
-			job.err = &model.UnexpectedTypeError{Value: v, Expected: new(model.SourceItem)}
 		}
 
 		q.logger.ErrorContext(
 			ctx, "SourceItem job failed",
-			"id", jobId,
 			"url", options.url,
-			"error", job.err,
+			"error", err,
 		)
-		job.status = pb.JobStatus_JOB_STATUS_FAILED
+		job.set(pb.JobStatus_JOB_STATUS_FAILED, err)
 	}()
-
-	return jobId, nil
-}
-func (q *PluginSourceItemJobQueue) Get(id string) (SourceItemJob, error) {
-	v, ok := q.jobs.Load(id)
-	if !ok {
-		q.logger.Warn("No such job", "id", id)
-		job := NewPluginJob[model.SourceItem]()
-		job.err = &model.JobNotFoundError{Id: id}
-		job.status = pb.JobStatus_JOB_STATUS_NOT_FOUND
-		return job, nil
-	}
-
-	job, ok := v.(SourceItemJob)
-	if !ok {
-		q.logger.Error(
-			"Unsupported job type",
-			"id", id,
-			"type", fmt.Sprintf("%T", v),
-		)
-		return nil, &model.UnexpectedTypeError{Value: v, Expected: new(SourceItemJob)}
-	}
 
 	return job, nil
 }
 
-// Ensure PluginSourceItemJobQueue implements SourceItemJobQueue
-var _ SourceItemJobQueue = new(PluginSourceItemJobQueue)
+// Ensure MutexSourceItemJobQueue implements SourceItemJobQueue
+var _ SourceItemJobQueue = new(MutexSourceItemJobQueue)
 
 // helpers
-func NewSourceItemJobQueue(
+func (q *MutexSourceItemJobQueue) get(url string) (Job, error) {
+	v, ok := q.jobs.Load(url)
+	if !ok {
+		return nil, nil
+	}
+
+	job, ok := v.(Job)
+	if !ok {
+		q.logger.Error(
+			"Unsupported job type",
+			"url", url,
+			"type", fmt.Sprintf("%T", v),
+		)
+		return nil, &model.UnexpectedTypeError{Value: v, Expected: new(Job)}
+	}
+
+	return job, nil
+}
+func NewMutexSourceItemJobQueue(
 	sr source.SourceRegistry,
-	group *singleflight.Group,
-) *PluginSourceItemJobQueue {
-	return &PluginSourceItemJobQueue{
+) *MutexSourceItemJobQueue {
+	return &MutexSourceItemJobQueue{
 		sr:     sr,
 		jobs:   new(sync.Map),
-		group:  group,
 		logger: slog.Default(),
 	}
 }

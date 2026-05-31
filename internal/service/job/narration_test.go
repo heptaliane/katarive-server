@@ -2,7 +2,6 @@ package job_test
 
 import (
 	"context"
-	"golang.org/x/sync/singleflight"
 	"testing"
 	"time"
 
@@ -11,7 +10,7 @@ import (
 	"github.com/heptaliane/katarive-server/internal/service/job"
 )
 
-func TestPluginNarrationJobQueue(t *testing.T) {
+func TestMutexNarrationJobQueue(t *testing.T) {
 	t.Parallel()
 
 	cases := map[string]struct {
@@ -32,22 +31,15 @@ func TestPluginNarrationJobQueue(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			jq := job.NewNarrationJobQueue(
+			jq := job.NewMutexNarrateJobQueue(
 				setupSourceRegistry(t),
 				setupNarrateRegistry(t),
-				new(singleflight.Group),
 			)
 
 			ctx := context.Background()
-			id, err := jq.Queue(ctx, job.WithNarrationUrl(tc.url))
+			job, err := jq.Queue(ctx, job.WithNarrationUrl(tc.url))
 			if err != nil {
 				t.Errorf("Queue returns unexpected error: %v", err)
-				return
-			}
-
-			job, err := jq.Get(id)
-			if err != nil {
-				t.Errorf("Get returns unexpected error: %v", err)
 				return
 			}
 

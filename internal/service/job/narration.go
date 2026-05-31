@@ -6,133 +6,129 @@ import (
 	"log/slog"
 	"sync"
 
-	"github.com/google/uuid"
 	pb "github.com/heptaliane/katarive-server/gen/pb/api/v1"
-	"golang.org/x/sync/singleflight"
 
 	"github.com/heptaliane/katarive-server/internal/model"
 	"github.com/heptaliane/katarive-server/internal/service/narrator"
 	"github.com/heptaliane/katarive-server/internal/service/source"
 )
 
-type PluginNarrationJobQueue struct {
+type MutexNarrateJobQueue struct {
 	sr source.SourceRegistry
 	nr narrator.NarrateRegistry
 
 	jobs   *sync.Map
-	group  *singleflight.Group
 	logger *slog.Logger
 }
 
-func (q *PluginNarrationJobQueue) Queue(
+func (q *MutexNarrateJobQueue) Queue(
 	ctx context.Context,
 	opts ...JobOption[narrationJobOption],
-) (string, error) {
+) (Job, error) {
 	var options narrationJobOption
 	for _, opt := range opts {
 		opt(&options)
 	}
 
-	id, err := uuid.NewV7()
-	if err != nil {
-		return "", err
+	job, err := q.get(options.url)
+	if job != nil || err != nil {
+		return job, err
 	}
 
-	jobId := id.String()
-	job := NewPluginJob[model.NarrationPackage]()
-	q.jobs.Store(jobId, job)
+	job = NewMutexJob()
+	q.jobs.Store(options.url, job)
 
 	go func() {
-		q.logger.InfoContext(ctx, "Start narration job", "id", jobId, "url", options.url)
+		q.logger.InfoContext(ctx, "Narrate job start", "url", options.url)
 
-		v, err, _ := q.group.Do(options.url, func() (any, error) {
-			opts := []source.SourceOption{
-				source.WithoutCache(options.disableCache),
-			}
-			src, err := q.sr.SourceItem(ctx, options.url, opts...)
-			if err != nil {
-				return nil, err
-			}
-
-			path, err := q.nr.Do(
-				ctx, src,
-				narrator.WithSpeaker(options.speakerId),
-				narrator.WithNarrator(options.narrator),
-				narrator.WithEncoding(options.encoding),
-			)
-			return model.NarrationPackage{
-				Path:   path,
-				Source: src,
-			}, err
-		})
-
-		job.mu.Lock()
-		defer job.mu.Unlock()
-
+		item, err := q.sr.GetItem(options.url)
 		if err != nil {
-			job.err = err
-		} else if result, ok := v.(model.NarrationPackage); ok {
-			q.logger.InfoContext(
-				ctx, "Narration job completed",
-				"id", jobId,
+			q.logger.ErrorContext(
+				ctx, "Narrate job failed with GetItem",
 				"url", options.url,
-				"path", result.Path,
+				"error", err,
 			)
-			job.data = &result
-			job.status = pb.JobStatus_JOB_STATUS_COMPLETED
+			job.set(pb.JobStatus_JOB_STATUS_FAILED, err)
 			return
-		} else {
-			job.err = &model.UnexpectedTypeError{Value: v, Expected: new(string)}
+		}
+		if item == nil {
+			err := q.sr.AddItem(ctx, options.url)
+			if err != nil {
+				q.logger.ErrorContext(
+					ctx, "Narrate job failed with AddItem",
+					"url", options.url,
+					"error", err,
+				)
+				job.set(pb.JobStatus_JOB_STATUS_FAILED, err)
+				return
+			}
+
+			item, err = q.sr.GetItem(options.url)
+			if err != nil {
+				q.logger.ErrorContext(
+					ctx, "Narrate job failed with GetItem",
+					"url", options.url,
+					"error", err,
+				)
+				job.set(pb.JobStatus_JOB_STATUS_FAILED, err)
+				return
+			}
+		}
+
+		err = q.nr.Do(
+			ctx, item,
+			narrator.WithSpeaker(options.speakerId),
+			narrator.WithNarrator(options.narrator),
+			narrator.WithEncoding(options.encoding),
+		)
+		if err == nil {
+			q.logger.InfoContext(ctx, "Narrate job completed", "url", options.url)
+			job.set(pb.JobStatus_JOB_STATUS_COMPLETED, nil)
+			q.jobs.Delete(options.url)
+			return
 		}
 
 		q.logger.ErrorContext(
-			ctx, "Narration job failed",
-			"id", jobId,
+			ctx, "Narrate job failed",
 			"url", options.url,
-			"error", job.err,
+			"error", err,
 		)
-		job.status = pb.JobStatus_JOB_STATUS_FAILED
+		job.set(pb.JobStatus_JOB_STATUS_FAILED, err)
 	}()
-
-	return jobId, nil
-}
-func (q *PluginNarrationJobQueue) Get(id string) (NarrationJob, error) {
-	v, ok := q.jobs.Load(id)
-	if !ok {
-		q.logger.Warn("No such job", "id", id)
-		job := NewPluginJob[model.NarrationPackage]()
-		job.err = &model.JobNotFoundError{Id: id}
-		job.status = pb.JobStatus_JOB_STATUS_NOT_FOUND
-		return job, nil
-	}
-
-	job, ok := v.(NarrationJob)
-	if !ok {
-		q.logger.Error(
-			"Unsupported job type",
-			"id", id,
-			"type", fmt.Sprintf("%T", v),
-		)
-		return nil, &model.UnexpectedTypeError{Value: v, Expected: new(NarrationJob)}
-	}
 
 	return job, nil
 }
 
-// Ensure PluginNarrationJobQueue implements NarrationJobQueue
-var _ NarrationJobQueue = new(PluginNarrationJobQueue)
+// Ensure MutexNarrateJobQueue implements NarrateJobQueue
+var _ NarrateJobQueue = new(MutexNarrateJobQueue)
 
 // helpers
-func NewNarrationJobQueue(
+func (q *MutexNarrateJobQueue) get(url string) (Job, error) {
+	v, ok := q.jobs.Load(url)
+	if !ok {
+		return nil, nil
+	}
+
+	job, ok := v.(Job)
+	if !ok {
+		q.logger.Error(
+			"Unsupported job type",
+			"url", url,
+			"type", fmt.Sprintf("%T", v),
+		)
+		return nil, &model.UnexpectedTypeError{Value: v, Expected: new(Job)}
+	}
+
+	return job, nil
+}
+func NewMutexNarrateJobQueue(
 	sr source.SourceRegistry,
 	nr narrator.NarrateRegistry,
-	group *singleflight.Group,
-) *PluginNarrationJobQueue {
-	return &PluginNarrationJobQueue{
+) *MutexNarrateJobQueue {
+	return &MutexNarrateJobQueue{
 		sr:     sr,
 		nr:     nr,
 		jobs:   new(sync.Map),
-		group:  group,
 		logger: slog.Default(),
 	}
 }

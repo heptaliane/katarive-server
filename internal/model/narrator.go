@@ -9,10 +9,6 @@ type NarratorManagerMetadata struct {
 	Encodings []pb.AudioEncoding
 	Speakers  []*pb.SpeakerInfo
 }
-type NarrationPackage struct {
-	Path   string
-	Source *SourceItem
-}
 type NarrateResult struct {
 	Path string
 }

@@ -7,7 +7,3 @@ import (
 type SourceItem = pb.SourceItem
 type SourceCollection = pb.SourceCollection
 type SourceSummary = pb.SourceSummary
-type SourceCollectionPackage struct {
-	Collection *SourceCollection
-	Sources    []*SourceSummary
-}

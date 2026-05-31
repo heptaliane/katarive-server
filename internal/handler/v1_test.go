@@ -28,18 +28,10 @@ func TestKatariveHandlerV1Narration(t *testing.T) {
 			expectedResponse: &pb.GetNarrationResponse{
 				Status: pb.JobStatus_JOB_STATUS_COMPLETED,
 				Path:   &p,
-				Source: &pb.SourceSummary{
-					Id:    "item-id",
-					Url:   VALID_URL,
-					Title: "item-title",
-				},
 			},
 		},
 		"invalid_url": {
-			url: "http://invalid.com",
-			expectedResponse: &pb.GetNarrationResponse{
-				Status: pb.JobStatus_JOB_STATUS_FAILED,
-			},
+			url:              "http://invalid.com",
 			expectedJobError: sie,
 		},
 	}
@@ -49,17 +41,8 @@ func TestKatariveHandlerV1Narration(t *testing.T) {
 			t.Parallel()
 
 			ctx := context.Background()
-			qreq := &pb.QueueNarrationRequest{Url: tc.url}
-			qres, err := h.QueueNarration(ctx, qreq)
-			if err != nil {
-				t.Errorf("QueueNarration returns unexpected error: %v", err)
-				return
-			}
-
-			time.Sleep(interval)
-
-			jreq := &pb.GetNarrationRequest{Id: qres.GetId()}
-			jres, err := h.GetNarration(ctx, jreq)
+			req := &pb.GetNarrationRequest{Url: tc.url}
+			_, err := h.GetNarration(ctx, req)
 			if tc.expectedJobError != nil {
 				if err == nil {
 					t.Errorf("GetNarration doesn't return error")
@@ -72,7 +55,23 @@ func TestKatariveHandlerV1Narration(t *testing.T) {
 				t.Errorf("GetNarration returns unexpected error: %v", err)
 			}
 
-			diff := cmp.Diff(tc.expectedResponse, jres, protocmp.Transform())
+			time.Sleep(interval)
+
+			res, err := h.GetNarration(ctx, req)
+			if tc.expectedJobError != nil {
+				if err == nil {
+					t.Errorf("GetNarration doesn't return error")
+					return
+				}
+				if diff := cmp.Diff(tc.expectedJobError.Error(), err.Error()); diff != "" {
+					t.Errorf("GetNarration returns unexpected error (-want +got):\n%s", diff)
+				}
+				return
+			} else if err != nil {
+				t.Errorf("GetNarration returns unexpected error: %v", err)
+			}
+
+			diff := cmp.Diff(tc.expectedResponse, res, protocmp.Transform())
 			if diff != "" {
 				t.Errorf("GetNarration returns unexpected response (-want +got):\n%s", diff)
 				return
@@ -133,8 +132,6 @@ func TestKatariveHandlerV1SourceItem(t *testing.T) {
 
 	h := newKatariveHandlerV1(t)
 
-	c := si.GetContent()
-
 	cases := map[string]struct {
 		url              string
 		expectedResponse *pb.GetSourceItemResponse
@@ -144,19 +141,24 @@ func TestKatariveHandlerV1SourceItem(t *testing.T) {
 			url: VALID_URL,
 			expectedResponse: &pb.GetSourceItemResponse{
 				Status: pb.JobStatus_JOB_STATUS_COMPLETED,
-				Metadata: &pb.SourceSummary{
-					Id:    si.GetId(),
-					Url:   si.GetUrl(),
-					Title: si.GetTitle(),
+				Item: &pb.SourceItem{
+					Id:      si.GetId(),
+					Url:     si.GetUrl(),
+					Title:   si.GetTitle(),
+					Content: si.GetContent(),
 				},
-				Content: &c,
+				Collection: &pb.SourceCollection{
+					Id:          scs[0].GetId(),
+					Url:         scs[0].GetUrl(),
+					Title:       scs[0].GetTitle(),
+					Description: scs[0].GetDescription(),
+					Author:      scs[0].GetAuthor(),
+					Tags:        scs[0].GetTags(),
+				},
 			},
 		},
 		"invalid_url": {
-			url: "http://invalid.com",
-			expectedResponse: &pb.GetSourceItemResponse{
-				Status: pb.JobStatus_JOB_STATUS_FAILED,
-			},
+			url:              "http://invalid.com",
 			expectedJobError: sie,
 		},
 	}
@@ -166,17 +168,8 @@ func TestKatariveHandlerV1SourceItem(t *testing.T) {
 			t.Parallel()
 
 			ctx := context.Background()
-			qreq := &pb.QueueSourceItemRequest{Url: tc.url}
-			qres, err := h.QueueSourceItem(ctx, qreq)
-			if err != nil {
-				t.Errorf("QueueSourceItem returns unexpected error: %v", err)
-				return
-			}
-
-			time.Sleep(interval)
-
-			jreq := &pb.GetSourceItemRequest{Id: qres.GetId()}
-			jres, err := h.GetSourceItem(ctx, jreq)
+			req := &pb.GetSourceItemRequest{Url: tc.url}
+			_, err := h.GetSourceItem(ctx, req)
 			if tc.expectedJobError != nil {
 				if err == nil {
 					t.Errorf("GetSourceItem doesn't return error")
@@ -189,7 +182,23 @@ func TestKatariveHandlerV1SourceItem(t *testing.T) {
 				t.Errorf("GetSourceItem returns unexpected error: %v", err)
 			}
 
-			diff := cmp.Diff(tc.expectedResponse, jres, protocmp.Transform())
+			time.Sleep(interval)
+
+			res, err := h.GetSourceItem(ctx, req)
+			if tc.expectedJobError != nil {
+				if err == nil {
+					t.Errorf("GetSourceItem doesn't return error")
+					return
+				}
+				if diff := cmp.Diff(tc.expectedJobError.Error(), err.Error()); diff != "" {
+					t.Errorf("GetSourceItem returns unexpected error (-want +got):\n%s", diff)
+				}
+				return
+			} else if err != nil {
+				t.Errorf("GetSourceItem returns unexpected error: %v", err)
+			}
+
+			diff := cmp.Diff(tc.expectedResponse, res, protocmp.Transform())
 			if diff != "" {
 				t.Errorf("GetSourceItem returns unexpected response (-want +got):\n%s", diff)
 				return
@@ -219,17 +228,14 @@ func TestKatariveHandlerV1SourceCollection(t *testing.T) {
 					Author:      sc.GetAuthor(),
 					Tags:        sc.GetTags(),
 				},
-				Sources: []*pb.SourceSummary{
+				Items: []*pb.SourceSummary{
 					{Id: "item1", Title: "title1", Url: "http://valid.com/1"},
 					{Id: "item2", Title: "title2", Url: "http://valid.com/2"},
 				},
 			},
 		},
 		"invalid_url": {
-			url: "http://invalid.com",
-			expectedResponse: &pb.GetSourceCollectionResponse{
-				Status: pb.JobStatus_JOB_STATUS_FAILED,
-			},
+			url:              "http://invalid.com",
 			expectedJobError: sce,
 		},
 	}
@@ -239,17 +245,8 @@ func TestKatariveHandlerV1SourceCollection(t *testing.T) {
 			t.Parallel()
 
 			ctx := context.Background()
-			qreq := &pb.QueueSourceCollectionRequest{Url: tc.url}
-			qres, err := h.QueueSourceCollection(ctx, qreq)
-			if err != nil {
-				t.Errorf("QueueSourceCollection returns unexpected error: %v", err)
-				return
-			}
-
-			time.Sleep(interval)
-
-			jreq := &pb.GetSourceCollectionRequest{Id: qres.GetId()}
-			jres, err := h.GetSourceCollection(ctx, jreq)
+			req := &pb.GetSourceCollectionRequest{Url: tc.url}
+			_, err := h.GetSourceCollection(ctx, req)
 			if tc.expectedJobError != nil {
 				if err == nil {
 					t.Errorf("GetSourceCollection doesn't return error")
@@ -264,7 +261,25 @@ func TestKatariveHandlerV1SourceCollection(t *testing.T) {
 				t.Errorf("GetSourceCollection returns unexpected error: %v", err)
 			}
 
-			diff := cmp.Diff(tc.expectedResponse, jres, protocmp.Transform())
+			time.Sleep(interval)
+
+			res, err := h.GetSourceCollection(ctx, req)
+			if tc.expectedJobError != nil {
+				if err == nil {
+					t.Errorf("GetSourceCollection doesn't return error")
+					return
+				}
+				if diff := cmp.Diff(tc.expectedJobError.Error(), err.Error()); diff != "" {
+					t.Errorf(
+						"GetSourceCollection returns unexpected error (-want +got):\n%s", diff,
+					)
+				}
+				return
+			} else if err != nil {
+				t.Errorf("GetSourceCollection returns unexpected error: %v", err)
+			}
+
+			diff := cmp.Diff(tc.expectedResponse, res, protocmp.Transform())
 			if diff != "" {
 				t.Errorf(
 					"GetSourceCollection returns unexpected response (-want +got):\n%s", diff,

@@ -20,6 +20,7 @@ import (
 var si *model.SourceItem
 var sc *model.SourceCollection
 var sis []*model.SourceSummary
+var scs []*model.SourceCollection
 var nmms []*model.NarratorManagerMetadata
 var sie error
 var sce error
@@ -34,6 +35,7 @@ func TestMain(m *testing.M) {
 	setupSourceItem()
 	setupSourceCollection()
 	setupSourceItems()
+	setupSourceCollections()
 	setupNarrateManagerMetadata()
 	setupError()
 	setupInterval()
@@ -72,6 +74,12 @@ func setupSourceItems() {
 		{Id: "item2", Title: "title2", Url: "http://valid.com/2"},
 	}
 }
+func setupSourceCollections() {
+	scs = []*model.SourceCollection{
+		{Id: "collection1", Title: "title1", Url: "http://valid.com/1"},
+		{Id: "collection2", Title: "title2", Url: "http://valid.com/2"},
+	}
+}
 func setupNarrateManagerMetadata() {
 	nmms = []*model.NarratorManagerMetadata{
 		{
@@ -101,21 +109,20 @@ func setupInterval() {
 }
 func newSourceRegistry(t *testing.T) source.SourceRegistry {
 	sr := smock.NewMockSourceRegistry(gomock.NewController(t))
-	sr.EXPECT().SourceItem(gomock.Any(), VALID_URL, gomock.Any()).Return(si, nil).AnyTimes()
-	sr.EXPECT().SourceItem(gomock.Any(), gomock.Not(VALID_URL), gomock.Any()).
-		Return(nil, sie).AnyTimes()
-	sr.EXPECT().SourceCollection(gomock.Any(), VALID_URL, gomock.Any()).Return(sc, nil).AnyTimes()
-	sr.EXPECT().SourceCollection(gomock.Any(), gomock.Not(VALID_URL), gomock.Any()).
-		Return(nil, sce).AnyTimes()
-	sr.EXPECT().SourceItems(gomock.Any(), VALID_URL, gomock.Any()).Return(sis, nil).AnyTimes()
-	sr.EXPECT().SourceItems(gomock.Any(), gomock.Not(VALID_URL), gomock.Any()).
-		Return(nil, sise).AnyTimes()
+	sr.EXPECT().GetItem(VALID_URL).Return(si, nil).AnyTimes()
+	sr.EXPECT().GetItem(gomock.Any()).Return(nil, sie).AnyTimes()
+	sr.EXPECT().GetCollection(VALID_URL).Return(sc, nil).AnyTimes()
+	sr.EXPECT().GetCollection(gomock.Not(VALID_URL)).Return(nil, sce).AnyTimes()
+	sr.EXPECT().GetItems(gomock.Any()).Return(sis, nil).AnyTimes()
+	sr.EXPECT().GetCollections(gomock.Any()).Return(scs, nil).AnyTimes()
 	return sr
 }
 func newNarrateRegistry(t *testing.T) narrator.NarrateRegistry {
 	nr := nmock.NewMockNarrateRegistry(gomock.NewController(t))
 	nr.EXPECT().Metadata().Return(nmms).AnyTimes()
-	nr.EXPECT().Do(gomock.Any(), gomock.Any(), gomock.Any()).Return(VALID_PATH, nil).AnyTimes()
+	nr.EXPECT().Do(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+	nr.EXPECT().Get(gomock.Any(), gomock.Any()).
+		Return(&model.NarrateResult{Path: VALID_PATH}).AnyTimes()
 	return nr
 }
 func newKatariveHandlerV1(t *testing.T) *handler.KatariveHandlerV1 {

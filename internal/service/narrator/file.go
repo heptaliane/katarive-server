@@ -26,7 +26,7 @@ func (r *FileNarratorRegistry) Do(
 	ctx context.Context,
 	source *model.SourceItem,
 	opts ...NarrateOption,
-) (string, error) {
+) error {
 	var options narrateOption
 	for _, opt := range opts {
 		opt(&options)
@@ -47,7 +47,7 @@ func (r *FileNarratorRegistry) Do(
 
 	_, err := nm.Narrate(ctx, req)
 
-	return path, err
+	return err
 }
 func (r *FileNarratorRegistry) Get(
 	source *model.SourceItem,

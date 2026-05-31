@@ -19,7 +19,7 @@ type NarratorManager interface {
 type NarrateRegistry interface {
 	Metadata() []*model.NarratorManagerMetadata
 
-	Do(ctx context.Context, source *model.SourceItem, opts ...NarrateOption) (string, error)
+	Do(ctx context.Context, source *model.SourceItem, opts ...NarrateOption) error
 	Get(source *model.SourceItem, opts ...NarrateOption) *model.NarrateResult
 }
 

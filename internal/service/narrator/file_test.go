@@ -20,9 +20,8 @@ func TestFileNarratorRegistryDo(t *testing.T) {
 	basedir := os.TempDir()
 
 	cases := map[string]struct {
-		source   *model.SourceItem
-		options  []narrator.NarrateOption
-		expected string
+		source  *model.SourceItem
+		options []narrator.NarrateOption
 	}{
 		"normal": {
 			source: &model.SourceItem{
@@ -35,7 +34,6 @@ func TestFileNarratorRegistryDo(t *testing.T) {
 				narrator.WithNarrator(metadata.Name),
 				narrator.WithSpeaker(1),
 			},
-			expected: filepath.Join(basedir, "narrator.v1", "001", "id_title.mp3"),
 		},
 	}
 
@@ -47,14 +45,9 @@ func TestFileNarratorRegistryDo(t *testing.T) {
 			nms := []narrator.NarratorManager{setupNarratorManager(t)}
 			nr := narrator.NewFileNarratorRegistry(ctx, basedir, nms)
 
-			actual, err := nr.Do(ctx, tc.source, tc.options...)
+			err := nr.Do(ctx, tc.source, tc.options...)
 			if err != nil {
 				t.Errorf("Unexpected error: %v", err)
-				return
-			}
-
-			if tc.expected != actual {
-				t.Errorf("Do unmatch: expected '%s' but got '%s'", tc.expected, actual)
 				return
 			}
 		})

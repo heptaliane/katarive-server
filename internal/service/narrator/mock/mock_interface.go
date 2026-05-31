@@ -97,16 +97,15 @@ func (m *MockNarrateRegistry) EXPECT() *MockNarrateRegistryMockRecorder {
 }
 
 // Do mocks base method.
-func (m *MockNarrateRegistry) Do(ctx context.Context, source *model.SourceItem, opts ...narrator.NarrateOption) (string, error) {
+func (m *MockNarrateRegistry) Do(ctx context.Context, source *model.SourceItem, opts ...narrator.NarrateOption) error {
 	m.ctrl.T.Helper()
 	varargs := []any{ctx, source}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "Do", varargs...)
-	ret0, _ := ret[0].(string)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // Do indicates an expected call of Do.

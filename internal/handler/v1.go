@@ -7,7 +7,6 @@ import (
 
 	ppb "github.com/heptaliane/katarive-go-sdk/gen/pb/plugin/v1"
 	apb "github.com/heptaliane/katarive-server/gen/pb/api/v1"
-	"golang.org/x/sync/singleflight"
 
 	"github.com/heptaliane/katarive-server/internal/service/job"
 	"github.com/heptaliane/katarive-server/internal/service/narrator"
@@ -19,56 +18,56 @@ type KatariveHandlerV1 struct {
 
 	sr  source.SourceRegistry
 	nr  narrator.NarrateRegistry
-	nq  job.NarrationJobQueue
+	nq  job.NarrateJobQueue
 	scq job.SourceCollectionJobQueue
 	siq job.SourceItemJobQueue
 
 	pm PathModifier
 }
 
-func (h *KatariveHandlerV1) QueueNarration(
-	ctx context.Context,
-	req *apb.QueueNarrationRequest,
-) (*apb.QueueNarrationResponse, error) {
-	ctx = context.WithoutCancel(ctx)
-	jobId, err := h.nq.Queue(
-		ctx,
-		job.WithNarrationUrl(req.GetUrl()),
-		job.WithNarrationNarrator(req.GetNarrator()),
-		job.WithNarrationSpeakerId(req.GetSpeakerId()),
-		job.WithNarrationEncoding(ppb.AudioEncoding_AUDIO_ENCODING_MP3),
-		// TODO: Allow disabling cache
-	)
-	return &apb.QueueNarrationResponse{Id: jobId}, err
-}
 func (h *KatariveHandlerV1) GetNarration(
 	ctx context.Context,
 	req *apb.GetNarrationRequest,
 ) (*apb.GetNarrationResponse, error) {
-	job, err := h.nq.Get(req.GetId())
+	item, err := h.sr.GetItem(req.GetUrl())
 	if err != nil {
 		return nil, err
 	}
 
-	result := job.Result()
+	opts := []narrator.NarrateOption{
+		narrator.WithSpeaker(req.GetSpeakerId()),
+		narrator.WithNarrator(req.GetNarrator()),
+		narrator.WithEncoding(ppb.AudioEncoding_AUDIO_ENCODING_MP3),
+	}
 
 	var path *string
-	var source *apb.SourceSummary
-	if result != nil {
-		p := h.pm.Do(result.Path)
-		path = &p
-		source = &apb.SourceSummary{
-			Id:    result.Source.GetId(),
-			Url:   result.Source.GetUrl(),
-			Title: result.Source.GetTitle(),
+	if item != nil {
+		result := h.nr.Get(item, opts...)
+		if result != nil {
+			path = &result.Path
 		}
 	}
 
+	status := apb.JobStatus_JOB_STATUS_COMPLETED
+	if path == nil {
+		ctx = context.WithoutCancel(ctx)
+		job, err := h.nq.Queue(
+			ctx,
+			job.WithNarrationSpeakerId(req.GetSpeakerId()),
+			job.WithNarrationNarrator(req.GetNarrator()),
+			job.WithNarrationEncoding(ppb.AudioEncoding_AUDIO_ENCODING_MP3),
+		)
+		if err != nil {
+			return nil, err
+		}
+		status = job.Status()
+		err = job.Error()
+	}
+
 	return &apb.GetNarrationResponse{
-		Status: job.Status(),
+		Status: status,
 		Path:   path,
-		Source: source,
-	}, job.Error()
+	}, err
 }
 func (h *KatariveHandlerV1) GetNarrators(
 	ctx context.Context,
@@ -93,102 +92,120 @@ func (h *KatariveHandlerV1) GetNarrators(
 
 	return &res, nil
 }
-func (h *KatariveHandlerV1) QueueSourceItem(
-	ctx context.Context,
-	req *apb.QueueSourceItemRequest,
-) (*apb.QueueSourceItemResponse, error) {
-	ctx = context.WithoutCancel(ctx)
-
-	jobId, err := h.siq.Queue(
-		ctx,
-		job.WithSourceItemUrl(req.GetUrl()),
-		job.WithoutSourceItemCache(req.GetDisableCache()),
-	)
-	return &apb.QueueSourceItemResponse{Id: jobId}, err
-}
 func (h *KatariveHandlerV1) GetSourceItem(
 	ctx context.Context,
 	req *apb.GetSourceItemRequest,
 ) (*apb.GetSourceItemResponse, error) {
-	job, err := h.siq.Get(req.GetId())
-	if err != nil {
-		return nil, err
+	var item *apb.SourceItem
+	var collection *apb.SourceCollection
+	var err error
+	if !req.GetDisableCache() {
+		i, err := h.sr.GetItem(req.GetUrl())
+		if err != nil {
+			return nil, err
+		}
+
+		cs, err := h.sr.GetCollections(source.WithItemUrl(req.GetUrl()))
+		if err != nil {
+			return nil, err
+		}
+
+		if i != nil {
+			item = &apb.SourceItem{
+				Id:      i.GetId(),
+				Url:     i.GetUrl(),
+				Title:   i.GetTitle(),
+				Content: i.GetContent(),
+			}
+		}
+		if len(cs) > 0 {
+			collection = &apb.SourceCollection{
+				Id:          cs[0].GetId(),
+				Url:         cs[0].GetUrl(),
+				Title:       cs[0].GetTitle(),
+				Description: cs[0].GetDescription(),
+				Author:      cs[0].GetAuthor(),
+				Tags:        cs[0].GetTags(),
+			}
+		}
 	}
 
-	result := job.Result()
-	var metadata *apb.SourceSummary
-	var contentPtr *string
-	if result != nil {
-		metadata = &apb.SourceSummary{
-			Id:    result.GetId(),
-			Url:   result.GetUrl(),
-			Title: result.GetTitle(),
+	status := apb.JobStatus_JOB_STATUS_COMPLETED
+	if item == nil {
+		ctx = context.WithoutCancel(ctx)
+		job, err := h.siq.Queue(ctx, job.WithSourceItemUrl(req.GetUrl()))
+		if err != nil {
+			return nil, err
 		}
-		content := result.GetContent()
-		contentPtr = &content
+		status = job.Status()
+		err = job.Error()
 	}
 
 	return &apb.GetSourceItemResponse{
-		Status:   job.Status(),
-		Metadata: metadata,
-		Content:  contentPtr,
-	}, job.Error()
-}
-func (h *KatariveHandlerV1) QueueSourceCollection(
-	ctx context.Context,
-	req *apb.QueueSourceCollectionRequest,
-) (*apb.QueueSourceCollectionResponse, error) {
-	ctx = context.WithoutCancel(ctx)
-	jobId, err := h.scq.Queue(
-		ctx,
-		job.WithSourceCollectionUrl(req.GetUrl()),
-		job.WithoutSourceCollectionCache(req.GetDisableCache()),
-	)
-	return &apb.QueueSourceCollectionResponse{Id: jobId}, err
+		Status:     status,
+		Item:       item,
+		Collection: collection,
+	}, err
 }
 func (h *KatariveHandlerV1) GetSourceCollection(
 	ctx context.Context,
 	req *apb.GetSourceCollectionRequest,
 ) (*apb.GetSourceCollectionResponse, error) {
-	job, err := h.scq.Get(req.GetId())
-	if err != nil {
-		return nil, err
-	}
-
-	result := job.Result()
 	var collection *apb.SourceCollection
-	var sources []*apb.SourceSummary
-	if result != nil {
-		collection = &apb.SourceCollection{
-			Id:          result.Collection.GetId(),
-			Url:         result.Collection.GetUrl(),
-			Title:       result.Collection.GetTitle(),
-			Description: result.Collection.GetDescription(),
-			Author:      result.Collection.GetAuthor(),
-			Tags:        result.Collection.GetTags(),
+	var items []*apb.SourceSummary
+	var err error
+	if !req.GetDisableCache() {
+		c, err := h.sr.GetCollection(req.GetUrl())
+		if err != nil {
+			return nil, err
 		}
-		for _, s := range result.Sources {
-			sources = append(sources, &apb.SourceSummary{
-				Id:    s.GetId(),
-				Title: s.GetTitle(),
-				Url:   s.GetUrl(),
-			})
+		is, err := h.sr.GetItems(source.WithCollectionUrl(req.GetUrl()))
+		if err != nil {
+			return nil, err
+		}
+
+		if c != nil {
+			collection = &apb.SourceCollection{
+				Id:          c.GetId(),
+				Url:         c.GetUrl(),
+				Title:       c.GetTitle(),
+				Description: c.GetDescription(),
+				Author:      c.GetAuthor(),
+				Tags:        c.GetTags(),
+			}
+		}
+		if len(is) > 0 {
+			for _, i := range is {
+				items = append(items, &apb.SourceSummary{
+					Id:    i.GetId(),
+					Url:   i.GetUrl(),
+					Title: i.GetTitle(),
+				})
+			}
 		}
 	}
 
-	// TODO: Set Sources
+	status := apb.JobStatus_JOB_STATUS_COMPLETED
+	if collection == nil {
+		job, err := h.scq.Queue(ctx, job.WithSourceCollectionUrl(req.GetUrl()))
+		if err != nil {
+			return nil, err
+		}
+		status = job.Status()
+		err = job.Error()
+	}
 
 	return &apb.GetSourceCollectionResponse{
-		Status:     job.Status(),
+		Status:     status,
 		Collection: collection,
-		Sources:    sources,
-	}, job.Error()
+		Items:      items,
+	}, err
 }
 func (h *KatariveHandlerV1) GetSourceCollections(
 	ctx context.Context,
 	req *apb.GetSourceCollectionsRequest,
 ) (*apb.GetSourceCollectionsResponse, error) {
-	cs, err := h.sr.SourceCollections()
+	cs, err := h.sr.GetCollections()
 	if err != nil {
 		return nil, err
 	}
@@ -219,16 +236,12 @@ func NewKatariveHandlerV1(
 	nr narrator.NarrateRegistry,
 	pm PathModifier,
 ) *KatariveHandlerV1 {
-	ngrp := new(singleflight.Group)
-	scgrp := new(singleflight.Group)
-	sigrp := new(singleflight.Group)
-
 	return &KatariveHandlerV1{
 		sr:  sr,
 		nr:  nr,
-		nq:  job.NewNarrationJobQueue(sr, nr, ngrp),
-		scq: job.NewSourceCollectionJobQueue(sr, scgrp),
-		siq: job.NewSourceItemJobQueue(sr, sigrp),
+		nq:  job.NewMutexNarrateJobQueue(sr, nr),
+		scq: job.NewMutexSourceCollectionJobQueue(sr),
+		siq: job.NewMutexSourceItemJobQueue(sr),
 		pm:  pm,
 	}
 }

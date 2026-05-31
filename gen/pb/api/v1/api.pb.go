@@ -76,7 +76,7 @@ func (JobStatus) EnumDescriptor() ([]byte, []int) {
 	return file_api_v1_api_proto_rawDescGZIP(), []int{0}
 }
 
-type QueueNarrationRequest struct {
+type GetNarrationRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Url           string                 `protobuf:"bytes,1,opt,name=url,proto3" json:"url,omitempty"`
 	Narrator      string                 `protobuf:"bytes,2,opt,name=narrator,proto3" json:"narrator,omitempty"`
@@ -85,111 +85,9 @@ type QueueNarrationRequest struct {
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *QueueNarrationRequest) Reset() {
-	*x = QueueNarrationRequest{}
-	mi := &file_api_v1_api_proto_msgTypes[0]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *QueueNarrationRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*QueueNarrationRequest) ProtoMessage() {}
-
-func (x *QueueNarrationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_api_proto_msgTypes[0]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use QueueNarrationRequest.ProtoReflect.Descriptor instead.
-func (*QueueNarrationRequest) Descriptor() ([]byte, []int) {
-	return file_api_v1_api_proto_rawDescGZIP(), []int{0}
-}
-
-func (x *QueueNarrationRequest) GetUrl() string {
-	if x != nil {
-		return x.Url
-	}
-	return ""
-}
-
-func (x *QueueNarrationRequest) GetNarrator() string {
-	if x != nil {
-		return x.Narrator
-	}
-	return ""
-}
-
-func (x *QueueNarrationRequest) GetSpeakerId() int32 {
-	if x != nil {
-		return x.SpeakerId
-	}
-	return 0
-}
-
-type QueueNarrationResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *QueueNarrationResponse) Reset() {
-	*x = QueueNarrationResponse{}
-	mi := &file_api_v1_api_proto_msgTypes[1]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *QueueNarrationResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*QueueNarrationResponse) ProtoMessage() {}
-
-func (x *QueueNarrationResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_api_proto_msgTypes[1]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use QueueNarrationResponse.ProtoReflect.Descriptor instead.
-func (*QueueNarrationResponse) Descriptor() ([]byte, []int) {
-	return file_api_v1_api_proto_rawDescGZIP(), []int{1}
-}
-
-func (x *QueueNarrationResponse) GetId() string {
-	if x != nil {
-		return x.Id
-	}
-	return ""
-}
-
-type GetNarrationRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
 func (x *GetNarrationRequest) Reset() {
 	*x = GetNarrationRequest{}
-	mi := &file_api_v1_api_proto_msgTypes[2]
+	mi := &file_api_v1_api_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -201,7 +99,7 @@ func (x *GetNarrationRequest) String() string {
 func (*GetNarrationRequest) ProtoMessage() {}
 
 func (x *GetNarrationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_api_proto_msgTypes[2]
+	mi := &file_api_v1_api_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -214,28 +112,41 @@ func (x *GetNarrationRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetNarrationRequest.ProtoReflect.Descriptor instead.
 func (*GetNarrationRequest) Descriptor() ([]byte, []int) {
-	return file_api_v1_api_proto_rawDescGZIP(), []int{2}
+	return file_api_v1_api_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *GetNarrationRequest) GetId() string {
+func (x *GetNarrationRequest) GetUrl() string {
 	if x != nil {
-		return x.Id
+		return x.Url
 	}
 	return ""
+}
+
+func (x *GetNarrationRequest) GetNarrator() string {
+	if x != nil {
+		return x.Narrator
+	}
+	return ""
+}
+
+func (x *GetNarrationRequest) GetSpeakerId() int32 {
+	if x != nil {
+		return x.SpeakerId
+	}
+	return 0
 }
 
 type GetNarrationResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Status        JobStatus              `protobuf:"varint,1,opt,name=status,proto3,enum=api.v1.JobStatus" json:"status,omitempty"`
 	Path          *string                `protobuf:"bytes,2,opt,name=path,proto3,oneof" json:"path,omitempty"`
-	Source        *SourceSummary         `protobuf:"bytes,3,opt,name=source,proto3,oneof" json:"source,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *GetNarrationResponse) Reset() {
 	*x = GetNarrationResponse{}
-	mi := &file_api_v1_api_proto_msgTypes[3]
+	mi := &file_api_v1_api_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -247,7 +158,7 @@ func (x *GetNarrationResponse) String() string {
 func (*GetNarrationResponse) ProtoMessage() {}
 
 func (x *GetNarrationResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_api_proto_msgTypes[3]
+	mi := &file_api_v1_api_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -260,7 +171,7 @@ func (x *GetNarrationResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetNarrationResponse.ProtoReflect.Descriptor instead.
 func (*GetNarrationResponse) Descriptor() ([]byte, []int) {
-	return file_api_v1_api_proto_rawDescGZIP(), []int{3}
+	return file_api_v1_api_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *GetNarrationResponse) GetStatus() JobStatus {
@@ -277,13 +188,6 @@ func (x *GetNarrationResponse) GetPath() string {
 	return ""
 }
 
-func (x *GetNarrationResponse) GetSource() *SourceSummary {
-	if x != nil {
-		return x.Source
-	}
-	return nil
-}
-
 type GetNarratorsRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
@@ -292,7 +196,7 @@ type GetNarratorsRequest struct {
 
 func (x *GetNarratorsRequest) Reset() {
 	*x = GetNarratorsRequest{}
-	mi := &file_api_v1_api_proto_msgTypes[4]
+	mi := &file_api_v1_api_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -304,7 +208,7 @@ func (x *GetNarratorsRequest) String() string {
 func (*GetNarratorsRequest) ProtoMessage() {}
 
 func (x *GetNarratorsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_api_proto_msgTypes[4]
+	mi := &file_api_v1_api_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -317,7 +221,7 @@ func (x *GetNarratorsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetNarratorsRequest.ProtoReflect.Descriptor instead.
 func (*GetNarratorsRequest) Descriptor() ([]byte, []int) {
-	return file_api_v1_api_proto_rawDescGZIP(), []int{4}
+	return file_api_v1_api_proto_rawDescGZIP(), []int{2}
 }
 
 type GetNarratorsResponse struct {
@@ -329,7 +233,7 @@ type GetNarratorsResponse struct {
 
 func (x *GetNarratorsResponse) Reset() {
 	*x = GetNarratorsResponse{}
-	mi := &file_api_v1_api_proto_msgTypes[5]
+	mi := &file_api_v1_api_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -341,7 +245,7 @@ func (x *GetNarratorsResponse) String() string {
 func (*GetNarratorsResponse) ProtoMessage() {}
 
 func (x *GetNarratorsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_api_proto_msgTypes[5]
+	mi := &file_api_v1_api_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -354,7 +258,7 @@ func (x *GetNarratorsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetNarratorsResponse.ProtoReflect.Descriptor instead.
 func (*GetNarratorsResponse) Descriptor() ([]byte, []int) {
-	return file_api_v1_api_proto_rawDescGZIP(), []int{5}
+	return file_api_v1_api_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *GetNarratorsResponse) GetNarrator() []*Narrator {
@@ -374,7 +278,7 @@ type Narrator struct {
 
 func (x *Narrator) Reset() {
 	*x = Narrator{}
-	mi := &file_api_v1_api_proto_msgTypes[6]
+	mi := &file_api_v1_api_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -386,7 +290,7 @@ func (x *Narrator) String() string {
 func (*Narrator) ProtoMessage() {}
 
 func (x *Narrator) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_api_proto_msgTypes[6]
+	mi := &file_api_v1_api_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -399,7 +303,7 @@ func (x *Narrator) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Narrator.ProtoReflect.Descriptor instead.
 func (*Narrator) Descriptor() ([]byte, []int) {
-	return file_api_v1_api_proto_rawDescGZIP(), []int{6}
+	return file_api_v1_api_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *Narrator) GetName() string {
@@ -426,7 +330,7 @@ type Speaker struct {
 
 func (x *Speaker) Reset() {
 	*x = Speaker{}
-	mi := &file_api_v1_api_proto_msgTypes[7]
+	mi := &file_api_v1_api_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -438,7 +342,7 @@ func (x *Speaker) String() string {
 func (*Speaker) ProtoMessage() {}
 
 func (x *Speaker) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_api_proto_msgTypes[7]
+	mi := &file_api_v1_api_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -451,7 +355,7 @@ func (x *Speaker) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Speaker.ProtoReflect.Descriptor instead.
 func (*Speaker) Descriptor() ([]byte, []int) {
-	return file_api_v1_api_proto_rawDescGZIP(), []int{7}
+	return file_api_v1_api_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *Speaker) GetId() int32 {
@@ -468,7 +372,7 @@ func (x *Speaker) GetLabel() string {
 	return ""
 }
 
-type QueueSourceItemRequest struct {
+type GetSourceItemRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Url           string                 `protobuf:"bytes,1,opt,name=url,proto3" json:"url,omitempty"`
 	DisableCache  bool                   `protobuf:"varint,2,opt,name=disable_cache,json=disableCache,proto3" json:"disable_cache,omitempty"`
@@ -476,104 +380,9 @@ type QueueSourceItemRequest struct {
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *QueueSourceItemRequest) Reset() {
-	*x = QueueSourceItemRequest{}
-	mi := &file_api_v1_api_proto_msgTypes[8]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *QueueSourceItemRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*QueueSourceItemRequest) ProtoMessage() {}
-
-func (x *QueueSourceItemRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_api_proto_msgTypes[8]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use QueueSourceItemRequest.ProtoReflect.Descriptor instead.
-func (*QueueSourceItemRequest) Descriptor() ([]byte, []int) {
-	return file_api_v1_api_proto_rawDescGZIP(), []int{8}
-}
-
-func (x *QueueSourceItemRequest) GetUrl() string {
-	if x != nil {
-		return x.Url
-	}
-	return ""
-}
-
-func (x *QueueSourceItemRequest) GetDisableCache() bool {
-	if x != nil {
-		return x.DisableCache
-	}
-	return false
-}
-
-type QueueSourceItemResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *QueueSourceItemResponse) Reset() {
-	*x = QueueSourceItemResponse{}
-	mi := &file_api_v1_api_proto_msgTypes[9]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *QueueSourceItemResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*QueueSourceItemResponse) ProtoMessage() {}
-
-func (x *QueueSourceItemResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_api_proto_msgTypes[9]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use QueueSourceItemResponse.ProtoReflect.Descriptor instead.
-func (*QueueSourceItemResponse) Descriptor() ([]byte, []int) {
-	return file_api_v1_api_proto_rawDescGZIP(), []int{9}
-}
-
-func (x *QueueSourceItemResponse) GetId() string {
-	if x != nil {
-		return x.Id
-	}
-	return ""
-}
-
-type GetSourceItemRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
 func (x *GetSourceItemRequest) Reset() {
 	*x = GetSourceItemRequest{}
-	mi := &file_api_v1_api_proto_msgTypes[10]
+	mi := &file_api_v1_api_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -585,7 +394,7 @@ func (x *GetSourceItemRequest) String() string {
 func (*GetSourceItemRequest) ProtoMessage() {}
 
 func (x *GetSourceItemRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_api_proto_msgTypes[10]
+	mi := &file_api_v1_api_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -598,28 +407,35 @@ func (x *GetSourceItemRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetSourceItemRequest.ProtoReflect.Descriptor instead.
 func (*GetSourceItemRequest) Descriptor() ([]byte, []int) {
-	return file_api_v1_api_proto_rawDescGZIP(), []int{10}
+	return file_api_v1_api_proto_rawDescGZIP(), []int{6}
 }
 
-func (x *GetSourceItemRequest) GetId() string {
+func (x *GetSourceItemRequest) GetUrl() string {
 	if x != nil {
-		return x.Id
+		return x.Url
 	}
 	return ""
+}
+
+func (x *GetSourceItemRequest) GetDisableCache() bool {
+	if x != nil {
+		return x.DisableCache
+	}
+	return false
 }
 
 type GetSourceItemResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Status        JobStatus              `protobuf:"varint,1,opt,name=status,proto3,enum=api.v1.JobStatus" json:"status,omitempty"`
-	Metadata      *SourceSummary         `protobuf:"bytes,2,opt,name=metadata,proto3,oneof" json:"metadata,omitempty"`
-	Content       *string                `protobuf:"bytes,3,opt,name=content,proto3,oneof" json:"content,omitempty"`
+	Item          *SourceItem            `protobuf:"bytes,2,opt,name=item,proto3,oneof" json:"item,omitempty"`
+	Collection    *SourceCollection      `protobuf:"bytes,3,opt,name=collection,proto3,oneof" json:"collection,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *GetSourceItemResponse) Reset() {
 	*x = GetSourceItemResponse{}
-	mi := &file_api_v1_api_proto_msgTypes[11]
+	mi := &file_api_v1_api_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -631,7 +447,7 @@ func (x *GetSourceItemResponse) String() string {
 func (*GetSourceItemResponse) ProtoMessage() {}
 
 func (x *GetSourceItemResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_api_proto_msgTypes[11]
+	mi := &file_api_v1_api_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -644,7 +460,7 @@ func (x *GetSourceItemResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetSourceItemResponse.ProtoReflect.Descriptor instead.
 func (*GetSourceItemResponse) Descriptor() ([]byte, []int) {
-	return file_api_v1_api_proto_rawDescGZIP(), []int{11}
+	return file_api_v1_api_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *GetSourceItemResponse) GetStatus() JobStatus {
@@ -654,21 +470,21 @@ func (x *GetSourceItemResponse) GetStatus() JobStatus {
 	return JobStatus_JOB_STATUS_UNSPECIFIED
 }
 
-func (x *GetSourceItemResponse) GetMetadata() *SourceSummary {
+func (x *GetSourceItemResponse) GetItem() *SourceItem {
 	if x != nil {
-		return x.Metadata
+		return x.Item
 	}
 	return nil
 }
 
-func (x *GetSourceItemResponse) GetContent() string {
-	if x != nil && x.Content != nil {
-		return *x.Content
+func (x *GetSourceItemResponse) GetCollection() *SourceCollection {
+	if x != nil {
+		return x.Collection
 	}
-	return ""
+	return nil
 }
 
-type QueueSourceCollectionRequest struct {
+type GetSourceCollectionRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Url           string                 `protobuf:"bytes,1,opt,name=url,proto3" json:"url,omitempty"`
 	DisableCache  bool                   `protobuf:"varint,2,opt,name=disable_cache,json=disableCache,proto3" json:"disable_cache,omitempty"`
@@ -676,104 +492,9 @@ type QueueSourceCollectionRequest struct {
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *QueueSourceCollectionRequest) Reset() {
-	*x = QueueSourceCollectionRequest{}
-	mi := &file_api_v1_api_proto_msgTypes[12]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *QueueSourceCollectionRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*QueueSourceCollectionRequest) ProtoMessage() {}
-
-func (x *QueueSourceCollectionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_api_proto_msgTypes[12]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use QueueSourceCollectionRequest.ProtoReflect.Descriptor instead.
-func (*QueueSourceCollectionRequest) Descriptor() ([]byte, []int) {
-	return file_api_v1_api_proto_rawDescGZIP(), []int{12}
-}
-
-func (x *QueueSourceCollectionRequest) GetUrl() string {
-	if x != nil {
-		return x.Url
-	}
-	return ""
-}
-
-func (x *QueueSourceCollectionRequest) GetDisableCache() bool {
-	if x != nil {
-		return x.DisableCache
-	}
-	return false
-}
-
-type QueueSourceCollectionResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *QueueSourceCollectionResponse) Reset() {
-	*x = QueueSourceCollectionResponse{}
-	mi := &file_api_v1_api_proto_msgTypes[13]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *QueueSourceCollectionResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*QueueSourceCollectionResponse) ProtoMessage() {}
-
-func (x *QueueSourceCollectionResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_api_proto_msgTypes[13]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use QueueSourceCollectionResponse.ProtoReflect.Descriptor instead.
-func (*QueueSourceCollectionResponse) Descriptor() ([]byte, []int) {
-	return file_api_v1_api_proto_rawDescGZIP(), []int{13}
-}
-
-func (x *QueueSourceCollectionResponse) GetId() string {
-	if x != nil {
-		return x.Id
-	}
-	return ""
-}
-
-type GetSourceCollectionRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
 func (x *GetSourceCollectionRequest) Reset() {
 	*x = GetSourceCollectionRequest{}
-	mi := &file_api_v1_api_proto_msgTypes[14]
+	mi := &file_api_v1_api_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -785,7 +506,7 @@ func (x *GetSourceCollectionRequest) String() string {
 func (*GetSourceCollectionRequest) ProtoMessage() {}
 
 func (x *GetSourceCollectionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_api_proto_msgTypes[14]
+	mi := &file_api_v1_api_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -798,28 +519,35 @@ func (x *GetSourceCollectionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetSourceCollectionRequest.ProtoReflect.Descriptor instead.
 func (*GetSourceCollectionRequest) Descriptor() ([]byte, []int) {
-	return file_api_v1_api_proto_rawDescGZIP(), []int{14}
+	return file_api_v1_api_proto_rawDescGZIP(), []int{8}
 }
 
-func (x *GetSourceCollectionRequest) GetId() string {
+func (x *GetSourceCollectionRequest) GetUrl() string {
 	if x != nil {
-		return x.Id
+		return x.Url
 	}
 	return ""
+}
+
+func (x *GetSourceCollectionRequest) GetDisableCache() bool {
+	if x != nil {
+		return x.DisableCache
+	}
+	return false
 }
 
 type GetSourceCollectionResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Status        JobStatus              `protobuf:"varint,1,opt,name=status,proto3,enum=api.v1.JobStatus" json:"status,omitempty"`
 	Collection    *SourceCollection      `protobuf:"bytes,2,opt,name=collection,proto3,oneof" json:"collection,omitempty"`
-	Sources       []*SourceSummary       `protobuf:"bytes,3,rep,name=sources,proto3" json:"sources,omitempty"`
+	Items         []*SourceSummary       `protobuf:"bytes,3,rep,name=items,proto3" json:"items,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *GetSourceCollectionResponse) Reset() {
 	*x = GetSourceCollectionResponse{}
-	mi := &file_api_v1_api_proto_msgTypes[15]
+	mi := &file_api_v1_api_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -831,7 +559,7 @@ func (x *GetSourceCollectionResponse) String() string {
 func (*GetSourceCollectionResponse) ProtoMessage() {}
 
 func (x *GetSourceCollectionResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_api_proto_msgTypes[15]
+	mi := &file_api_v1_api_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -844,7 +572,7 @@ func (x *GetSourceCollectionResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetSourceCollectionResponse.ProtoReflect.Descriptor instead.
 func (*GetSourceCollectionResponse) Descriptor() ([]byte, []int) {
-	return file_api_v1_api_proto_rawDescGZIP(), []int{15}
+	return file_api_v1_api_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *GetSourceCollectionResponse) GetStatus() JobStatus {
@@ -861,9 +589,9 @@ func (x *GetSourceCollectionResponse) GetCollection() *SourceCollection {
 	return nil
 }
 
-func (x *GetSourceCollectionResponse) GetSources() []*SourceSummary {
+func (x *GetSourceCollectionResponse) GetItems() []*SourceSummary {
 	if x != nil {
-		return x.Sources
+		return x.Items
 	}
 	return nil
 }
@@ -876,7 +604,7 @@ type GetSourceCollectionsRequest struct {
 
 func (x *GetSourceCollectionsRequest) Reset() {
 	*x = GetSourceCollectionsRequest{}
-	mi := &file_api_v1_api_proto_msgTypes[16]
+	mi := &file_api_v1_api_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -888,7 +616,7 @@ func (x *GetSourceCollectionsRequest) String() string {
 func (*GetSourceCollectionsRequest) ProtoMessage() {}
 
 func (x *GetSourceCollectionsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_api_proto_msgTypes[16]
+	mi := &file_api_v1_api_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -901,7 +629,7 @@ func (x *GetSourceCollectionsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetSourceCollectionsRequest.ProtoReflect.Descriptor instead.
 func (*GetSourceCollectionsRequest) Descriptor() ([]byte, []int) {
-	return file_api_v1_api_proto_rawDescGZIP(), []int{16}
+	return file_api_v1_api_proto_rawDescGZIP(), []int{10}
 }
 
 type GetSourceCollectionsResponse struct {
@@ -913,7 +641,7 @@ type GetSourceCollectionsResponse struct {
 
 func (x *GetSourceCollectionsResponse) Reset() {
 	*x = GetSourceCollectionsResponse{}
-	mi := &file_api_v1_api_proto_msgTypes[17]
+	mi := &file_api_v1_api_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -925,7 +653,7 @@ func (x *GetSourceCollectionsResponse) String() string {
 func (*GetSourceCollectionsResponse) ProtoMessage() {}
 
 func (x *GetSourceCollectionsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_api_proto_msgTypes[17]
+	mi := &file_api_v1_api_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -938,7 +666,7 @@ func (x *GetSourceCollectionsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetSourceCollectionsResponse.ProtoReflect.Descriptor instead.
 func (*GetSourceCollectionsResponse) Descriptor() ([]byte, []int) {
-	return file_api_v1_api_proto_rawDescGZIP(), []int{17}
+	return file_api_v1_api_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *GetSourceCollectionsResponse) GetCollection() []*SourceCollection {
@@ -959,7 +687,7 @@ type SourceSummary struct {
 
 func (x *SourceSummary) Reset() {
 	*x = SourceSummary{}
-	mi := &file_api_v1_api_proto_msgTypes[18]
+	mi := &file_api_v1_api_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -971,7 +699,7 @@ func (x *SourceSummary) String() string {
 func (*SourceSummary) ProtoMessage() {}
 
 func (x *SourceSummary) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_api_proto_msgTypes[18]
+	mi := &file_api_v1_api_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -984,7 +712,7 @@ func (x *SourceSummary) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SourceSummary.ProtoReflect.Descriptor instead.
 func (*SourceSummary) Descriptor() ([]byte, []int) {
-	return file_api_v1_api_proto_rawDescGZIP(), []int{18}
+	return file_api_v1_api_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *SourceSummary) GetId() string {
@@ -1008,6 +736,74 @@ func (x *SourceSummary) GetTitle() string {
 	return ""
 }
 
+type SourceItem struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Url           string                 `protobuf:"bytes,2,opt,name=url,proto3" json:"url,omitempty"`
+	Title         string                 `protobuf:"bytes,3,opt,name=title,proto3" json:"title,omitempty"`
+	Content       string                 `protobuf:"bytes,4,opt,name=content,proto3" json:"content,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SourceItem) Reset() {
+	*x = SourceItem{}
+	mi := &file_api_v1_api_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SourceItem) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SourceItem) ProtoMessage() {}
+
+func (x *SourceItem) ProtoReflect() protoreflect.Message {
+	mi := &file_api_v1_api_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SourceItem.ProtoReflect.Descriptor instead.
+func (*SourceItem) Descriptor() ([]byte, []int) {
+	return file_api_v1_api_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *SourceItem) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *SourceItem) GetUrl() string {
+	if x != nil {
+		return x.Url
+	}
+	return ""
+}
+
+func (x *SourceItem) GetTitle() string {
+	if x != nil {
+		return x.Title
+	}
+	return ""
+}
+
+func (x *SourceItem) GetContent() string {
+	if x != nil {
+		return x.Content
+	}
+	return ""
+}
+
 type SourceCollection struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -1022,7 +818,7 @@ type SourceCollection struct {
 
 func (x *SourceCollection) Reset() {
 	*x = SourceCollection{}
-	mi := &file_api_v1_api_proto_msgTypes[19]
+	mi := &file_api_v1_api_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1034,7 +830,7 @@ func (x *SourceCollection) String() string {
 func (*SourceCollection) ProtoMessage() {}
 
 func (x *SourceCollection) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_api_proto_msgTypes[19]
+	mi := &file_api_v1_api_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1047,7 +843,7 @@ func (x *SourceCollection) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SourceCollection.ProtoReflect.Descriptor instead.
 func (*SourceCollection) Descriptor() ([]byte, []int) {
-	return file_api_v1_api_proto_rawDescGZIP(), []int{19}
+	return file_api_v1_api_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *SourceCollection) GetId() string {
@@ -1096,22 +892,16 @@ var File_api_v1_api_proto protoreflect.FileDescriptor
 
 const file_api_v1_api_proto_rawDesc = "" +
 	"\n" +
-	"\x10api/v1/api.proto\x12\x06api.v1\"d\n" +
-	"\x15QueueNarrationRequest\x12\x10\n" +
+	"\x10api/v1/api.proto\x12\x06api.v1\"b\n" +
+	"\x13GetNarrationRequest\x12\x10\n" +
 	"\x03url\x18\x01 \x01(\tR\x03url\x12\x1a\n" +
 	"\bnarrator\x18\x02 \x01(\tR\bnarrator\x12\x1d\n" +
 	"\n" +
-	"speaker_id\x18\x03 \x01(\x05R\tspeakerId\"(\n" +
-	"\x16QueueNarrationResponse\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\"%\n" +
-	"\x13GetNarrationRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\"\xa2\x01\n" +
+	"speaker_id\x18\x03 \x01(\x05R\tspeakerId\"c\n" +
 	"\x14GetNarrationResponse\x12)\n" +
 	"\x06status\x18\x01 \x01(\x0e2\x11.api.v1.JobStatusR\x06status\x12\x17\n" +
-	"\x04path\x18\x02 \x01(\tH\x00R\x04path\x88\x01\x01\x122\n" +
-	"\x06source\x18\x03 \x01(\v2\x15.api.v1.SourceSummaryH\x01R\x06source\x88\x01\x01B\a\n" +
-	"\x05_pathB\t\n" +
-	"\a_source\"\x15\n" +
+	"\x04path\x18\x02 \x01(\tH\x00R\x04path\x88\x01\x01B\a\n" +
+	"\x05_path\"\x15\n" +
 	"\x13GetNarratorsRequest\"D\n" +
 	"\x14GetNarratorsResponse\x12,\n" +
 	"\bnarrator\x18\x01 \x03(\v2\x10.api.v1.NarratorR\bnarrator\"K\n" +
@@ -1120,34 +910,27 @@ const file_api_v1_api_proto_rawDesc = "" +
 	"\bspeakers\x18\x02 \x03(\v2\x0f.api.v1.SpeakerR\bspeakers\"/\n" +
 	"\aSpeaker\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x05R\x02id\x12\x14\n" +
-	"\x05label\x18\x02 \x01(\tR\x05label\"O\n" +
-	"\x16QueueSourceItemRequest\x12\x10\n" +
+	"\x05label\x18\x02 \x01(\tR\x05label\"M\n" +
+	"\x14GetSourceItemRequest\x12\x10\n" +
 	"\x03url\x18\x01 \x01(\tR\x03url\x12#\n" +
-	"\rdisable_cache\x18\x02 \x01(\bR\fdisableCache\")\n" +
-	"\x17QueueSourceItemResponse\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\"&\n" +
-	"\x14GetSourceItemRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\"\xb2\x01\n" +
+	"\rdisable_cache\x18\x02 \x01(\bR\fdisableCache\"\xc6\x01\n" +
 	"\x15GetSourceItemResponse\x12)\n" +
-	"\x06status\x18\x01 \x01(\x0e2\x11.api.v1.JobStatusR\x06status\x126\n" +
-	"\bmetadata\x18\x02 \x01(\v2\x15.api.v1.SourceSummaryH\x00R\bmetadata\x88\x01\x01\x12\x1d\n" +
-	"\acontent\x18\x03 \x01(\tH\x01R\acontent\x88\x01\x01B\v\n" +
-	"\t_metadataB\n" +
+	"\x06status\x18\x01 \x01(\x0e2\x11.api.v1.JobStatusR\x06status\x12+\n" +
+	"\x04item\x18\x02 \x01(\v2\x12.api.v1.SourceItemH\x00R\x04item\x88\x01\x01\x12=\n" +
 	"\n" +
-	"\b_content\"U\n" +
-	"\x1cQueueSourceCollectionRequest\x12\x10\n" +
+	"collection\x18\x03 \x01(\v2\x18.api.v1.SourceCollectionH\x01R\n" +
+	"collection\x88\x01\x01B\a\n" +
+	"\x05_itemB\r\n" +
+	"\v_collection\"S\n" +
+	"\x1aGetSourceCollectionRequest\x12\x10\n" +
 	"\x03url\x18\x01 \x01(\tR\x03url\x12#\n" +
-	"\rdisable_cache\x18\x02 \x01(\bR\fdisableCache\"/\n" +
-	"\x1dQueueSourceCollectionResponse\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\",\n" +
-	"\x1aGetSourceCollectionRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\"\xc7\x01\n" +
+	"\rdisable_cache\x18\x02 \x01(\bR\fdisableCache\"\xc3\x01\n" +
 	"\x1bGetSourceCollectionResponse\x12)\n" +
 	"\x06status\x18\x01 \x01(\x0e2\x11.api.v1.JobStatusR\x06status\x12=\n" +
 	"\n" +
 	"collection\x18\x02 \x01(\v2\x18.api.v1.SourceCollectionH\x00R\n" +
-	"collection\x88\x01\x01\x12/\n" +
-	"\asources\x18\x03 \x03(\v2\x15.api.v1.SourceSummaryR\asourcesB\r\n" +
+	"collection\x88\x01\x01\x12+\n" +
+	"\x05items\x18\x03 \x03(\v2\x15.api.v1.SourceSummaryR\x05itemsB\r\n" +
 	"\v_collection\"\x1d\n" +
 	"\x1bGetSourceCollectionsRequest\"X\n" +
 	"\x1cGetSourceCollectionsResponse\x128\n" +
@@ -1157,7 +940,13 @@ const file_api_v1_api_proto_rawDesc = "" +
 	"\rSourceSummary\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x10\n" +
 	"\x03url\x18\x02 \x01(\tR\x03url\x12\x14\n" +
-	"\x05title\x18\x03 \x01(\tR\x05title\"\x98\x01\n" +
+	"\x05title\x18\x03 \x01(\tR\x05title\"^\n" +
+	"\n" +
+	"SourceItem\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x10\n" +
+	"\x03url\x18\x02 \x01(\tR\x03url\x12\x14\n" +
+	"\x05title\x18\x03 \x01(\tR\x05title\x12\x18\n" +
+	"\acontent\x18\x04 \x01(\tR\acontent\"\x98\x01\n" +
 	"\x10SourceCollection\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x10\n" +
 	"\x03url\x18\x02 \x01(\tR\x03url\x12\x14\n" +
@@ -1170,14 +959,11 @@ const file_api_v1_api_proto_rawDesc = "" +
 	"\x16JOB_STATUS_PROGRESSING\x10\x01\x12\x18\n" +
 	"\x14JOB_STATUS_COMPLETED\x10\x02\x12\x15\n" +
 	"\x11JOB_STATUS_FAILED\x10\x03\x12\x18\n" +
-	"\x14JOB_STATUS_NOT_FOUND\x10\x042\xc3\x05\n" +
-	"\x0fKatariveService\x12O\n" +
-	"\x0eQueueNarration\x12\x1d.api.v1.QueueNarrationRequest\x1a\x1e.api.v1.QueueNarrationResponse\x12I\n" +
+	"\x14JOB_STATUS_NOT_FOUND\x10\x042\xb8\x03\n" +
+	"\x0fKatariveService\x12I\n" +
 	"\fGetNarration\x12\x1b.api.v1.GetNarrationRequest\x1a\x1c.api.v1.GetNarrationResponse\x12I\n" +
-	"\fGetNarrators\x12\x1b.api.v1.GetNarratorsRequest\x1a\x1c.api.v1.GetNarratorsResponse\x12R\n" +
-	"\x0fQueueSourceItem\x12\x1e.api.v1.QueueSourceItemRequest\x1a\x1f.api.v1.QueueSourceItemResponse\x12L\n" +
-	"\rGetSourceItem\x12\x1c.api.v1.GetSourceItemRequest\x1a\x1d.api.v1.GetSourceItemResponse\x12d\n" +
-	"\x15QueueSourceCollection\x12$.api.v1.QueueSourceCollectionRequest\x1a%.api.v1.QueueSourceCollectionResponse\x12^\n" +
+	"\fGetNarrators\x12\x1b.api.v1.GetNarratorsRequest\x1a\x1c.api.v1.GetNarratorsResponse\x12L\n" +
+	"\rGetSourceItem\x12\x1c.api.v1.GetSourceItemRequest\x1a\x1d.api.v1.GetSourceItemResponse\x12^\n" +
 	"\x13GetSourceCollection\x12\".api.v1.GetSourceCollectionRequest\x1a#.api.v1.GetSourceCollectionResponse\x12a\n" +
 	"\x14GetSourceCollections\x12#.api.v1.GetSourceCollectionsRequest\x1a$.api.v1.GetSourceCollectionsResponseB\x8a\x01\n" +
 	"\n" +
@@ -1196,59 +982,48 @@ func file_api_v1_api_proto_rawDescGZIP() []byte {
 }
 
 var file_api_v1_api_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_api_v1_api_proto_msgTypes = make([]protoimpl.MessageInfo, 20)
+var file_api_v1_api_proto_msgTypes = make([]protoimpl.MessageInfo, 15)
 var file_api_v1_api_proto_goTypes = []any{
-	(JobStatus)(0),                        // 0: api.v1.JobStatus
-	(*QueueNarrationRequest)(nil),         // 1: api.v1.QueueNarrationRequest
-	(*QueueNarrationResponse)(nil),        // 2: api.v1.QueueNarrationResponse
-	(*GetNarrationRequest)(nil),           // 3: api.v1.GetNarrationRequest
-	(*GetNarrationResponse)(nil),          // 4: api.v1.GetNarrationResponse
-	(*GetNarratorsRequest)(nil),           // 5: api.v1.GetNarratorsRequest
-	(*GetNarratorsResponse)(nil),          // 6: api.v1.GetNarratorsResponse
-	(*Narrator)(nil),                      // 7: api.v1.Narrator
-	(*Speaker)(nil),                       // 8: api.v1.Speaker
-	(*QueueSourceItemRequest)(nil),        // 9: api.v1.QueueSourceItemRequest
-	(*QueueSourceItemResponse)(nil),       // 10: api.v1.QueueSourceItemResponse
-	(*GetSourceItemRequest)(nil),          // 11: api.v1.GetSourceItemRequest
-	(*GetSourceItemResponse)(nil),         // 12: api.v1.GetSourceItemResponse
-	(*QueueSourceCollectionRequest)(nil),  // 13: api.v1.QueueSourceCollectionRequest
-	(*QueueSourceCollectionResponse)(nil), // 14: api.v1.QueueSourceCollectionResponse
-	(*GetSourceCollectionRequest)(nil),    // 15: api.v1.GetSourceCollectionRequest
-	(*GetSourceCollectionResponse)(nil),   // 16: api.v1.GetSourceCollectionResponse
-	(*GetSourceCollectionsRequest)(nil),   // 17: api.v1.GetSourceCollectionsRequest
-	(*GetSourceCollectionsResponse)(nil),  // 18: api.v1.GetSourceCollectionsResponse
-	(*SourceSummary)(nil),                 // 19: api.v1.SourceSummary
-	(*SourceCollection)(nil),              // 20: api.v1.SourceCollection
+	(JobStatus)(0),                       // 0: api.v1.JobStatus
+	(*GetNarrationRequest)(nil),          // 1: api.v1.GetNarrationRequest
+	(*GetNarrationResponse)(nil),         // 2: api.v1.GetNarrationResponse
+	(*GetNarratorsRequest)(nil),          // 3: api.v1.GetNarratorsRequest
+	(*GetNarratorsResponse)(nil),         // 4: api.v1.GetNarratorsResponse
+	(*Narrator)(nil),                     // 5: api.v1.Narrator
+	(*Speaker)(nil),                      // 6: api.v1.Speaker
+	(*GetSourceItemRequest)(nil),         // 7: api.v1.GetSourceItemRequest
+	(*GetSourceItemResponse)(nil),        // 8: api.v1.GetSourceItemResponse
+	(*GetSourceCollectionRequest)(nil),   // 9: api.v1.GetSourceCollectionRequest
+	(*GetSourceCollectionResponse)(nil),  // 10: api.v1.GetSourceCollectionResponse
+	(*GetSourceCollectionsRequest)(nil),  // 11: api.v1.GetSourceCollectionsRequest
+	(*GetSourceCollectionsResponse)(nil), // 12: api.v1.GetSourceCollectionsResponse
+	(*SourceSummary)(nil),                // 13: api.v1.SourceSummary
+	(*SourceItem)(nil),                   // 14: api.v1.SourceItem
+	(*SourceCollection)(nil),             // 15: api.v1.SourceCollection
 }
 var file_api_v1_api_proto_depIdxs = []int32{
 	0,  // 0: api.v1.GetNarrationResponse.status:type_name -> api.v1.JobStatus
-	19, // 1: api.v1.GetNarrationResponse.source:type_name -> api.v1.SourceSummary
-	7,  // 2: api.v1.GetNarratorsResponse.narrator:type_name -> api.v1.Narrator
-	8,  // 3: api.v1.Narrator.speakers:type_name -> api.v1.Speaker
-	0,  // 4: api.v1.GetSourceItemResponse.status:type_name -> api.v1.JobStatus
-	19, // 5: api.v1.GetSourceItemResponse.metadata:type_name -> api.v1.SourceSummary
+	5,  // 1: api.v1.GetNarratorsResponse.narrator:type_name -> api.v1.Narrator
+	6,  // 2: api.v1.Narrator.speakers:type_name -> api.v1.Speaker
+	0,  // 3: api.v1.GetSourceItemResponse.status:type_name -> api.v1.JobStatus
+	14, // 4: api.v1.GetSourceItemResponse.item:type_name -> api.v1.SourceItem
+	15, // 5: api.v1.GetSourceItemResponse.collection:type_name -> api.v1.SourceCollection
 	0,  // 6: api.v1.GetSourceCollectionResponse.status:type_name -> api.v1.JobStatus
-	20, // 7: api.v1.GetSourceCollectionResponse.collection:type_name -> api.v1.SourceCollection
-	19, // 8: api.v1.GetSourceCollectionResponse.sources:type_name -> api.v1.SourceSummary
-	20, // 9: api.v1.GetSourceCollectionsResponse.collection:type_name -> api.v1.SourceCollection
-	1,  // 10: api.v1.KatariveService.QueueNarration:input_type -> api.v1.QueueNarrationRequest
-	3,  // 11: api.v1.KatariveService.GetNarration:input_type -> api.v1.GetNarrationRequest
-	5,  // 12: api.v1.KatariveService.GetNarrators:input_type -> api.v1.GetNarratorsRequest
-	9,  // 13: api.v1.KatariveService.QueueSourceItem:input_type -> api.v1.QueueSourceItemRequest
-	11, // 14: api.v1.KatariveService.GetSourceItem:input_type -> api.v1.GetSourceItemRequest
-	13, // 15: api.v1.KatariveService.QueueSourceCollection:input_type -> api.v1.QueueSourceCollectionRequest
-	15, // 16: api.v1.KatariveService.GetSourceCollection:input_type -> api.v1.GetSourceCollectionRequest
-	17, // 17: api.v1.KatariveService.GetSourceCollections:input_type -> api.v1.GetSourceCollectionsRequest
-	2,  // 18: api.v1.KatariveService.QueueNarration:output_type -> api.v1.QueueNarrationResponse
-	4,  // 19: api.v1.KatariveService.GetNarration:output_type -> api.v1.GetNarrationResponse
-	6,  // 20: api.v1.KatariveService.GetNarrators:output_type -> api.v1.GetNarratorsResponse
-	10, // 21: api.v1.KatariveService.QueueSourceItem:output_type -> api.v1.QueueSourceItemResponse
-	12, // 22: api.v1.KatariveService.GetSourceItem:output_type -> api.v1.GetSourceItemResponse
-	14, // 23: api.v1.KatariveService.QueueSourceCollection:output_type -> api.v1.QueueSourceCollectionResponse
-	16, // 24: api.v1.KatariveService.GetSourceCollection:output_type -> api.v1.GetSourceCollectionResponse
-	18, // 25: api.v1.KatariveService.GetSourceCollections:output_type -> api.v1.GetSourceCollectionsResponse
-	18, // [18:26] is the sub-list for method output_type
-	10, // [10:18] is the sub-list for method input_type
+	15, // 7: api.v1.GetSourceCollectionResponse.collection:type_name -> api.v1.SourceCollection
+	13, // 8: api.v1.GetSourceCollectionResponse.items:type_name -> api.v1.SourceSummary
+	15, // 9: api.v1.GetSourceCollectionsResponse.collection:type_name -> api.v1.SourceCollection
+	1,  // 10: api.v1.KatariveService.GetNarration:input_type -> api.v1.GetNarrationRequest
+	3,  // 11: api.v1.KatariveService.GetNarrators:input_type -> api.v1.GetNarratorsRequest
+	7,  // 12: api.v1.KatariveService.GetSourceItem:input_type -> api.v1.GetSourceItemRequest
+	9,  // 13: api.v1.KatariveService.GetSourceCollection:input_type -> api.v1.GetSourceCollectionRequest
+	11, // 14: api.v1.KatariveService.GetSourceCollections:input_type -> api.v1.GetSourceCollectionsRequest
+	2,  // 15: api.v1.KatariveService.GetNarration:output_type -> api.v1.GetNarrationResponse
+	4,  // 16: api.v1.KatariveService.GetNarrators:output_type -> api.v1.GetNarratorsResponse
+	8,  // 17: api.v1.KatariveService.GetSourceItem:output_type -> api.v1.GetSourceItemResponse
+	10, // 18: api.v1.KatariveService.GetSourceCollection:output_type -> api.v1.GetSourceCollectionResponse
+	12, // 19: api.v1.KatariveService.GetSourceCollections:output_type -> api.v1.GetSourceCollectionsResponse
+	15, // [15:20] is the sub-list for method output_type
+	10, // [10:15] is the sub-list for method input_type
 	10, // [10:10] is the sub-list for extension type_name
 	10, // [10:10] is the sub-list for extension extendee
 	0,  // [0:10] is the sub-list for field type_name
@@ -1259,16 +1034,16 @@ func file_api_v1_api_proto_init() {
 	if File_api_v1_api_proto != nil {
 		return
 	}
-	file_api_v1_api_proto_msgTypes[3].OneofWrappers = []any{}
-	file_api_v1_api_proto_msgTypes[11].OneofWrappers = []any{}
-	file_api_v1_api_proto_msgTypes[15].OneofWrappers = []any{}
+	file_api_v1_api_proto_msgTypes[1].OneofWrappers = []any{}
+	file_api_v1_api_proto_msgTypes[7].OneofWrappers = []any{}
+	file_api_v1_api_proto_msgTypes[9].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_v1_api_proto_rawDesc), len(file_api_v1_api_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   20,
+			NumMessages:   15,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

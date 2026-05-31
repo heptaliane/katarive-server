@@ -19,26 +19,20 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	KatariveService_QueueNarration_FullMethodName        = "/api.v1.KatariveService/QueueNarration"
-	KatariveService_GetNarration_FullMethodName          = "/api.v1.KatariveService/GetNarration"
-	KatariveService_GetNarrators_FullMethodName          = "/api.v1.KatariveService/GetNarrators"
-	KatariveService_QueueSourceItem_FullMethodName       = "/api.v1.KatariveService/QueueSourceItem"
-	KatariveService_GetSourceItem_FullMethodName         = "/api.v1.KatariveService/GetSourceItem"
-	KatariveService_QueueSourceCollection_FullMethodName = "/api.v1.KatariveService/QueueSourceCollection"
-	KatariveService_GetSourceCollection_FullMethodName   = "/api.v1.KatariveService/GetSourceCollection"
-	KatariveService_GetSourceCollections_FullMethodName  = "/api.v1.KatariveService/GetSourceCollections"
+	KatariveService_GetNarration_FullMethodName         = "/api.v1.KatariveService/GetNarration"
+	KatariveService_GetNarrators_FullMethodName         = "/api.v1.KatariveService/GetNarrators"
+	KatariveService_GetSourceItem_FullMethodName        = "/api.v1.KatariveService/GetSourceItem"
+	KatariveService_GetSourceCollection_FullMethodName  = "/api.v1.KatariveService/GetSourceCollection"
+	KatariveService_GetSourceCollections_FullMethodName = "/api.v1.KatariveService/GetSourceCollections"
 )
 
 // KatariveServiceClient is the client API for KatariveService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type KatariveServiceClient interface {
-	QueueNarration(ctx context.Context, in *QueueNarrationRequest, opts ...grpc.CallOption) (*QueueNarrationResponse, error)
 	GetNarration(ctx context.Context, in *GetNarrationRequest, opts ...grpc.CallOption) (*GetNarrationResponse, error)
 	GetNarrators(ctx context.Context, in *GetNarratorsRequest, opts ...grpc.CallOption) (*GetNarratorsResponse, error)
-	QueueSourceItem(ctx context.Context, in *QueueSourceItemRequest, opts ...grpc.CallOption) (*QueueSourceItemResponse, error)
 	GetSourceItem(ctx context.Context, in *GetSourceItemRequest, opts ...grpc.CallOption) (*GetSourceItemResponse, error)
-	QueueSourceCollection(ctx context.Context, in *QueueSourceCollectionRequest, opts ...grpc.CallOption) (*QueueSourceCollectionResponse, error)
 	GetSourceCollection(ctx context.Context, in *GetSourceCollectionRequest, opts ...grpc.CallOption) (*GetSourceCollectionResponse, error)
 	GetSourceCollections(ctx context.Context, in *GetSourceCollectionsRequest, opts ...grpc.CallOption) (*GetSourceCollectionsResponse, error)
 }
@@ -49,16 +43,6 @@ type katariveServiceClient struct {
 
 func NewKatariveServiceClient(cc grpc.ClientConnInterface) KatariveServiceClient {
 	return &katariveServiceClient{cc}
-}
-
-func (c *katariveServiceClient) QueueNarration(ctx context.Context, in *QueueNarrationRequest, opts ...grpc.CallOption) (*QueueNarrationResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(QueueNarrationResponse)
-	err := c.cc.Invoke(ctx, KatariveService_QueueNarration_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
 }
 
 func (c *katariveServiceClient) GetNarration(ctx context.Context, in *GetNarrationRequest, opts ...grpc.CallOption) (*GetNarrationResponse, error) {
@@ -81,30 +65,10 @@ func (c *katariveServiceClient) GetNarrators(ctx context.Context, in *GetNarrato
 	return out, nil
 }
 
-func (c *katariveServiceClient) QueueSourceItem(ctx context.Context, in *QueueSourceItemRequest, opts ...grpc.CallOption) (*QueueSourceItemResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(QueueSourceItemResponse)
-	err := c.cc.Invoke(ctx, KatariveService_QueueSourceItem_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *katariveServiceClient) GetSourceItem(ctx context.Context, in *GetSourceItemRequest, opts ...grpc.CallOption) (*GetSourceItemResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(GetSourceItemResponse)
 	err := c.cc.Invoke(ctx, KatariveService_GetSourceItem_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *katariveServiceClient) QueueSourceCollection(ctx context.Context, in *QueueSourceCollectionRequest, opts ...grpc.CallOption) (*QueueSourceCollectionResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(QueueSourceCollectionResponse)
-	err := c.cc.Invoke(ctx, KatariveService_QueueSourceCollection_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -135,12 +99,9 @@ func (c *katariveServiceClient) GetSourceCollections(ctx context.Context, in *Ge
 // All implementations must embed UnimplementedKatariveServiceServer
 // for forward compatibility.
 type KatariveServiceServer interface {
-	QueueNarration(context.Context, *QueueNarrationRequest) (*QueueNarrationResponse, error)
 	GetNarration(context.Context, *GetNarrationRequest) (*GetNarrationResponse, error)
 	GetNarrators(context.Context, *GetNarratorsRequest) (*GetNarratorsResponse, error)
-	QueueSourceItem(context.Context, *QueueSourceItemRequest) (*QueueSourceItemResponse, error)
 	GetSourceItem(context.Context, *GetSourceItemRequest) (*GetSourceItemResponse, error)
-	QueueSourceCollection(context.Context, *QueueSourceCollectionRequest) (*QueueSourceCollectionResponse, error)
 	GetSourceCollection(context.Context, *GetSourceCollectionRequest) (*GetSourceCollectionResponse, error)
 	GetSourceCollections(context.Context, *GetSourceCollectionsRequest) (*GetSourceCollectionsResponse, error)
 	mustEmbedUnimplementedKatariveServiceServer()
@@ -153,23 +114,14 @@ type KatariveServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedKatariveServiceServer struct{}
 
-func (UnimplementedKatariveServiceServer) QueueNarration(context.Context, *QueueNarrationRequest) (*QueueNarrationResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method QueueNarration not implemented")
-}
 func (UnimplementedKatariveServiceServer) GetNarration(context.Context, *GetNarrationRequest) (*GetNarrationResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetNarration not implemented")
 }
 func (UnimplementedKatariveServiceServer) GetNarrators(context.Context, *GetNarratorsRequest) (*GetNarratorsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetNarrators not implemented")
 }
-func (UnimplementedKatariveServiceServer) QueueSourceItem(context.Context, *QueueSourceItemRequest) (*QueueSourceItemResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method QueueSourceItem not implemented")
-}
 func (UnimplementedKatariveServiceServer) GetSourceItem(context.Context, *GetSourceItemRequest) (*GetSourceItemResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetSourceItem not implemented")
-}
-func (UnimplementedKatariveServiceServer) QueueSourceCollection(context.Context, *QueueSourceCollectionRequest) (*QueueSourceCollectionResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method QueueSourceCollection not implemented")
 }
 func (UnimplementedKatariveServiceServer) GetSourceCollection(context.Context, *GetSourceCollectionRequest) (*GetSourceCollectionResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetSourceCollection not implemented")
@@ -196,24 +148,6 @@ func RegisterKatariveServiceServer(s grpc.ServiceRegistrar, srv KatariveServiceS
 		t.testEmbeddedByValue()
 	}
 	s.RegisterService(&KatariveService_ServiceDesc, srv)
-}
-
-func _KatariveService_QueueNarration_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueueNarrationRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(KatariveServiceServer).QueueNarration(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: KatariveService_QueueNarration_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(KatariveServiceServer).QueueNarration(ctx, req.(*QueueNarrationRequest))
-	}
-	return interceptor(ctx, in, info, handler)
 }
 
 func _KatariveService_GetNarration_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -252,24 +186,6 @@ func _KatariveService_GetNarrators_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
-func _KatariveService_QueueSourceItem_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueueSourceItemRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(KatariveServiceServer).QueueSourceItem(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: KatariveService_QueueSourceItem_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(KatariveServiceServer).QueueSourceItem(ctx, req.(*QueueSourceItemRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _KatariveService_GetSourceItem_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetSourceItemRequest)
 	if err := dec(in); err != nil {
@@ -284,24 +200,6 @@ func _KatariveService_GetSourceItem_Handler(srv interface{}, ctx context.Context
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(KatariveServiceServer).GetSourceItem(ctx, req.(*GetSourceItemRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _KatariveService_QueueSourceCollection_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueueSourceCollectionRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(KatariveServiceServer).QueueSourceCollection(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: KatariveService_QueueSourceCollection_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(KatariveServiceServer).QueueSourceCollection(ctx, req.(*QueueSourceCollectionRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -350,10 +248,6 @@ var KatariveService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*KatariveServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "QueueNarration",
-			Handler:    _KatariveService_QueueNarration_Handler,
-		},
-		{
 			MethodName: "GetNarration",
 			Handler:    _KatariveService_GetNarration_Handler,
 		},
@@ -362,16 +256,8 @@ var KatariveService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _KatariveService_GetNarrators_Handler,
 		},
 		{
-			MethodName: "QueueSourceItem",
-			Handler:    _KatariveService_QueueSourceItem_Handler,
-		},
-		{
 			MethodName: "GetSourceItem",
 			Handler:    _KatariveService_GetSourceItem_Handler,
-		},
-		{
-			MethodName: "QueueSourceCollection",
-			Handler:    _KatariveService_QueueSourceCollection_Handler,
 		},
 		{
 			MethodName: "GetSourceCollection",

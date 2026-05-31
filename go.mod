@@ -5,15 +5,13 @@ go 1.25.5
 require (
 	connectrpc.com/connect v1.19.1
 	github.com/google/go-cmp v0.7.0
-	github.com/google/uuid v1.6.0
 	github.com/hashicorp/go-hclog v1.6.3
 	github.com/hashicorp/go-plugin v1.7.0
-	github.com/heptaliane/katarive-go-sdk v0.0.20
+	github.com/heptaliane/katarive-go-sdk v0.0.23
 	github.com/improbable-eng/grpc-web v0.15.0
 	github.com/rs/cors v1.11.1
 	go.uber.org/mock v0.6.0
 	golang.org/x/net v0.53.0
-	golang.org/x/sync v0.20.0
 	google.golang.org/grpc v1.80.0
 	google.golang.org/protobuf v1.36.11
 	gorm.io/driver/sqlite v1.6.0

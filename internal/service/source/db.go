@@ -34,10 +34,32 @@ func (r *DatabaseSourceRegistry) AddItem(
 		return err
 	}
 
+	// Fetch collection
+	var c *model.SourceCollection
+	i := res.GetItem()
+	curl := i.GetCollectionUrl()
+	if curl != "" {
+		if c, err = r.GetCollection(curl); err != nil {
+			return err
+		}
+		if c == nil {
+			if err := r.AddCollection(ctx, curl); err != nil {
+				return err
+			}
+		}
+		if c, err = r.GetCollection(curl); err != nil {
+			return err
+		}
+	}
+
 	// Add registry
 	var item SourceItem
-	item.FromSourceItem(res.GetItem())
+	item.FromSourceItem(i)
 	item.Plugin = sm.Name()
+	if c != nil {
+		cid := c.GetId()
+		item.CollectionId = &cid
+	}
 	return r.db.Clauses(clause.OnConflict{
 		Columns:   []clause.Column{{Name: "Id"}, {Name: "Plugin"}},
 		DoUpdates: item.Assignments(),
@@ -116,7 +138,7 @@ func (r *DatabaseSourceRegistry) GetItem(itemUrl string) (*model.SourceItem, err
 	}
 
 	var item SourceItem
-	err = r.db.First(&item, &SourceItem{
+	err = r.db.Joins("Collection").First(&item, &SourceItem{
 		Url:    itemUrl,
 		Plugin: sm.Name(),
 	}).Error
@@ -343,9 +365,6 @@ func (i *SourceItem) FromSourceItem(si *model.SourceItem) {
 	i.Url = si.GetUrl()
 	i.Title = si.GetTitle()
 	i.Language = int32(si.GetLanguage())
-	if collectionId := si.GetCollectionId(); collectionId != "" {
-		i.CollectionId = &collectionId
-	}
 	if content := si.GetContent(); content != "" {
 		i.Content = &content
 	}
@@ -357,14 +376,16 @@ func (i *SourceItem) FromSourceSummary(ss *model.SourceSummary) {
 }
 func (i *SourceItem) IntoSourceItem() *model.SourceItem {
 	item := &model.SourceItem{
-		Id:           i.Id,
-		CollectionId: i.CollectionId,
-		Url:          i.Url,
-		Title:        i.Title,
-		Language:     pb.Language(i.Language),
+		Id:       i.Id,
+		Url:      i.Url,
+		Title:    i.Title,
+		Language: pb.Language(i.Language),
 	}
 	if i.Content != nil {
 		item.Content = *i.Content
+	}
+	if i.Collection != nil {
+		item.CollectionUrl = &i.Collection.Url
 	}
 	return item
 }

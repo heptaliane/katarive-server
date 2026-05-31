@@ -42,32 +42,32 @@ func setupGetSourceServiceMetadataResponse() {
 	gssmr.SupportedCollectionPattern = `^http://example\.com/collection/.*$`
 }
 func setupGetSourceItemResponse() {
-	collectionId := "collection-id"
+	collectionUrl := "http://example.com/collection-id"
 	gsir.Item = &pb.SourceItem{
-		Id:           "item-id",
-		CollectionId: &collectionId,
-		Url:          "http://example.com/item/001",
-		Title:        "title",
-		Content:      "content",
-		Language:     pb.Language_LANGUAGE_ENGLISH,
+		Id:            "item-id",
+		CollectionUrl: &collectionUrl,
+		Url:           "http://example.com/item/001",
+		Title:         "title",
+		Content:       "content",
+		Language:      pb.Language_LANGUAGE_ENGLISH,
 	}
-	collection1 := "collection1"
-	collection2 := "collection2"
+	collection1 := SM1_COLLECTION_URL
+	collection2 := SM2_COLLECTION_URL
 	gsir1.Item = &pb.SourceItem{
-		Id:           "item1",
-		CollectionId: &collection1,
-		Url:          SM1_ITEM_URL,
-		Title:        "title1",
-		Content:      "content1",
-		Language:     pb.Language_LANGUAGE_ENGLISH,
+		Id:            "item1",
+		CollectionUrl: &collection1,
+		Url:           SM1_ITEM_URL,
+		Title:         "title1",
+		Content:       "content1",
+		Language:      pb.Language_LANGUAGE_ENGLISH,
 	}
 	gsir2.Item = &pb.SourceItem{
-		Id:           "item2",
-		CollectionId: &collection2,
-		Url:          SM2_ITEM_URL,
-		Title:        "title2",
-		Content:      "content2",
-		Language:     pb.Language_LANGUAGE_ENGLISH,
+		Id:            "item2",
+		CollectionUrl: &collection2,
+		Url:           SM2_ITEM_URL,
+		Title:         "title2",
+		Content:       "content2",
+		Language:      pb.Language_LANGUAGE_ENGLISH,
 	}
 }
 func setupGetSourceCollectionResponse() {

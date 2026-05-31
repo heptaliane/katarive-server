@@ -21,7 +21,6 @@ var si *model.SourceItem
 var sis []*model.SourceSummary
 var sce error
 var sie error
-var sise error
 var ne error
 var interval time.Duration
 
@@ -62,7 +61,6 @@ func setupSourceItems() {
 func setupError() {
 	sce = errors.New("SourceRegistry.SourceCollection failed")
 	sie = errors.New("SourceRegistry.SourceItem failed")
-	sise = errors.New("SourceRegistry.SourceItems failed")
 	ne = errors.New("NarrateRegistry.Do failed")
 }
 func setupInterval() {
@@ -70,15 +68,12 @@ func setupInterval() {
 }
 func setupSourceRegistry(t *testing.T) source.SourceRegistry {
 	sr := smock.NewMockSourceRegistry(gomock.NewController(t))
-	sr.EXPECT().SourceItem(gomock.Any(), VALID_URL, gomock.Any()).Return(si, nil).AnyTimes()
-	sr.EXPECT().SourceItem(gomock.Any(), gomock.Not(VALID_URL), gomock.Any()).
-		Return(nil, sie).AnyTimes()
-	sr.EXPECT().SourceCollection(gomock.Any(), VALID_URL, gomock.Any()).Return(sc, nil).AnyTimes()
-	sr.EXPECT().SourceCollection(gomock.Any(), gomock.Not(VALID_URL), gomock.Any()).
-		Return(nil, sce).AnyTimes()
-	sr.EXPECT().SourceItems(gomock.Any(), VALID_URL, gomock.Any()).Return(sis, nil).AnyTimes()
-	sr.EXPECT().SourceItems(gomock.Any(), gomock.Not(VALID_URL), gomock.Any()).
-		Return(nil, sise).AnyTimes()
+	sr.EXPECT().GetItem(VALID_URL).Return(si, nil).AnyTimes()
+	sr.EXPECT().GetItem(gomock.Not(VALID_URL)).Return(nil, sie).AnyTimes()
+	sr.EXPECT().AddCollection(gomock.Any(), VALID_URL).Return(nil).AnyTimes()
+	sr.EXPECT().AddCollection(gomock.Any(), gomock.Not(VALID_URL)).Return(sce).AnyTimes()
+	sr.EXPECT().AddItem(gomock.Any(), VALID_URL).Return(nil).AnyTimes()
+	sr.EXPECT().AddItem(gomock.Any(), gomock.Not(VALID_URL)).Return(sie).AnyTimes()
 	return sr
 }
 func setupNarrateRegistry(t *testing.T) narrator.NarrateRegistry {

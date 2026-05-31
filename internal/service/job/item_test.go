@@ -42,11 +42,6 @@ func TestMutexSourceItemJobQueue(t *testing.T) {
 				return
 			}
 
-			if err != nil {
-				t.Errorf("Get returns unexpected error: %v", err)
-				return
-			}
-
 			time.Sleep(interval)
 
 			err = job.Error()

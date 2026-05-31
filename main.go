@@ -34,8 +34,8 @@ func main() {
 	}
 
 	pm := handler.NewBasePathModifier(
-		handler.WithPathRule(DATA_DIR, "file"),
-		handler.WithPathRule(STATIC_DIR, "static"),
+		handler.WithPathRule(DATA_DIR, "/file"),
+		handler.WithPathRule(STATIC_DIR, "/static"),
 	)
 	grpc, err := NewGRPCServer(PLUGIN_DIR, DATA_DIR, INTERVAL, database, pm, PLUGIN_LOG_LEVEL)
 	if err != nil {

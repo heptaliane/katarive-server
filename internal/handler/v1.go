@@ -53,6 +53,7 @@ func (h *KatariveHandlerV1) GetNarration(
 		ctx = context.WithoutCancel(ctx)
 		job, err := h.nq.Queue(
 			ctx,
+			job.WithNarrationUrl(req.GetUrl()),
 			job.WithNarrationSpeakerId(req.GetSpeakerId()),
 			job.WithNarrationNarrator(req.GetNarrator()),
 			job.WithNarrationEncoding(ppb.AudioEncoding_AUDIO_ENCODING_MP3),
